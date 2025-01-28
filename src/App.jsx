@@ -1,13 +1,14 @@
 import React from 'react'
-import Navbar from './components/Navbar/Navbar';
+import Navbar from './components/Navbar/Navbar'
+import Hero from './components/Hero/Hero';
 
 const App = () => {
-  return (
-    <div>
-      <Navbar />
-    </div>
+  return(
+    <div className="overflow-x-hidden">
+       <Navbar />
+       <Hero />
+      </div>
   )
 }
 
-export default App
-
+export default App;
