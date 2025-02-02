@@ -47,10 +47,10 @@ const Hero = ({ handleOrderPopup }) => {
   };
 
   return (
-    <div className="relative overflow-hidden min-h-[550px] sm:min-h-[650px] bg-gray-100 flex justify-center items-center dark:bg-gray-100 dark:text-white duration-200 ">
+    <div className="relative overflow-hidden min-h-[400px] sm:min-h-[500px] bg-whwh flex justify-center items-center dark:bg-gray-100 dark:text-white duration-200 ">
       {/* background pattern */}
       {/* hero section */}
-      <div className="container pb-8 sm:pb-0">
+      <div className="container m-2 pb-8 sm:pb-0">
         <Slider {...settings}>
           {ImageList.map((data) => (
             <div>
@@ -60,19 +60,19 @@ const Hero = ({ handleOrderPopup }) => {
                   <div
                     data-aos="zoom-in"
                     data-aos-once="true"
-                    className="relative z-10"
+                    className="relative z-auto"
                   >
                     <img
                       src={data.img}
                       alt=""
-                      className="w-[500px] h-[500px] sm:h-[650px] sm:w-[650px] sm:scale-305 lg:scale-320 object-contain mx-auto"
+                      className="w-[300px] h-[300px] sm:h-[450px] sm:w-[450px] sm:scale-125 lg:scale-125 object-contain mx-auto"
                     />
                   </div>
                 </div>
 
 
                 {/* text content section */}
-                <div className="flex flex-col justify-center gap-4 pt-12 sm:pt-0 text-center sm:text-right order-2 sm:order-2 relative z-10 text-black">
+                <div className="flex flex-col justify-center gap-8 pt-12 sm:pt-0 tex-center sm:text-right order-2 sm:order-2 relative z-10 text-black">
                   <h1
                     data-aos="zoom-out"
                     data-aos-duration="500"
@@ -96,7 +96,7 @@ const Hero = ({ handleOrderPopup }) => {
                   >
                     <button
                       onClick={handleOrderPopup}
-                      className="bg-gradient-to-r from-[#5eb1f6] to-[#97caf4eb] hover:scale-105 duration-200 text-black py-2 px-4 rounded-full"
+                      className="bg-gradient-to-r from-[#5eb1f6] to-[#97caf4eb] hover:scale-105 duration-200 text-white py-2 px-4 rounded-full"
                     >
                       Order Now
                     </button>

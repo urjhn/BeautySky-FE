@@ -3,6 +3,8 @@ import Navbar from './components/Navbar/Navbar'
 import Hero from './components/Hero/Hero';
 import AOS from "aos";
 import "aos/dist/aos.css";
+import Products from './components/Products/Products';
+import TopProducts from './components/TopProducts/TopProducts';
 
 const App = () => {
   const [orderPopup, setOrderPopup] = React.useState(false);
@@ -24,6 +26,8 @@ const App = () => {
     <div className="overflow-x-hidden">
         <Navbar handleOrderPopup={handleOrderPopup} />
         <Hero handleOrderPopup={handleOrderPopup} />
+        <Products />
+        <TopProducts />
       </div>
   )
 }
