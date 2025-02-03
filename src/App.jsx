@@ -5,6 +5,7 @@ import AOS from "aos";
 import "aos/dist/aos.css";
 import Products from './components/Products/Products';
 import TopProducts from './components/TopProducts/TopProducts';
+import Test from './components/Test/Test';
 
 const App = () => {
   const [orderPopup, setOrderPopup] = React.useState(false);
@@ -28,6 +29,7 @@ const App = () => {
         <Hero handleOrderPopup={handleOrderPopup} />
         <Products />
         <TopProducts />
+        <Test />
       </div>
   )
 }

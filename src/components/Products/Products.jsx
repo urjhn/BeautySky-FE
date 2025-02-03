@@ -64,7 +64,6 @@ const Products = () => {
             Products Lines
           </h1>
         </div>
-
         
         {/* Body section */}
         <div>
