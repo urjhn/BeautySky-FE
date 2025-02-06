@@ -5,7 +5,9 @@ import AOS from "aos";
 import "aos/dist/aos.css";
 import Products from './components/Products/Products';
 import TopProducts from './components/TopProducts/TopProducts';
-import Test from './components/Test/Test';
+import Banner from './components/Banner/Banner';
+import Testimonials from './Testimonials/Testimonials';
+import Footer from './Footer/Footer';
 
 const App = () => {
   const [orderPopup, setOrderPopup] = React.useState(false);
@@ -29,7 +31,9 @@ const App = () => {
         <Hero handleOrderPopup={handleOrderPopup} />
         <Products />
         <TopProducts />
-        <Test />
+        <Banner />
+        <Testimonials />
+        <Footer />
       </div>
   )
 }
