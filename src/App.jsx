@@ -6,8 +6,9 @@ import "aos/dist/aos.css";
 import Products from './components/Products/Products';
 import TopProducts from './components/TopProducts/TopProducts';
 import Banner from './components/Banner/Banner';
-import Testimonials from './Testimonials/Testimonials';
-import Footer from './Footer/Footer';
+import Footer from './components/Footer/Footer';
+import Testimonials from './components/Testimonials/Testimonials';
+
 
 const App = () => {
   const [orderPopup, setOrderPopup] = React.useState(false);
