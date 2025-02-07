@@ -16,10 +16,10 @@ const Footer = () => {
 
                 {/* company details */}
                 
-                    <div className=" py-8 px-16">
+                    <div className="justify-items-center py-8 px-0">
                         <h1 className="sm:max-w-40 flex justify-around items-center grid-cols-2 gap-4">
-                        <a href="#/" className="flex items-center">
-                            <img src={footerLogo} alt="" className="w-20"/>
+                        <a href="#/" className="justify-items-center">
+                            <img src={footerLogo} alt="" className=" w-20"/>
             
                             <img src={footerNamebrand} alt="" className="w-40"/>
                         </a>
@@ -43,9 +43,9 @@ const Footer = () => {
                     </div>
    
                     {/* footer links */}
-                    <div className="grid grid-cols-2 sm:grid-cols-2 col-span-1 md:pl-6 ">
+                    <div className="grid grid-cols-2 sm:grid-cols-2 col-span-1 md:pl-2 ">
                         <div className="">
-                            <div className="text-center py-8 px-16">
+                            <div className="py-8 px-16">
                                 <h1 className="sm:text-xl text-xl font-bold sm:text-left text-justify mb-3">
                                     FPT Trading Company Limited
                                 </h1>
