@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { FaShoppingCart, FaUserCircle } from "react-icons/fa";
 import { Link } from "react-router-dom";
-import Navbar from "../components/Navbar/Navbar";
-import Footer from "../components/Footer/Footer";
+import Navbar from "../../components/Navbar/Navbar";
+import Footer from "../../components/Footer/Footer";
 
 const ProductsPage = () => {
   const products = Array.from({ length: 50 }, (_, index) => ({
