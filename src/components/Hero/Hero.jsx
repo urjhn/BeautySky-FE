@@ -1,12 +1,13 @@
-import React from 'react'
+import React from "react";
 import Image1 from "../../assets/hero/hero01.png";
 import Image2 from "../../assets/hero/hero02.png";
 import Image3 from "../../assets/hero/hero03.png";
-import Slider from 'react-slick';
-import AOS from 'aos';
-import 'aos/dist/aos.css';
+import Slider from "react-slick";
+import AOS from "aos";
+import "aos/dist/aos.css";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css"; // (Optional, but recommended)
+import { Link } from "react-router-dom";
 
 const ImageList = [
   {
@@ -55,7 +56,7 @@ const Hero = ({ handleOrderPopup }) => {
           {ImageList.map((data) => (
             <div>
               <div className="grid grid-cols-1 sm:grid-cols-2">
-              {/* image section */}
+                {/* image section */}
                 <div className="order-1 sm:order-1">
                   <div
                     data-aos="zoom-in"
@@ -69,7 +70,6 @@ const Hero = ({ handleOrderPopup }) => {
                     />
                   </div>
                 </div>
-
 
                 {/* text content section */}
                 <div className="flex flex-col justify-center gap-8 pt-12 sm:pt-0 tex-center sm:text-right order-2 sm:order-2 relative z-10 text-black">
@@ -94,15 +94,14 @@ const Hero = ({ handleOrderPopup }) => {
                     data-aos-duration="500"
                     data-aos-delay="300"
                   >
-                    <button
-                      onClick={handleOrderPopup}
+                    <Link
+                      to="/product"
                       className="bg-gradient-to-r from-[#5eb1f6] to-[#97caf4eb] hover:scale-105 duration-200 text-white py-2 px-4 rounded-full"
                     >
                       Order Now
-                    </button>
+                    </Link>
                   </div>
                 </div>
-                
               </div>
             </div>
           ))}

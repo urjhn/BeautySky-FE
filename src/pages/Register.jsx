@@ -1,9 +1,9 @@
-import { useState } from "react";
+import React from "react";
 import { Link } from "react-router-dom";
 import Navbar from "../components/Navbar/Navbar";
 import Footer from "../components/Footer/Footer";
 
-function Login() {
+function Register() {
   return (
     <>
       <Navbar />
@@ -11,42 +11,36 @@ function Login() {
         <div className="login-card">
           <div className="form-section">
             <form className="login-form">
-              <h3>Sign In</h3>
+              <h3>Sign Up</h3>
               <input
                 type="text"
                 placeholder="Username"
                 className="form-input"
               />
+              <input type="email" placeholder="Email" className="form-input" />
               <input
                 type="password"
                 placeholder="Password"
                 className="form-input"
               />
-              <button type="submit" className="sign-in-button">
-                Sign In
-              </button>
-            </form>
-            <div className="options">
-              <a href="#" className="forgot-password">
-                Forget password?
-              </a>
-              <div className="sign-up">
-                <p>Does not have an account?</p>
-                <Link to="/register">Sign up</Link>
+              <input
+                type="password"
+                placeholder="Confirm Password"
+                className="form-input"
+              />
+              <div className="sign-in-button">
+                <p>Do you already have an account?</p>
+                <Link to="/login">Sign in</Link>
               </div>
-            </div>
+            </form>
             <div className="divider">
               <span>OR</span>
             </div>
             <div className="external-sign-in">
               <button className="google-sign-in">
-                <i className="fab fa-google"></i> Sign in with Google
-              </button>
-              <button className="email-sign-in">
-                <i className="fas fa-envelope"></i> Sign in with Email
+                <i className="fab fa-google"></i> Sign up with Google
               </button>
             </div>
-            <p className="terms">FASCO Terms & Conditions</p>
           </div>
         </div>
       </div>
@@ -55,4 +49,4 @@ function Login() {
   );
 }
 
-export default Login;
+export default Register;
