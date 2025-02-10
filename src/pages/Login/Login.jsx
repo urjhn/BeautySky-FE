@@ -1,10 +1,23 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import { auth, provider, signInWithPopup } from "../../services/firebase";
 import Navbar from "../../components/Navbar/Navbar";
 import Footer from "../../components/Footer/Footer";
 import loginImage from "../../assets/login/login.png";
 
 function Login() {
+  const [user, setUser] = useState(null);
+
+  const handleGoogleSignIn = async () => {
+    try {
+      const result = await signInWithPopup(auth, provider);
+      setUser(result.user);
+      alert(`Welcome ${result.user.displayName}!`);
+    } catch (error) {
+      console.error("Google Sign-In Error", error);
+    }
+  };
+
   return (
     <>
       <Navbar />
@@ -57,7 +70,10 @@ function Login() {
               </div>
             </div>
             <div className="flex flex-col space-y-3">
-              <button className="w-full flex items-center justify-center bg-red-500 text-white py-2 rounded-lg hover:bg-red-600 transition duration-300">
+              <button
+                className="w-full flex items-center justify-center bg-red-500 text-white py-2 rounded-lg hover:bg-red-600 transition duration-300"
+                onClick={handleGoogleSignIn}
+              >
                 <i className="fab fa-google mr-2"></i> Sign in with Google
               </button>
               <button className="w-full flex items-center justify-center bg-gray-800 text-white py-2 rounded-lg hover:bg-gray-900 transition duration-300">
