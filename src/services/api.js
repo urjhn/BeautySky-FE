@@ -12,32 +12,49 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 const getToken = () => {
-  const saveAccessToken = window.localStorage.getItem("access_token");
-  if (saveAccessToken) {
-    return saveAccessToken;
+  const savedAccessToken = window.localStorage.getItem("access-token");
+  if (savedAccessToken) {
+    return savedAccessToken;
   } else {
     const url = new URLSearchParams(window.location.hash.substring(1));
     const token = url.get("access_token");
-    window.localStorage.setItem("access-token", token);
+    if (token) {
+      window.localStorage.setItem("access-token", token);
+    }
     return token;
   }
 };
 
 const getUserInfo = async () => {
   const accessToken = getToken();
-  const response = await fetch(
-    `https://www.googleapis.com/oauth2/v3/userinfo?access_token={access_token}`
-  );
-  const data = await response.json();
-  renderUI(data);
+  if (!accessToken) {
+    console.error("Do not find access token");
+    return;
+  }
+
+  try {
+    const response = await fetch(
+      `https://www.googleapis.com/oauth2/v3/userinfo?access_token=${accessToken}`
+    );
+    if (!response.ok) {
+      throw new Error("Error get user's information");
+    }
+    const data = await response.json();
+    renderUI(data);
+  } catch (error) {
+    console.error("Error:", error);
+  }
 };
-getUserInfo();
+
 const renderUI = (data) => {
   const avatar = document.getElementById("avatar");
   const name = document.getElementById("name");
   const mail = document.getElementById("mail");
+
   avatar.src = data.picture;
   name.innerText = data.name;
-  mail.innerText = data.mail;
+  mail.innerText = data.email;
   console.log(data);
 };
+
+getUserInfo();
