@@ -52,9 +52,12 @@ const Navbar = () => {
               onClick={() => handleOrderPopup()}
               className="bg-gradient-to-r from-[#6BBCFE] to-[#0272cd] transition-all duration-200 text-white  py-1 px-4 rounded-full flex items-center gap-3 group"
             >
-              <span className="group-hover:block hidden transition-all duration-200">
+              <Link
+                to="/viewcart"
+                className="group-hover:block hidden transition-all duration-200"
+              >
                 Order
-              </span>
+              </Link>
               <FaCartShopping className="text-xl text-white drop-shadow-sm cursor-pointer" />
             </button>
 
