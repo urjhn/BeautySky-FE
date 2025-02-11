@@ -1,6 +1,6 @@
 import { useContext, useState } from "react";
-import { Link } from "react-router-dom";
-import { AuthContext } from "../../context/AuthContext"; // Đường dẫn AuthContext
+import { Link, useNavigate } from "react-router-dom"; // Import useNavigate
+import { AuthContext } from "../../context/AuthContext";
 import { auth, provider, signInWithPopup } from "../../services/firebase";
 import Navbar from "../../components/Navbar/Navbar";
 import Footer from "../../components/Footer/Footer";
@@ -8,6 +8,7 @@ import loginImage from "../../assets/login/login.png";
 
 function Login() {
   const { login } = useContext(AuthContext);
+  const navigate = useNavigate(); // Dùng để chuyển hướng sau khi login
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
@@ -22,7 +23,20 @@ function Login() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    await login(email, password);
+    try {
+      const role = await login(email, password); // Lấy role sau khi đăng nhập
+      localStorage.setItem("role", role); // Lưu role vào localStorage
+
+      if (role === "manager") {
+        navigate("/dashboard");
+      } else if (role === "staff") {
+        navigate("/profile");
+      } else {
+        navigate("/");
+      }
+    } catch (error) {
+      console.error("Login failed", error);
+    }
   };
 
   return (
