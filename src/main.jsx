@@ -9,6 +9,8 @@ import Product from "./pages/Product/Product.jsx";
 import Checkout from "./pages/Checkout/Checkout.jsx";
 import Viewcart from "./pages/Product/Viewcart.jsx";
 import Quizz from "./features/quiz/QuizPage.jsx";
+import Error from "./pages/Errors/NotFoundPage.jsx";
+import UserProfile from "./pages/Profile/UserProfilePage.jsx";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 
@@ -24,6 +26,8 @@ createRoot(document.getElementById("root")).render(
         <Route path="/checkout" element={<Checkout />} />
         <Route path="/viewcart" element={<Viewcart />} />
         <Route path="/quizz" element={<Quizz />} />
+        <Route path="*" element={<Error />} />
+        <Route path="/profile" element={<UserProfile />} />
       </Routes>
     </Router>
   </StrictMode>
