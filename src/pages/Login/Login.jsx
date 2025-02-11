@@ -1,21 +1,28 @@
-import { useState } from "react";
+import { useContext, useState } from "react";
 import { Link } from "react-router-dom";
+import { AuthContext } from "../../context/AuthContext"; // Đường dẫn AuthContext
 import { auth, provider, signInWithPopup } from "../../services/firebase";
 import Navbar from "../../components/Navbar/Navbar";
 import Footer from "../../components/Footer/Footer";
 import loginImage from "../../assets/login/login.png";
 
 function Login() {
-  const [user, setUser] = useState(null);
+  const { login } = useContext(AuthContext);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
 
   const handleGoogleSignIn = async () => {
     try {
       const result = await signInWithPopup(auth, provider);
-      setUser(result.user);
       alert(`Welcome ${result.user.displayName}!`);
     } catch (error) {
       console.error("Google Sign-In Error", error);
     }
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    await login(email, password);
   };
 
   return (
@@ -32,15 +39,19 @@ function Login() {
           </div>
           <div className="w-full md:w-1/2 p-8 flex flex-col justify-center">
             <h3 className="text-2xl font-semibold text-center mb-4">Sign In</h3>
-            <form className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-4">
               <input
-                type="text"
-                placeholder="Username"
+                type="email"
+                placeholder="Email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500"
               />
               <input
                 type="password"
                 placeholder="Password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
                 className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500"
               />
               <button
@@ -75,9 +86,6 @@ function Login() {
                 onClick={handleGoogleSignIn}
               >
                 <i className="fab fa-google mr-2"></i> Sign in with Google
-              </button>
-              <button className="w-full flex items-center justify-center bg-gray-800 text-white py-2 rounded-lg hover:bg-gray-900 transition duration-300">
-                <i className="fas fa-envelope mr-2"></i> Sign in with Email
               </button>
             </div>
             <p className="text-center text-gray-500 text-xs mt-4">
