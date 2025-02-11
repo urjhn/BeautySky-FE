@@ -2,8 +2,10 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import Navbar from "../../components/Navbar/Navbar";
 import Footer from "../../components/Footer/Footer";
+import { useCart } from "../../context/CartContext"; // Import CartContext
 
 const ProductsPage = () => {
+  const { addToCart } = useCart(); // Lấy hàm addToCart từ context
   const products = Array.from({ length: 50 }, (_, index) => ({
     id: index + 1,
     name: `Product ${index + 1}`,
@@ -83,7 +85,7 @@ const ProductsPage = () => {
               <p className="text-blue-500 font-bold">${product.price}</p>
               <button
                 className="mt-2 w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600 transition duration-300"
-                onClick={() => handleAddToCart(product)}
+                onClick={() => addToCart(product)}
               >
                 Add to Cart
               </button>

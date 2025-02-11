@@ -1,17 +1,18 @@
 import axios from "axios";
-const baseUrl = "http://14.225.207.163:8080/api/";
 
-const config = {
-  baseURL: baseUrl,
+const handleLogin = async (email, password) => {
+  try {
+    const response = await axios.post("https://your-backend.com/api/login", {
+      email,
+      password,
+    });
+
+    console.log("Login SuccesfullySuccesfully:", response.data);
+    localStorage.setItem("token", response.data.token);
+  } catch (error) {
+    console.error("Error Login", error.response?.data || error.message);
+  }
 };
-const api = axios.create(config);
 
-const handleBefore = (config) => {
-  const token = localStorage.getItem("token")?.replaceAll('"', "");
-  config.headers["Authorization"] = `Bearer ${token}`;
-  return config;
-};
-
-api.interceptors.request.use(handleBefore);
-
-export default api;
+// Gọi hàm login
+handleLogin("test@example.com", "123456");

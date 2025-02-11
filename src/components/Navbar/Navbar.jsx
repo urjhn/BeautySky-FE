@@ -5,9 +5,12 @@ import { FaShoppingCart, FaUserCircle } from "react-icons/fa"; // Đổi FaCartS
 import Logo from "../../assets/logo.png";
 import Namebrand from "../../assets/namebrand.png";
 import { NavbarMenu } from "../../mockData/data";
+import { useCart } from "../../context/CartContext"; // Import CartContext
 
 const Navbar = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const { cartItems } = useCart(); // Lấy giỏ hàng từ context
+  const cartCount = cartItems.reduce((acc, item) => acc + item.quantity, 0);
 
   // Kiểm tra trạng thái đăng nhập từ localStorage khi load trang
   useEffect(() => {
@@ -54,11 +57,11 @@ const Navbar = () => {
           </div>
 
           <button className="bg-gradient-to-r from-[#6BBCFE] to-[#0272cd] transition-all duration-200 text-white py-1 px-4 rounded-full flex items-center gap-3 group">
-            <Link
-              to="/viewcart"
-              className="group-hover:block hidden transition-all duration-200"
-            >
-              Order
+            <Link to="/viewcart" className="relative hover:underline">
+              Order{" "}
+              <span className="absolute -top-3 -right-14 bg-red-500 text-white text-xs px-1 py-1 rounded-md">
+                {cartCount}
+              </span>
             </Link>
             <FaShoppingCart className="text-xl text-white drop-shadow-sm cursor-pointer" />
           </button>

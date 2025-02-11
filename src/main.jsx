@@ -13,22 +13,30 @@ import Error from "./pages/Errors/NotFoundPage.jsx";
 import UserProfile from "./pages/Profile/UserProfilePage.jsx";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
+import { CartProvider } from "./context/CartContext.jsx"; // Import CartProvider
+import { AuthProvider } from "./context/AuthContext"; // Đúng đường dẫn
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
-    <Router>
-      <Routes>
-        {/* Định nghĩa các route cho các trang */}
-        <Route path="/" element={<Home />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-        <Route path="/product" element={<Product />} />
-        <Route path="/checkout" element={<Checkout />} />
-        <Route path="/viewcart" element={<Viewcart />} />
-        <Route path="/quizz" element={<Quizz />} />
-        <Route path="*" element={<Error />} />
-        <Route path="/profile" element={<UserProfile />} />
-      </Routes>
-    </Router>
+    <AuthProvider>
+      <CartProvider>
+        {" "}
+        {/* Bọc toàn bộ app với CartProvider */}
+        <Router>
+          <Routes>
+            {/* Định nghĩa các route cho các trang */}
+            <Route path="/" element={<Home />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/product" element={<Product />} />
+            <Route path="/checkout" element={<Checkout />} />
+            <Route path="/viewcart" element={<Viewcart />} />
+            <Route path="/quizz" element={<Quizz />} />
+            <Route path="*" element={<Error />} />
+            <Route path="/profile" element={<UserProfile />} />
+          </Routes>
+        </Router>
+      </CartProvider>
+    </AuthProvider>
   </StrictMode>
 );
