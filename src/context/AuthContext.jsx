@@ -8,10 +8,13 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (email, password) => {
     try {
-      const response = await axios.post("https://your-backend.com/api/login", {
-        email,
-        password,
-      });
+      const response = await axios.post(
+        "https://localhost:7250/api/Accounts/Login",
+        {
+          email,
+          password,
+        }
+      );
       setUser(response.data.user); // Lưu thông tin user
       localStorage.setItem("token", response.data.token); // Lưu token
     } catch (error) {
