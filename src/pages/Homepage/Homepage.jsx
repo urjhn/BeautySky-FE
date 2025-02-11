@@ -26,7 +26,7 @@ const Homepage = () => {
   }, []);
 
   return (
-    <div className="overflow-x-hidden">
+    <div>
       <Navbar handleOrderPopup={handleOrderPopup} />
       <Hero handleOrderPopup={handleOrderPopup} />
       <Products />
