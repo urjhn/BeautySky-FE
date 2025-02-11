@@ -1,15 +1,11 @@
-import React from 'react'
-import Img1 from "../../assets/products/product1.png"
-import Img2 from "../../assets/products/product2.png"
-import Img3 from "../../assets/products/product3.png"
-import Img4 from "../../assets/products/product4.png"
-import Img5 from "../../assets/products/product5.png"
+import React from "react";
+import Img1 from "../../assets/products/product1.png";
+import Img2 from "../../assets/products/product2.png";
+import Img3 from "../../assets/products/product3.png";
+import Img4 from "../../assets/products/product4.png";
+import Img5 from "../../assets/products/product5.png";
 import { FaStar } from "react-icons/fa6";
-
-
-
-
-
+import { Link } from "react-router-dom";
 
 const ProductsData = [
   {
@@ -50,21 +46,23 @@ const ProductsData = [
   },
 ];
 
-
 const Products = () => {
   return (
     <div className="mt-14 mb-12">
-        <div className="container">
+      <div className="container">
         {/* Header section */}
         <div className="text-center mb-10 max-w-[600px] mx-auto">
           <p data-aos="fade-up" className="text-sm text-black">
             Top Selling Products for you
           </p>
-          <h1 data-aos="fade-up" className="text-4xl underline underline-offset-8 hover:underline decoration-1 decoration-black font-bold text-[#6BBCFE]">
+          <h1
+            data-aos="fade-up"
+            className="text-4xl underline underline-offset-8 hover:underline decoration-1 decoration-black font-bold text-[#6BBCFE]"
+          >
             Products Lines
           </h1>
         </div>
-        
+
         {/* Body section */}
         <div>
           <div className="grid grid-cols-1 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 place-items-center gap-5">
@@ -93,17 +91,20 @@ const Products = () => {
             ))}
           </div>
           {/* view all button */}
-          <a href= "#">
-          <div className="flex justify-center">
-            <button className="text-center mt-10 cursor-pointer bg-[#6bbcfe] text-white py-1 px-5 rounded-md">
-              View All Button
-            </button>
-          </div>
+          <a href="#">
+            <div className="flex justify-center">
+              <Link
+                to="/product"
+                className="text-center mt-10 cursor-pointer bg-[#6bbcfe] text-white py-1 px-5 rounded-md"
+              >
+                View All Products
+              </Link>
+            </div>
           </a>
         </div>
-        </div>
+      </div>
     </div>
-  )
-}
+  );
+};
 
-export default Products
+export default Products;
