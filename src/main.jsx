@@ -29,6 +29,7 @@ import { CartProvider } from "./context/CartContext.jsx"; // Import CartProvider
 import { AuthProvider } from "./context/AuthContext.jsx";
 import { ThemeProvider } from "./pages/DashBoard/context/ThemeContext.jsx";
 import RoutineBuilderPage from "./features/skincare-routine/RoutineBuilderPage";
+import "./index.css";
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
