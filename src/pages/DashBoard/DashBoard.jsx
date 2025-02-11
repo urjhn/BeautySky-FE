@@ -9,8 +9,16 @@ import {
   FaHome,
   FaCog,
 } from "react-icons/fa";
+import {
+  Chart as ChartJS,
+  LineElement,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+} from "chart.js";
 import { Line, Bar } from "react-chartjs-2";
-import "chart.js/auto";
+
+ChartJS.register(LineElement, CategoryScale, LinearScale, PointElement);
 
 const Dashboard = () => {
   const { user } = useAuth();
