@@ -1,18 +1,43 @@
-// src/firebaseConfig.js
 import { initializeApp } from "firebase/app";
-import { getAuth, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
+import {
+  getAuth,
+  GoogleAuthProvider,
+  signInWithPopup,
+  signOut,
+} from "firebase/auth";
 
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_AUTH_DOMAIN",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_STORAGE_BUCKET",
-  messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-  appId: "YOUR_APP_ID",
+  apiKey: "AIzaSyAEeubzgO7za2wg9-i8dP9BWKAyKSaoXmI",
+  authDomain: "beautysky-fe.firebaseapp.com",
+  projectId: "beautysky-fe",
+  storageBucket: "beautysky-fe.appspot.com",
+  messagingSenderId: "603561443167",
+  appId: "1:603561443167:web:1cd028dc8f2881256280ea",
 };
 
+// Khởi tạo Firebase
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const provider = new GoogleAuthProvider();
 
-export { auth, provider, signInWithPopup };
+// Hàm đăng nhập bằng Google
+const signInWithGoogle = async () => {
+  try {
+    const result = await signInWithPopup(auth, provider);
+    console.log("User Info:", result.user);
+  } catch (error) {
+    console.error("Login Error:", error);
+  }
+};
+
+// Hàm đăng xuất
+const logOut = async () => {
+  try {
+    await signOut(auth);
+    console.log("User logged out");
+  } catch (error) {
+    console.error("Logout Error:", error);
+  }
+};
+
+export { auth, signInWithGoogle, logOut };

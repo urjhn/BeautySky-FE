@@ -1,8 +1,8 @@
-import { useContext, useState } from "react";
+import { useContext, useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { AuthContext } from "../../context/AuthContext";
-import { auth, provider, signInWithPopup } from "../../services/firebase";
-import ReCAPTCHA from "react-google-recaptcha"; // Import reCAPTCHA
+import { signInWithGoogle } from "../../services/firebase";
+import ReCAPTCHA from "react-google-recaptcha";
 import Navbar from "../../components/Navbar/Navbar";
 import Footer from "../../components/Footer/Footer";
 import loginImage from "../../assets/login/login.png";
@@ -10,16 +10,29 @@ import loginImage from "../../assets/login/login.png";
 function Login() {
   const { login } = useContext(AuthContext);
   const navigate = useNavigate();
+
+  const [user, setUser] = useState(null);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [recaptchaToken, setRecaptchaToken] = useState(null); // State lưu token reCAPTCHA
+  const [recaptchaToken, setRecaptchaToken] = useState(null);
+  const [loading, setLoading] = useState(false); // Trạng thái loading
+
+  // Cập nhật user từ localStorage khi component mount
+  useEffect(() => {
+    const storedUser = localStorage.getItem("user");
+    if (storedUser) setUser(JSON.parse(storedUser));
+  }, []);
 
   const handleGoogleSignIn = async () => {
     try {
-      const result = await signInWithPopup(auth, provider);
-      alert(`Welcome ${result.user.displayName}!`);
+      setLoading(true);
+      const googleUser = await signInWithGoogle();
+      setUser(googleUser);
+      alert(`Welcome ${googleUser.displayName}!`);
     } catch (error) {
       console.error("Google Sign-In Error", error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -31,18 +44,17 @@ function Login() {
     }
 
     try {
-      const role = await login(email, password, recaptchaToken); // Gửi token reCAPTCHA lên backend
+      setLoading(true);
+      const role = await login(email, password, recaptchaToken);
       localStorage.setItem("role", role);
 
-      if (role === "manager") {
-        navigate("/dashboard");
-      } else if (role === "staff") {
-        navigate("/profile");
-      } else {
-        navigate("/");
-      }
+      if (role === "manager") navigate("/dashboard");
+      else if (role === "staff") navigate("/profile");
+      else navigate("/");
     } catch (error) {
       console.error("Login failed", error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -76,17 +88,21 @@ function Login() {
                 className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500"
               />
 
-              {/* Thêm reCAPTCHA */}
               <ReCAPTCHA
-                sitekey="6LdigtQqAAAAANHvagd73iYJm0B4n2mQjXvf9aX9" // Thay YOUR_SITE_KEY bằng site key của bạn
-                onChange={(token) => setRecaptchaToken(token)}
+                sitekey="6LdigtQqAAAAANHvagd73iYJm0B4n2mQjXvf9aX9"
+                onChange={setRecaptchaToken}
               />
 
               <button
                 type="submit"
-                className="w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600 transition duration-300"
+                disabled={loading}
+                className={`w-full py-2 rounded-lg transition duration-300 ${
+                  loading
+                    ? "bg-gray-400"
+                    : "bg-blue-500 hover:bg-blue-600 text-white"
+                }`}
               >
-                Sign In
+                {loading ? "Signing in..." : "Sign In"}
               </button>
             </form>
 
@@ -111,14 +127,14 @@ function Login() {
               </div>
             </div>
 
-            <div className="flex flex-col space-y-3">
-              <button
-                className="w-full flex items-center justify-center bg-red-500 text-white py-2 rounded-lg hover:bg-red-600 transition duration-300"
-                onClick={handleGoogleSignIn}
-              >
-                <i className="fab fa-google mr-2"></i> Sign in with Google
-              </button>
-            </div>
+            <button
+              className="w-full flex items-center justify-center bg-red-500 text-white py-2 rounded-lg hover:bg-red-600 transition duration-300"
+              onClick={handleGoogleSignIn}
+              disabled={loading}
+            >
+              <i className="fab fa-google mr-2"></i>{" "}
+              {loading ? "Signing in..." : "Sign in with Google"}
+            </button>
 
             <p className="text-center text-gray-500 text-xs mt-4">
               FASCO Terms & Conditions
