@@ -1,16 +1,18 @@
 import { useContext, useState } from "react";
-import { Link, useNavigate } from "react-router-dom"; // Import useNavigate
+import { Link, useNavigate } from "react-router-dom";
 import { AuthContext } from "../../context/AuthContext";
 import { auth, provider, signInWithPopup } from "../../services/firebase";
+import ReCAPTCHA from "react-google-recaptcha"; // Import reCAPTCHA
 import Navbar from "../../components/Navbar/Navbar";
 import Footer from "../../components/Footer/Footer";
 import loginImage from "../../assets/login/login.png";
 
 function Login() {
   const { login } = useContext(AuthContext);
-  const navigate = useNavigate(); // Dùng để chuyển hướng sau khi login
+  const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [recaptchaToken, setRecaptchaToken] = useState(null); // State lưu token reCAPTCHA
 
   const handleGoogleSignIn = async () => {
     try {
@@ -23,9 +25,14 @@ function Login() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!recaptchaToken) {
+      alert("Please complete the reCAPTCHA verification.");
+      return;
+    }
+
     try {
-      const role = await login(email, password); // Lấy role sau khi đăng nhập
-      localStorage.setItem("role", role); // Lưu role vào localStorage
+      const role = await login(email, password, recaptchaToken); // Gửi token reCAPTCHA lên backend
+      localStorage.setItem("role", role);
 
       if (role === "manager") {
         navigate("/dashboard");
@@ -68,6 +75,13 @@ function Login() {
                 onChange={(e) => setPassword(e.target.value)}
                 className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500"
               />
+
+              {/* Thêm reCAPTCHA */}
+              <ReCAPTCHA
+                sitekey="6LdigtQqAAAAANHvagd73iYJm0B4n2mQjXvf9aX9" // Thay YOUR_SITE_KEY bằng site key của bạn
+                onChange={(token) => setRecaptchaToken(token)}
+              />
+
               <button
                 type="submit"
                 className="w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600 transition duration-300"
@@ -75,6 +89,7 @@ function Login() {
                 Sign In
               </button>
             </form>
+
             <div className="flex justify-between items-center mt-4 text-sm">
               <Link to="#" className="text-blue-500 hover:underline">
                 Forget password?
@@ -86,6 +101,7 @@ function Login() {
                 </Link>
               </div>
             </div>
+
             <div className="relative my-6">
               <div className="absolute inset-0 flex items-center">
                 <div className="w-full border-t"></div>
@@ -94,6 +110,7 @@ function Login() {
                 <span className="bg-white px-2 text-gray-500">OR</span>
               </div>
             </div>
+
             <div className="flex flex-col space-y-3">
               <button
                 className="w-full flex items-center justify-center bg-red-500 text-white py-2 rounded-lg hover:bg-red-600 transition duration-300"
@@ -102,6 +119,7 @@ function Login() {
                 <i className="fab fa-google mr-2"></i> Sign in with Google
               </button>
             </div>
+
             <p className="text-center text-gray-500 text-xs mt-4">
               FASCO Terms & Conditions
             </p>
