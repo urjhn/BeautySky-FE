@@ -8,38 +8,44 @@ export const AuthProvider = ({ children }) => {
   const [role, setRole] = useState(null);
 
   useEffect(() => {
-    const storedUser = localStorage.getItem("user");
-    const storedRole = localStorage.getItem("role");
+    try {
+      const storedUser = localStorage.getItem("user");
+      const storedRole = localStorage.getItem("role");
 
-    if (storedUser && storedRole) {
-      setUser(JSON.parse(storedUser));
-      setRole(storedRole);
+      setUser(storedUser ? JSON.parse(storedUser) : null);
+      setRole(storedRole || null);
+    } catch (error) {
+      console.error("Error parsing localStorage data:", error);
+      localStorage.removeItem("user"); // Xóa dữ liệu lỗi để tránh crash
+      localStorage.removeItem("role");
     }
   }, []);
 
   const login = async (email, password) => {
     try {
       const response = await axios.post(
-        "https://localhost:7250/api/Accounts/Login",
-        {
-          email,
-          password,
-        }
+        "http://localhost:7250/api/Accounts/Login", // Đổi HTTPS -> HTTP nếu backend không dùng SSL
+        { email, password }
       );
 
-      const userData = response.data.user;
-      const userRole = response.data.role; // API phải trả về role
+      const userData = response.data?.user;
+      const userRole = response.data?.role;
+      const token = response.data?.token;
+
+      if (!userData || !userRole || !token) {
+        throw new Error("Invalid API response format");
+      }
 
       setUser(userData);
       setRole(userRole);
 
       localStorage.setItem("user", JSON.stringify(userData));
       localStorage.setItem("role", userRole);
-      localStorage.setItem("token", response.data.token);
+      localStorage.setItem("token", token);
 
       return userRole; // Trả về role để điều hướng trong Login.jsx
     } catch (error) {
-      console.error("Login fail:", error.response?.data || error.message);
+      console.error("Login failed:", error.response?.data || error.message);
       throw error;
     }
   };
