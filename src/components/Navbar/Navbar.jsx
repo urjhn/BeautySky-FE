@@ -1,22 +1,41 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { IoMdSearch } from "react-icons/io";
-import { FaShoppingCart, FaUserCircle } from "react-icons/fa"; // Đổi FaCartShopping -> FaShoppingCart
+import { FaShoppingCart, FaUserCircle } from "react-icons/fa";
 import Logo from "../../assets/logo.png";
 import Namebrand from "../../assets/namebrand.png";
 import { NavbarMenu } from "../../mockData/data";
-import { useCart } from "../../context/CartContext"; // Import CartContext
+import { useCart } from "../../context/CartContext";
 
 const Navbar = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const { cartItems } = useCart(); // Lấy giỏ hàng từ context
+  const { cartItems } = useCart();
   const cartCount = cartItems.reduce((acc, item) => acc + item.quantity, 0);
 
-  // Kiểm tra trạng thái đăng nhập từ localStorage khi load trang
+  // State cho search
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState([]);
+  const [showDropdown, setShowDropdown] = useState(false);
+
   useEffect(() => {
     const userStatus = localStorage.getItem("isLoggedIn") === "true";
     setIsLoggedIn(userStatus);
   }, []);
+
+  // Gửi request API khi bấm tìm kiếm
+  const handleSearch = async () => {
+    if (!searchQuery) return;
+    try {
+      const response = await fetch(
+        `http://localhost:5000/search?query=${searchQuery}`
+      );
+      const data = await response.json();
+      setSearchResults(data);
+      setShowDropdown(true);
+    } catch (error) {
+      console.error("Search error:", error);
+    }
+  };
 
   return (
     <nav>
@@ -45,28 +64,60 @@ const Navbar = () => {
           </ul>
         </div>
 
-        {/* Icons */}
-        <div className="flex items-center gap-4">
-          <div className="relative group hidden md:block">
+        {/* Icons + Search */}
+        <div className="flex items-center gap-4 relative">
+          {/* Search Box */}
+          <div className="relative group">
             <input
               type="text"
               placeholder="Search"
-              className="w-[100px] sm:w-[100px] group-hover:w-[150px] transition-all duration-300 rounded-full border border-gray-300 px-2 py-1 focus:outline-none focus:border-1 focus:border-primary dark:border-sky-400 dark:bg-gray-100"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-[150px] sm:w-[120px] rounded-full border border-gray-300 px-3 py-1 focus:outline-none focus:border-1 focus:border-primary"
             />
-            <IoMdSearch className="text-gray-500 group-hover:text-[#6BBCFE] absolute top-1/2 -translate-y-1/2 right-3" />
+            <button
+              onClick={handleSearch}
+              className="absolute right-3 top-1/2 -translate-y-1/2"
+            >
+              <IoMdSearch className="text-gray-500 hover:text-[#6BBCFE]" />
+            </button>
+
+            {/* Search Results Dropdown */}
+            {showDropdown && searchResults.length > 0 && (
+              <div className="absolute top-full left-0 w-[200px] bg-white shadow-md rounded-lg mt-2 z-50">
+                {searchResults.map((product) => (
+                  <Link
+                    to={`/product/${product.id}`}
+                    key={product.id}
+                    className="flex items-center gap-3 p-2 border-b hover:bg-gray-100"
+                  >
+                    <img
+                      src={product.image}
+                      alt={product.name}
+                      className="w-10 h-10 object-cover rounded-md"
+                    />
+                    <div>
+                      <h3 className="text-sm font-semibold">{product.name}</h3>
+                      <p className="text-xs text-gray-500">{product.price}</p>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            )}
           </div>
 
-          <button className="bg-gradient-to-r from-[#6BBCFE] to-[#0272cd] transition-all duration-200 text-white py-1 px-4 rounded-full flex items-center gap-3 group">
-            <Link to="/viewcart" className="relative hover:underline">
+          {/* Cart */}
+          <button className="bg-gradient-to-r from-[#6BBCFE] to-[#0272cd] text-white py-1 px-4 rounded-full flex items-center gap-3">
+            <Link to="/viewcart" className="relative">
               Order{" "}
               <span className="absolute -top-3 -right-14 bg-red-500 text-white text-xs px-1 py-1 rounded-md">
                 {cartCount}
               </span>
             </Link>
-            <FaShoppingCart className="text-xl text-white drop-shadow-sm cursor-pointer" />
+            <FaShoppingCart className="text-xl" />
           </button>
 
-          {/* Nếu đã đăng nhập -> Hiển thị icon user + Logout */}
+          {/* User Login */}
           {isLoggedIn ? (
             <div className="flex items-center gap-4">
               <Link to="/profile">
