@@ -1,65 +1,59 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
+import axios from "axios";
 import Navbar from "../../components/Navbar/Navbar";
 import Footer from "../../components/Footer/Footer";
-import { useCart } from "../../context/CartContext"; // Import CartContext
+import { useCart } from "../../context/CartContext";
 
 const ProductsPage = () => {
-  const { addToCart } = useCart(); // Lấy hàm addToCart từ context
-  const products = Array.from({ length: 50 }, (_, index) => ({
-    id: index + 1,
-    name: `Product ${index + 1}`,
-    price: (Math.random() * 100).toFixed(2),
-    image: `https://via.placeholder.com/200?text=Product+${index + 1}`,
-    skinType: ["Oily Skin", "Dry Skin", "Normal Skin"][
-      Math.floor(Math.random() * 3)
-    ],
-  }));
-
-  const itemsPerPage = 8;
+  const { addToCart } = useCart();
+  const [products, setProducts] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedFilter, setSelectedFilter] = useState("All");
-  const [cartItems, setCartItems] = useState([]);
+  const itemsPerPage = 8;
 
+  // Gọi API lấy dữ liệu sản phẩm từ Backend
+  useEffect(() => {
+    axios
+      .get("https://your-api.com/products") // Thay bằng API thực tế
+      .then((response) => setProducts(response.data))
+      .catch((error) => console.error("Error fetching products:", error));
+  }, []);
+
+  // Lọc sản phẩm theo loại da
   const filteredProducts =
     selectedFilter === "All"
       ? products
       : products.filter((product) => product.skinType === selectedFilter);
+
   const currentProducts = filteredProducts.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
   );
-  const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
 
-  const handleAddToCart = (product) => {
-    setCartItems((prevItems) => {
-      const existingProduct = prevItems.find((item) => item.id === product.id);
-      return existingProduct
-        ? prevItems.map((item) =>
-            item.id === product.id
-              ? { ...item, quantity: Math.min(item.quantity + 1, 99) }
-              : item
-          )
-        : [...prevItems, { ...product, quantity: 1 }];
-    });
-  };
+  const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
 
   return (
     <>
-      <Navbar
-        cartCount={cartItems.reduce((acc, item) => acc + item.quantity, 0)}
-      />
+      <Navbar />
       <div className="flex flex-col items-center bg-gray-100 min-h-screen py-10">
-        <h1 className="text-3xl font-bold text-gray-800 mb-6">Product List</h1>
+        <h1 className="text-4xl font-bold text-gray-800 mb-6">
+          Our Skincare Products
+        </h1>
+
+        {/* Bộ lọc sản phẩm */}
         <div className="mb-6">
-          <label htmlFor="skin-type" className="text-gray-700 mr-2">
+          <label
+            htmlFor="skin-type"
+            className="text-gray-700 font-semibold mr-2"
+          >
             Filter by Skin Type:
           </label>
           <select
             id="skin-type"
             value={selectedFilter}
             onChange={(e) => setSelectedFilter(e.target.value)}
-            className="p-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+            className="p-2 border rounded-lg bg-white shadow-md focus:ring-2 focus:ring-blue-500"
           >
             <option value="All">All</option>
             <option value="Oily Skin">Oily Skin</option>
@@ -67,24 +61,30 @@ const ProductsPage = () => {
             <option value="Normal Skin">Normal Skin</option>
           </select>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 w-3/4">
+
+        {/* Danh sách sản phẩm */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8 w-3/4">
           {currentProducts.map((product) => (
             <div
               key={product.id}
-              className="bg-white p-4 shadow-md rounded-lg hover:shadow-lg transition duration-300"
+              className="bg-white p-5 rounded-lg shadow-lg hover:shadow-2xl transition duration-300"
             >
               <img
                 src={product.image}
                 alt={product.name}
-                className="w-full h-40 object-cover rounded-md mb-4"
+                className="w-full h-48 object-cover rounded-md mb-4"
               />
-              <h3 className="text-lg font-semibold text-gray-800">
+              <h3 className="text-lg font-semibold text-gray-900">
                 {product.name}
               </h3>
-              <p className="text-gray-600">Skin Type: {product.skinType}</p>
-              <p className="text-blue-500 font-bold">${product.price}</p>
+              <p className="text-gray-600 mt-1">
+                Skin Type: {product.skinType}
+              </p>
+              <p className="text-blue-500 font-bold text-xl mt-2">
+                ${product.price}
+              </p>
               <button
-                className="mt-2 w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600 transition duration-300"
+                className="mt-3 w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600 transition duration-300"
                 onClick={() => addToCart(product)}
               >
                 Add to Cart
@@ -92,7 +92,9 @@ const ProductsPage = () => {
             </div>
           ))}
         </div>
-        <div className="flex mt-6 space-x-2">
+
+        {/* Phân trang */}
+        <div className="flex mt-8 space-x-2">
           {Array.from({ length: totalPages }, (_, index) => (
             <button
               key={index + 1}
