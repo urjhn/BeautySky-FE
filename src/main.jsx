@@ -17,6 +17,7 @@ import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import { CartProvider } from "./context/CartContext.jsx"; // Import CartProvider
 import { AuthProvider } from "./context/AuthContext.jsx";
+import RoutineBuilderPage from "./features/skincare-routine/RoutineBuilderPage";
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
@@ -38,6 +39,7 @@ createRoot(document.getElementById("root")).render(
             <Route path="/blog" element={<Blog />} />
             <Route path="*" element={<Error />} />
             <Route path="/profile" element={<UserProfile />} />
+            <Route path="/routine-builder" element={<RoutineBuilderPage />} />
           </Routes>
         </Router>
       </CartProvider>
