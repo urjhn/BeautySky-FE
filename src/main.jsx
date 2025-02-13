@@ -38,6 +38,7 @@ createRoot(document.getElementById("root")).render(
             <Route path="/blog" element={<Blog />} />
             <Route path="*" element={<Error />} />
             <Route path="/profile" element={<UserProfile />} />
+            <Route path="/routine-builder" element={<RoutineBuilderPage />} />
           </Routes>
         </Router>
       </CartProvider>
