@@ -5,36 +5,32 @@ import Footer from "../../components/Footer/Footer";
 
 const CheckoutPage = () => {
   const [paymentMethod, setPaymentMethod] = useState("VNPay");
+  const [paymentStatus, setPaymentStatus] = useState(null); // null | "success" | "error"
+  const [loading, setLoading] = useState(false);
 
-  const handlePayment = () => {
-    if (paymentMethod === "VNPay") {
-      alert("Redirecting to VNPay...");
-      showPaymentStatus(true);
-    } else {
-      alert("Processing other payment methods...");
-      showPaymentStatus(false);
+  const handlePayment = async () => {
+    setLoading(true);
+    try {
+      const response = await fetch("https://your-api.com/payment", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ method: paymentMethod }),
+      });
+
+      const result = await response.json();
+      setLoading(false);
+
+      if (result.success) {
+        setPaymentStatus("success");
+      } else {
+        setPaymentStatus("error");
+      }
+    } catch (error) {
+      console.error("Payment error:", error);
+      setPaymentStatus("error");
+      setLoading(false);
     }
   };
-
-  function showPaymentStatus(isSuccess) {
-    const paymentStatus = document.getElementById("payment-status");
-    const successMessage = document.getElementById("success-message");
-    const errorMessage = document.getElementById("error-message");
-
-    if (isSuccess) {
-      successMessage.style.display = "block";
-      errorMessage.style.display = "none";
-    } else {
-      successMessage.style.display = "none";
-      errorMessage.style.display = "block";
-    }
-
-    paymentStatus.classList.add("show");
-
-    setTimeout(() => {
-      paymentStatus.classList.remove("show");
-    }, 3000);
-  }
 
   return (
     <>
@@ -126,28 +122,25 @@ const CheckoutPage = () => {
             {/* Checkout Button */}
             <button
               type="button"
-              className="w-full bg-blue-500 text-white py-3 rounded-lg font-bold hover:bg-blue-600 transition"
+              className="w-full bg-blue-500 text-white py-3 rounded-lg font-bold hover:bg-blue-600 transition flex justify-center"
               onClick={handlePayment}
+              disabled={loading}
             >
-              Proceed to Payment
+              {loading ? "Processing..." : "Proceed to Payment"}
             </button>
           </form>
 
           {/* Payment Status Messages */}
-          <div id="payment-status" className="mt-6">
-            <div
-              id="success-message"
-              className="hidden p-3 bg-green-500 text-white text-center rounded-lg"
-            >
+          {paymentStatus === "success" && (
+            <div className="mt-6 p-3 bg-green-500 text-white text-center rounded-lg animate-fade-in">
               Payment Successful!
             </div>
-            <div
-              id="error-message"
-              className="hidden p-3 bg-red-500 text-white text-center rounded-lg"
-            >
+          )}
+          {paymentStatus === "error" && (
+            <div className="mt-6 p-3 bg-red-500 text-white text-center rounded-lg animate-fade-in">
               Payment Failed. Please try again!
             </div>
-          </div>
+          )}
         </div>
       </div>
       <Footer />
