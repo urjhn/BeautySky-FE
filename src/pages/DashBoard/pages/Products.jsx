@@ -3,33 +3,32 @@ import { FaEdit, FaTrash, FaPlus } from "react-icons/fa";
 
 const Products = () => {
   const [products, setProducts] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [filter, setFilter] = useState("All");
+  const productsPerPage = 5;
 
   useEffect(() => {
     // Giả lập dữ liệu sản phẩm từ backend
-    setProducts([
-      {
-        id: 1,
-        name: "Hydrating Face Cream",
-        price: "$25.99",
-        image: "/images/cream.jpg",
-        status: "In Stock",
-      },
-      {
-        id: 2,
-        name: "Vitamin C Serum",
-        price: "$32.50",
-        image: "/images/serum.jpg",
-        status: "Out of Stock",
-      },
-      {
-        id: 3,
-        name: "Sunscreen SPF 50",
-        price: "$18.75",
-        image: "/images/sunscreen.jpg",
-        status: "In Stock",
-      },
-    ]);
+    const sampleProducts = Array.from({ length: 20 }, (_, i) => ({
+      id: i + 1,
+      name: `Product ${i + 1}`,
+      price: `$${(Math.random() * 50 + 10).toFixed(2)}`,
+      image: `/images/product${(i % 5) + 1}.jpg`,
+      status: i % 2 === 0 ? "In Stock" : "Out of Stock",
+    }));
+    setProducts(sampleProducts);
   }, []);
+
+  // Lọc sản phẩm theo trạng thái
+  const filteredProducts =
+    filter === "All" ? products : products.filter((p) => p.status === filter);
+
+  // Tính số trang
+  const totalPages = Math.ceil(filteredProducts.length / productsPerPage);
+  const displayedProducts = filteredProducts.slice(
+    (currentPage - 1) * productsPerPage,
+    currentPage * productsPerPage
+  );
 
   return (
     <div className="p-6 bg-gray-100 min-h-screen">
@@ -38,6 +37,19 @@ const Products = () => {
         <button className="bg-blue-600 text-white px-4 py-2 rounded flex items-center">
           <FaPlus className="mr-2" /> Add Product
         </button>
+      </div>
+
+      {/* Bộ lọc sản phẩm */}
+      <div className="mb-4">
+        <select
+          className="p-2 border rounded"
+          value={filter}
+          onChange={(e) => setFilter(e.target.value)}
+        >
+          <option value="All">All</option>
+          <option value="In Stock">In Stock</option>
+          <option value="Out of Stock">Out of Stock</option>
+        </select>
       </div>
 
       <div className="bg-white p-6 rounded-lg shadow-lg">
@@ -52,7 +64,7 @@ const Products = () => {
             </tr>
           </thead>
           <tbody>
-            {products.map((product) => (
+            {displayedProducts.map((product) => (
               <tr key={product.id} className="border-t">
                 <td className="p-3">
                   <img
@@ -86,6 +98,23 @@ const Products = () => {
             ))}
           </tbody>
         </table>
+
+        {/* Phân trang */}
+        <div className="mt-4 flex justify-center space-x-2">
+          {[...Array(totalPages)].map((_, index) => (
+            <button
+              key={index}
+              className={`px-4 py-2 rounded ${
+                currentPage === index + 1
+                  ? "bg-blue-600 text-white"
+                  : "bg-gray-300"
+              }`}
+              onClick={() => setCurrentPage(index + 1)}
+            >
+              {index + 1}
+            </button>
+          ))}
+        </div>
       </div>
     </div>
   );
