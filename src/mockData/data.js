@@ -5,23 +5,23 @@ export const NavbarMenu = [
     link: "/#",
   },
   {
-    id: 2,
-    title: "About Sky Beauty",
-    link: "/#",
-  },
-  {
-    id: 3,
+    id: 22,
     title: "Product",
     link: "/product",
   },
   {
-    id: 4,
+    id: 33,
     title: "Blogs",
     link: "/blog",
   },
   {
-    id: 5,
+    id: 4,
     title: "Contact",
+    link: "/contact",
+  },
+  {
+    id: 5,
+    title: "Dashboard",
     link: "/dashboard",
   },
 ];
