@@ -28,7 +28,8 @@ function Login() {
       setLoading(true);
       const googleUser = await signInWithGoogle();
       setUser(googleUser);
-      alert(`Welcome ${googleUser.displayName}!`);
+      localStorage.setItem("user", JSON.stringify(googleUser)); // Lưu vào localStorage
+      navigate("/profile"); // Chuyển hướng sang trang cá nhân
     } catch (error) {
       console.error("Google Sign-In Error", error);
     } finally {
