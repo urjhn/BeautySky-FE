@@ -25,6 +25,7 @@ const signInWithGoogle = async () => {
   try {
     const result = await signInWithPopup(auth, provider);
     console.log("User Info:", result.user);
+    window.location.href = "";
   } catch (error) {
     console.error("Login Error:", error);
   }
