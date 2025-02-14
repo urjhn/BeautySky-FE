@@ -10,6 +10,15 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     try {
       const storedUser = localStorage.getItem("user");
+      let user = null;
+      if (storedUser) {
+        try {
+          user = JSON.parse(storedUser);
+        } catch (error) {
+          console.error("Error parsing user data:", error);
+          localStorage.removeItem("user");
+        }
+      }
       const storedRole = localStorage.getItem("role");
 
       setUser(storedUser ? JSON.parse(storedUser) : null);
