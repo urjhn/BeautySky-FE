@@ -48,7 +48,7 @@ function Login() {
       const role = await login(email, password, recaptchaToken);
       localStorage.setItem("role", role);
 
-      if (role === "manager") navigate("/dashboard");
+      if (role === "Manager") navigate("/dashboard");
       else if (role === "staff") navigate("/profile");
       else navigate("/");
     } catch (error) {

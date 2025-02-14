@@ -24,7 +24,7 @@ export const AuthProvider = ({ children }) => {
   const login = async (email, password) => {
     try {
       const response = await axios.post(
-        "https://localhost:7250/api/Accounts/Login", // Đổi HTTPS -> HTTP nếu backend không dùng SSL
+        "http://10.87.38.210:7112/api/Accounts/Login", // Đổi HTTPS -> HTTP nếu backend không dùng SSL
         { email, password }
       );
 
