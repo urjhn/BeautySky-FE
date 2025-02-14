@@ -5,6 +5,7 @@ import Home from "./pages/Homepage/Homepage.jsx";
 import Login from "./pages/Login/Login.jsx";
 import Register from "./pages/Register/Register.jsx";
 import Product from "./pages/Product/Product.jsx";
+import ProductDetail from "./pages/Product/ProductDetail.jsx";
 import Checkout from "./pages/Checkout/Checkout.jsx";
 import Viewcart from "./pages/Product/Viewcart.jsx";
 import Quizz from "./features/quiz/QuizPage.jsx";
@@ -44,6 +45,7 @@ createRoot(document.getElementById("root")).render(
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
               <Route path="/product" element={<Product />} />
+              <Route path="/product/:id" element={<ProductDetail />} />
               <Route path="/checkout" element={<Checkout />} />
               <Route path="/viewcart" element={<Viewcart />} />
               <Route path="/contact" element={<Contact />} />
