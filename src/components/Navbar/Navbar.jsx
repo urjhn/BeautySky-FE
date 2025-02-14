@@ -18,8 +18,16 @@ const Navbar = () => {
 
   // Kiểm tra trạng thái đăng nhập từ localStorage
   useEffect(() => {
-    const storedUser = JSON.parse(localStorage.getItem("user"));
-    if (storedUser) setUser(storedUser);
+    const storedUser = localStorage.getItem("user");
+    let user = null;
+    if (storedUser) {
+      try {
+        user = JSON.parse(storedUser);
+      } catch (error) {
+        console.error("Error parsing user data:", error);
+        localStorage.removeItem("user");
+      }
+    }
   }, []);
 
   // Xử lý tìm kiếm sản phẩm

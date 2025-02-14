@@ -20,7 +20,14 @@ function Login() {
   // Cập nhật user từ localStorage khi component mount
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
-    if (storedUser) setUser(JSON.parse(storedUser));
+    if (storedUser) {
+      try {
+        setUser(JSON.parse(storedUser));
+      } catch (error) {
+        console.error("Error parsing user data:", error);
+        localStorage.removeItem("user"); // Remove corrupted data
+      }
+    }
   }, []);
 
   const handleGoogleSignIn = async () => {
