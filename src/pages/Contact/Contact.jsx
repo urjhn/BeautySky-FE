@@ -23,19 +23,19 @@ function Contact() {
   return (
     <>
       <Navbar />
-      <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 p-6">
-        <h2 className="text-3xl font-semibold mb-6 text-blue-600">
-          Contact Us
+      <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-b from-blue-100 to-gray-100 p-6">
+        <h2 className="text-4xl font-extrabold mb-6 text-blue-600 animate-pulse">
+          Get in Touch
         </h2>
-        <div className="bg-white shadow-lg rounded-lg p-8 max-w-2xl w-full">
-          <form onSubmit={handleSubmit} className="space-y-4">
+        <div className="bg-white shadow-xl rounded-lg p-10 max-w-2xl w-full transition transform hover:scale-105 duration-300">
+          <form onSubmit={handleSubmit} className="space-y-6">
             <input
               type="text"
               name="name"
               placeholder="Your Name"
               value={formData.name}
               onChange={handleChange}
-              className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500"
+              className="w-full p-4 border rounded-lg focus:ring-4 focus:ring-blue-400 transition duration-200"
               required
             />
             <input
@@ -44,7 +44,7 @@ function Contact() {
               placeholder="Your Email"
               value={formData.email}
               onChange={handleChange}
-              className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500"
+              className="w-full p-4 border rounded-lg focus:ring-4 focus:ring-blue-400 transition duration-200"
               required
             />
             <textarea
@@ -52,24 +52,24 @@ function Contact() {
               placeholder="Your Message"
               value={formData.message}
               onChange={handleChange}
-              className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500"
+              className="w-full p-4 border rounded-lg focus:ring-4 focus:ring-blue-400 transition duration-200"
               rows="5"
               required
             ></textarea>
             <button
               type="submit"
-              className="w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600 transition duration-300"
+              className="w-full bg-gradient-to-r from-blue-500 to-blue-700 text-white py-3 rounded-lg hover:shadow-xl hover:scale-105 transition duration-300"
             >
               Send Message
             </button>
           </form>
-          <p className="text-center text-gray-500 text-xs mt-4">
-            We will get back to you soon.
+          <p className="text-center text-gray-500 text-sm mt-4">
+            We will get back to you as soon as possible.
           </p>
         </div>
-        <div className="w-full max-w-2xl mt-8">
+        <div className="w-full max-w-2xl mt-8 overflow-hidden rounded-lg shadow-xl">
           <iframe
-            className="w-full h-64 rounded-lg shadow-lg"
+            className="w-full h-72 rounded-lg border-4 border-blue-500"
             src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3151.835434509426!2d144.95373531590465!3d-37.81627974202171!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x6ad65d5df0f7e6d5%3A0x5045675218ce7e33!2sMelbourne%20CBD%2C%20Victoria%2C%20Australia!5e0!3m2!1sen!2s!4v1615960204691!5m2!1sen!2s"
             allowFullScreen=""
             loading="lazy"

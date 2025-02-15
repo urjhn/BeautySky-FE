@@ -4,7 +4,7 @@ import { IoMdSearch } from "react-icons/io";
 import { FaShoppingCart } from "react-icons/fa";
 import Logo from "../../assets/logo.png";
 import Namebrand from "../../assets/namebrand.png";
-import { NavbarMenu } from "../../mockData/data";
+import { NavbarMenu } from "../Navbar/data";
 import { useCart } from "../../context/CartContext";
 
 const Navbar = () => {

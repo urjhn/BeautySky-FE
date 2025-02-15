@@ -107,7 +107,7 @@ function Login() {
                 className={`w-full py-2 rounded-lg transition duration-300 ${
                   loading
                     ? "bg-gray-400"
-                    : "bg-blue-500 hover:bg-blue-600 text-white"
+                    : "bg-[#6bbcfe] hover:bg-blue-600 text-white"
                 }`}
               >
                 {loading ? "Signing in..." : "Sign In"}
@@ -115,9 +115,6 @@ function Login() {
             </form>
 
             <div className="flex justify-between items-center mt-4 text-sm">
-              <Link to="#" className="text-blue-500 hover:underline">
-                Forget password?
-              </Link>
               <div className="text-gray-600">
                 <p>Don't have an account?</p>
                 <Link to="/register" className="text-blue-500 hover:underline">
