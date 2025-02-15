@@ -113,7 +113,7 @@ function Register() {
                 className={`w-full py-2 rounded-lg transition duration-300 ${
                   loading
                     ? "bg-gray-400"
-                    : "bg-blue-500 hover:bg-blue-600 text-white"
+                    : "bg-[#6bbcfe] hover:bg-blue-600 text-white"
                 }`}
               >
                 {loading ? "Signing up..." : "Sign Up"}

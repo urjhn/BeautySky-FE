@@ -11,12 +11,12 @@ export const AuthProvider = ({ children }) => {
     try {
       const storedUser = localStorage.getItem("user");
       let user = null;
-      if (storedUser) {
+      if (storedUser && storedUser !== "undefined") {
         try {
           user = JSON.parse(storedUser);
         } catch (error) {
           console.error("Error parsing user data:", error);
-          localStorage.removeItem("user");
+          localStorage.removeItem("user"); // Remove corrupted data
         }
       }
       const storedRole = localStorage.getItem("role");

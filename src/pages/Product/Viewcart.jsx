@@ -61,12 +61,12 @@ const ViewCart = () => {
           )}
           <div className="flex justify-between mt-4 text-lg font-bold">
             <span>Total:</span>
-            <span className="text-blue-500">${totalPrice}</span>
+            <span className="text-red-500">${totalPrice}</span>
           </div>
           <div className="flex justify-end mt-4">
             <Link
               to="/checkout"
-              className="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600"
+              className="bg-[#6bbcfe] text-white px-6 py-2 rounded-lg hover:bg-blue-600"
             >
               Proceed to Checkout
             </Link>
