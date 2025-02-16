@@ -1,22 +1,22 @@
 export const NavbarMenu = [
   {
     id: 1,
-    title: "Home",
+    title: "Trang chính",
     link: "/#",
   },
   {
-    id: 22,
-    title: "Product",
+    id: 2,
+    title: "Sản phẩm",
     link: "/product",
   },
   {
-    id: 33,
+    id: 3,
     title: "Blogs",
     link: "/blog",
   },
   {
     id: 4,
-    title: "Contact",
+    title: "Liên lạc",
     link: "/contact",
   },
   {

@@ -68,7 +68,8 @@ const ProductsPage = () => {
     <>
       <Navbar />
       <div className="flex bg-gradient-to-br from-blue-50 to-white min-h-screen py-10 px-6">
-        <div className="w-1/4 p-5 bg-white shadow-xl rounded-xl h-full overflow-y-auto sticky top-20">
+        {/* Sidebar */}
+        <div className="w-1/4 p-5 bg-white shadow-xl rounded-xl h-fit sticky top-20">
           <h2 className="text-xl font-bold mb-4 text-gray-700">
             Lọc theo loại da
           </h2>
@@ -82,34 +83,26 @@ const ProductsPage = () => {
             <option value="Dry Skin">Da khô</option>
             <option value="Normal Skin">Da thường</option>
           </select>
+
           <h2 className="text-xl font-bold mt-6 mb-4 text-gray-700">
             Lọc theo loại sản phẩm
           </h2>
-          <div className="flex flex-col space-y-2 overflow-y-auto">
-            {[
-              "All",
-              "Tẩy trang",
-              "Sữa rửa mặt",
-              "Toner",
-              "Serum",
-              "Kem trị mụn",
-              "Kem chống nắng",
-            ].map((category) => (
-              <button
-                key={category}
-                onClick={() => setSelectedCategory(category)}
-                className={`p-2 rounded-lg font-semibold transition-all ${
-                  selectedCategory === category
-                    ? "bg-[#6bbcfe] text-white"
-                    : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-                }`}
-              >
-                {category}
-              </button>
-            ))}
-          </div>
+          <select
+            value={selectedCategory}
+            onChange={(e) => setSelectedCategory(e.target.value)}
+            className="w-full p-3 border rounded-lg shadow-md bg-white focus:ring-2 focus:ring-blue-500 transition-all"
+          >
+            <option value="All">Tất cả</option>
+            <option value="Tẩy trang">Tẩy trang</option>
+            <option value="Sữa rửa mặt">Sữa rửa mặt</option>
+            <option value="Toner">Toner</option>
+            <option value="Serum">Serum</option>
+            <option value="Kem trị mụn">Kem trị mụn</option>
+            <option value="Kem chống nắng">Kem chống nắng</option>
+          </select>
         </div>
 
+        {/* Product List */}
         <div className="w-3/4 p-5">
           <h1 className="text-4xl font-bold text-[#6bbcfe] mb-6 text-center">
             Sản phẩm chăm sóc da
@@ -134,37 +127,26 @@ const ProductsPage = () => {
                 <p className="text-gray-500">
                   Loại sản phẩm: {product.category}
                 </p>
-                <p className="text-red-300 font-bold text-xl mt-2">
+                <p className="text-red-400 font-bold text-xl mt-2">
                   ${product.price.toFixed(2)}
                 </p>
+
+                {/* Nút thêm vào giỏ hàng */}
                 <button
                   className="mt-4 w-full bg-gradient-to-r from-[#6bbcfe] to-[#6bbcfe] text-white py-2 rounded-lg hover:from-blue-500 hover:to-blue-700 transition-all shadow-md"
                   onClick={() => addToCart(product)}
                 >
-                  Thêm vào giỏ hàng
+                  🛒 Thêm vào giỏ hàng
                 </button>
+
+                {/* Nút xem chi tiết */}
                 <button
                   onClick={() => navigate(`/product/${product.id}`)}
                   className="mt-2 w-full bg-red-400 text-white py-2 rounded-lg hover:bg-red-600 transition-all shadow-lg"
                 >
-                  Xem chi tiết
+                  🔍 Xem chi tiết
                 </button>
               </div>
-            ))}
-          </div>
-          <div className="flex justify-center mt-6 space-x-2">
-            {Array.from({ length: totalPages }, (_, index) => (
-              <button
-                key={index + 1}
-                onClick={() => setCurrentPage(index + 1)}
-                className={`px-4 py-2 border rounded-lg font-semibold transition-all ${
-                  currentPage === index + 1
-                    ? "bg-[#6bbcfe] text-white"
-                    : "bg-white text-gray-700 hover:bg-gray-200"
-                }`}
-              >
-                {index + 1}
-              </button>
             ))}
           </div>
         </div>
@@ -175,3 +157,18 @@ const ProductsPage = () => {
 };
 
 export default ProductsPage;
+
+// const [products, setProducts] = useState([]);
+
+// useEffect(() => {
+//   const fetchProducts = async () => {
+//     try {
+//       const data = await getProducts();
+//       setProducts(data);
+//     } catch (error) {
+//       console.error("Lỗi khi lấy sản phẩm:", error);
+//     }
+//   };
+
+//   fetchProducts();
+// });
