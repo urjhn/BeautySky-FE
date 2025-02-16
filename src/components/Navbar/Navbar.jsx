@@ -24,7 +24,7 @@ const Navbar = () => {
       try {
         user = JSON.parse(storedUser);
       } catch (error) {
-        console.error("Error parsing user data:", error);
+        console.error("Lỗi khi phân tích dữ liệu người dùng:", error);
         localStorage.removeItem("user");
       }
     }
@@ -41,11 +41,11 @@ const Navbar = () => {
       setSearchResults(data);
       setShowDropdown(true);
     } catch (error) {
-      console.error("Search error:", error);
+      console.error("Lỗi tìm kiếm:", error);
     }
   };
 
-  // Đăng xuất
+  // Xử lý đăng xuất
   const handleLogout = () => {
     localStorage.removeItem("user");
     setUser(null);
@@ -58,7 +58,7 @@ const Navbar = () => {
         <div className="flex items-center">
           <Link to="/" className="flex items-center">
             <img src={Logo} alt="Logo" className="w-16" />
-            <img src={Namebrand} alt="Namebrand" className="w-32" />
+            <img src={Namebrand} alt="Tên thương hiệu" className="w-32" />
           </Link>
         </div>
 
@@ -76,13 +76,13 @@ const Navbar = () => {
           ))}
         </ul>
 
-        {/* Search + Icons */}
+        {/* Thanh tìm kiếm + Biểu tượng */}
         <div className="flex items-center gap-6">
-          {/* Search Box */}
+          {/* Ô tìm kiếm */}
           <div className="relative">
             <input
               type="text"
-              placeholder="Search"
+              placeholder="Tìm kiếm"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-40 md:w-48 border border-gray-300 rounded-full px-4 py-2 focus:outline-none focus:border-primary"
@@ -91,7 +91,7 @@ const Navbar = () => {
               <IoMdSearch className="text-gray-500 hover:text-[#6BBCFE]" />
             </button>
 
-            {/* Search Results */}
+            {/* Kết quả tìm kiếm */}
             {showDropdown && searchResults.length > 0 && (
               <div className="absolute top-full left-0 w-60 bg-white shadow-lg rounded-lg mt-2 z-50">
                 {searchResults.map((product) => (
@@ -115,7 +115,7 @@ const Navbar = () => {
             )}
           </div>
 
-          {/* Cart */}
+          {/* Giỏ hàng */}
           <Link
             to="/viewcart"
             className="relative flex items-center bg-gradient-to-r from-[#6BBCFE] to-[#0272cd] text-white py-2 px-4 rounded-full"
@@ -128,13 +128,13 @@ const Navbar = () => {
             )}
           </Link>
 
-          {/* User Login */}
+          {/* Đăng nhập/Đăng xuất */}
           {user ? (
             <div className="flex items-center gap-4">
               <Link to="/profile">
                 <img
                   src={user.photoURL || "https://via.placeholder.com/40"}
-                  alt="User Avatar"
+                  alt="Ảnh đại diện"
                   className="w-10 h-10 rounded-full border"
                 />
               </Link>
@@ -142,7 +142,7 @@ const Navbar = () => {
                 onClick={handleLogout}
                 className="text-red-600 font-semibold hover:text-red-800"
               >
-                Logout
+                Đăng xuất
               </button>
             </div>
           ) : (
@@ -150,7 +150,7 @@ const Navbar = () => {
               to="/login"
               className="hidden md:block hover:bg-[#6BBCFE] text-primary font-semibold hover:text-white rounded-md border-2 border-[#6BBFCE] px-6 py-2 transition duration-200"
             >
-              Sign in
+              Đăng nhập
             </Link>
           )}
         </div>

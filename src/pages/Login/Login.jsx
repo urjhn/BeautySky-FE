@@ -1,6 +1,7 @@
 import { useContext, useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { AuthContext } from "../../context/AuthContext";
+import { loginUser } from "../../services/authService";
 import { signInWithGoogle } from "../../services/firebase";
 import ReCAPTCHA from "react-google-recaptcha";
 import Navbar from "../../components/Navbar/Navbar";
@@ -8,59 +9,70 @@ import Footer from "../../components/Footer/Footer";
 import loginImage from "../../assets/login/login.png";
 
 function Login() {
-  const { login } = useContext(AuthContext);
+  const { setUser } = useContext(AuthContext);
   const navigate = useNavigate();
 
-  const [user, setUser] = useState(null);
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [formData, setFormData] = useState({ email: "", password: "" });
   const [recaptchaToken, setRecaptchaToken] = useState(null);
-  const [loading, setLoading] = useState(false); // Trạng thái loading
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
-  // Cập nhật user từ localStorage khi component mount
+  // Lấy user từ localStorage nếu có
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
     if (storedUser) {
       try {
         setUser(JSON.parse(storedUser));
-      } catch (error) {
-        console.error("Error parsing user data:", error);
-        localStorage.removeItem("user"); // Remove corrupted data
+      } catch (err) {
+        console.error("Error parsing user data:", err);
+        localStorage.removeItem("user"); // Xóa dữ liệu lỗi
       }
     }
   }, []);
+
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError("");
+    if (!recaptchaToken) {
+      setError("Please complete the reCAPTCHA verification.");
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const data = await loginUser(formData);
+
+      // Lưu thông tin user vào localStorage
+      localStorage.setItem("user", JSON.stringify(data.user));
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("role", data.user.role);
+
+      setUser(data.user);
+
+      // Điều hướng dựa trên vai trò
+      if (data.user.role === "Manager") navigate("/dashboard");
+      else if (data.user.role === "staff") navigate("/profile");
+      else navigate("/");
+    } catch (err) {
+      setError(err.message || "Login failed!");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleGoogleSignIn = async () => {
     try {
       setLoading(true);
       const googleUser = await signInWithGoogle();
       setUser(googleUser);
-      localStorage.setItem("user", JSON.stringify(googleUser)); // Lưu vào localStorage
-      navigate("/profile"); // Chuyển hướng sang trang cá nhân
-    } catch (error) {
-      console.error("Google Sign-In Error", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!recaptchaToken) {
-      alert("Please complete the reCAPTCHA verification.");
-      return;
-    }
-
-    try {
-      setLoading(true);
-      const role = await login(email, password, recaptchaToken);
-      localStorage.setItem("role", role);
-
-      if (role === "Manager") navigate("/dashboard");
-      else if (role === "staff") navigate("/profile");
-      else navigate("/");
-    } catch (error) {
-      console.error("Login failed", error);
+      localStorage.setItem("user", JSON.stringify(googleUser));
+      navigate("/profile");
+    } catch (err) {
+      console.error("Google Sign-In Error", err);
     } finally {
       setLoading(false);
     }
@@ -83,23 +95,29 @@ function Login() {
             <form onSubmit={handleSubmit} className="space-y-4">
               <input
                 type="email"
+                name="email"
                 placeholder="Email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                value={formData.email}
+                onChange={handleChange}
                 className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500"
+                required
               />
               <input
                 type="password"
+                name="password"
                 placeholder="Password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                value={formData.password}
+                onChange={handleChange}
                 className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500"
+                required
               />
 
               <ReCAPTCHA
                 sitekey="6LdigtQqAAAAANHvagd73iYJm0B4n2mQjXvf9aX9"
                 onChange={setRecaptchaToken}
               />
+
+              {error && <p className="text-red-500 text-sm">{error}</p>}
 
               <button
                 type="submit"
