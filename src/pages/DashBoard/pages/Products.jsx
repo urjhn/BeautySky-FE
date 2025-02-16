@@ -46,9 +46,9 @@ const Products = () => {
           value={filter}
           onChange={(e) => setFilter(e.target.value)}
         >
-          <option value="All">All</option>
-          <option value="In Stock">In Stock</option>
-          <option value="Out of Stock">Out of Stock</option>
+          <option value="All">Tất cả</option>
+          <option value="In Stock">Còn hàng</option>
+          <option value="Out of Stock">Hết hàng</option>
         </select>
       </div>
 
@@ -56,9 +56,9 @@ const Products = () => {
         <table className="w-full border-collapse">
           <thead>
             <tr className="bg-gray-200">
-              <th className="p-3 text-left">Image</th>
-              <th className="p-3 text-left">Name</th>
-              <th className="p-3 text-left">Price</th>
+              <th className="p-3 text-left">Hình ảnh</th>
+              <th className="p-3 text-left">Tên</th>
+              <th className="p-3 text-left">Giá</th>
               <th className="p-3 text-left">Status</th>
               <th className="p-3 text-left">Actions</th>
             </tr>

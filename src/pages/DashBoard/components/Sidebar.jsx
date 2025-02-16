@@ -21,10 +21,10 @@ const Sidebar = () => {
       <nav>
         <ul className="space-y-2">
           <NavItem icon={<FaChartBar />} title="Dashboard" to="/dashboard" />
-          <NavItem icon={<FaHome />} title="Home" to="/" />
+          <NavItem icon={<FaHome />} title="Cửa hàng" to="/" />
           <NavItem
             icon={<FaUsers />}
-            title="Customers"
+            title="Khách hàng"
             to="/dashboard/customers"
           />
           <NavItem
@@ -32,19 +32,19 @@ const Sidebar = () => {
             title="Orders"
             to="/dashboard/orders"
           />
-          <NavItem icon={<FaBox />} title="Products" to="/dashboard/products" />
+          <NavItem icon={<FaBox />} title="Sản phẩm" to="/dashboard/products" />
           <NavItem icon={<FaBlog />} title="Blogs" to="/dashboard/blogs" />
           <NavItem
             icon={<FaTags />}
-            title="Promotions"
+            title="Khuyến mãi"
             to="/dashboard/promotions"
           />
           <NavItem
             icon={<FaFileAlt />}
-            title="Reports"
+            title="Báo cáo"
             to="/dashboard/reports"
           />
-          <NavItem icon={<FaCog />} title="Settings" to="/dashboard/settings" />
+          <NavItem icon={<FaCog />} title="Cài đặt" to="/dashboard/settings" />
         </ul>
       </nav>
     </aside>

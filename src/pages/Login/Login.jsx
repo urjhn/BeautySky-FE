@@ -24,7 +24,7 @@ function Login() {
       try {
         setUser(JSON.parse(storedUser));
       } catch (err) {
-        console.error("Error parsing user data:", err);
+        console.error("Lỗi khi phân tích dữ liệu người dùng:", err);
         localStorage.removeItem("user"); // Xóa dữ liệu lỗi
       }
     }
@@ -38,7 +38,7 @@ function Login() {
     e.preventDefault();
     setError("");
     if (!recaptchaToken) {
-      setError("Please complete the reCAPTCHA verification.");
+      setError("Vui lòng hoàn thành xác minh reCAPTCHA.");
       return;
     }
 
@@ -91,7 +91,9 @@ function Login() {
             />
           </div>
           <div className="w-full md:w-1/2 p-8 flex flex-col justify-center">
-            <h3 className="text-2xl font-semibold text-center mb-4">Sign In</h3>
+            <h3 className="text-2xl font-semibold text-center mb-4">
+              Đăng nhập
+            </h3>
             <form onSubmit={handleSubmit} className="space-y-4">
               <input
                 type="email"
@@ -128,15 +130,15 @@ function Login() {
                     : "bg-[#6bbcfe] hover:bg-blue-600 text-white"
                 }`}
               >
-                {loading ? "Signing in..." : "Sign In"}
+                {loading ? "Đang đăng nhập..." : "Đăng nhập"}
               </button>
             </form>
 
             <div className="flex justify-between items-center mt-4 text-sm">
               <div className="text-gray-600">
-                <p>Don't have an account?</p>
+                <p>Bạn chưa có tài khoản?</p>
                 <Link to="/register" className="text-blue-500 hover:underline">
-                  Sign up
+                  Đăng ký
                 </Link>
               </div>
             </div>
@@ -156,11 +158,11 @@ function Login() {
               disabled={loading}
             >
               <i className="fab fa-google mr-2"></i>{" "}
-              {loading ? "Signing in..." : "Sign in with Google"}
+              {loading ? "Đang đăng nhập" : "Đăng nhập với Google"}
             </button>
 
             <p className="text-center text-gray-500 text-xs mt-4">
-              FASCO Terms & Conditions
+              Terms & Conditions of FASCO
             </p>
           </div>
         </div>

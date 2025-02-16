@@ -16,7 +16,9 @@ const ViewCart = () => {
     <>
       <Navbar cartCount={cartItems.length} />
       <div className="min-h-screen bg-gray-50 flex flex-col items-center py-10">
-        <h1 className="text-3xl font-bold text-gray-800 mb-6">🛒 Your Cart</h1>
+        <h1 className="text-3xl font-bold text-gray-800 mb-6">
+          🛒 Giỏ hàng của bạn
+        </h1>
         <div className="w-3/4 bg-white shadow-xl rounded-xl p-6">
           {cartItems.length > 0 ? (
             cartItems.map((item) => (
@@ -67,13 +69,13 @@ const ViewCart = () => {
             ))
           ) : (
             <p className="text-center text-gray-600 text-lg">
-              Your cart is empty. 😢
+              Giỏ hàng của bạn trống. 😢
             </p>
           )}
 
           {/* Total Section */}
           <div className="flex justify-between mt-6 text-xl font-bold">
-            <span>Total:</span>
+            <span>Tổng tiền:</span>
             <span className="text-red-500">${totalPrice}</span>
           </div>
 
@@ -83,7 +85,7 @@ const ViewCart = () => {
               to="/checkout"
               className="bg-[#6bbcfe] text-white px-6 py-3 rounded-lg hover:bg-blue-600 shadow-md transform hover:scale-105 transition duration-300"
             >
-              Proceed to Checkout
+              Thanh toán
             </Link>
           </div>
         </div>

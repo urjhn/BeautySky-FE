@@ -14,37 +14,37 @@ import {
 const allProducts = [
   {
     id: "1",
-    name: "Hydrating Facial Cleanser",
-    skinType: "Dry Skin",
+    name: "Sữa Rửa Mặt Dưỡng Ẩm",
+    skinType: "Da Khô",
     price: 25.99,
     image: "https://via.placeholder.com/400x300",
     description:
-      "A gentle hydrating cleanser that refreshes and nourishes your skin.",
-    ingredients: ["Hyaluronic Acid", "Glycerin", "Aloe Vera"],
-    usage: "Apply to damp skin and massage gently. Rinse with warm water.",
+      "Sữa rửa mặt dưỡng ẩm nhẹ nhàng giúp làm sạch và nuôi dưỡng làn da.",
+    ingredients: ["Axit Hyaluronic", "Glycerin", "Lô Hội"],
+    usage: "Thoa lên da ướt và massage nhẹ nhàng. Rửa lại với nước ấm.",
     rating: 4.5,
   },
   {
     id: "2",
-    name: "Oil-Free Moisturizer",
-    skinType: "Oily Skin",
+    name: "Kem Dưỡng Ẩm Không Dầu",
+    skinType: "Da Dầu",
     price: 30.99,
     image: "https://via.placeholder.com/400x300",
-    description:
-      "Lightweight, non-greasy moisturizer perfect for oily skin types.",
-    ingredients: ["Niacinamide", "Salicylic Acid", "Green Tea Extract"],
-    usage: "Apply a small amount to clean skin. Use morning and night.",
+    description: "Kem dưỡng nhẹ, không gây nhờn, phù hợp với da dầu.",
+    ingredients: ["Niacinamide", "Axit Salicylic", "Chiết xuất Trà Xanh"],
+    usage: "Thoa một lượng nhỏ lên da sạch. Dùng sáng và tối.",
     rating: 4.2,
   },
   {
     id: "3",
-    name: "Soothing Toner",
-    skinType: "Sensitive Skin",
+    name: "Nước Hoa Hồng Dịu Nhẹ",
+    skinType: "Da Nhạy Cảm",
     price: 19.99,
     image: "https://via.placeholder.com/400x300",
-    description: "A gentle toner to calm and balance sensitive skin.",
-    ingredients: ["Chamomile", "Witch Hazel", "Rose Water"],
-    usage: "Apply with a cotton pad after cleansing.",
+    description:
+      "Nước hoa hồng nhẹ nhàng giúp làm dịu và cân bằng da nhạy cảm.",
+    ingredients: ["Cúc La Mã", "Chiết xuất Phỉ", "Nước Hoa Hồng"],
+    usage: "Thấm vào bông tẩy trang và lau nhẹ nhàng sau khi rửa mặt.",
     rating: 4.0,
   },
 ];
@@ -69,7 +69,7 @@ const ProductDetail = () => {
   if (!product) {
     return (
       <div className="text-center text-gray-500 text-lg mt-20">
-        Product not found
+        Sản phẩm không tìm thấy
       </div>
     );
   }
@@ -89,14 +89,14 @@ const ProductDetail = () => {
       <Navbar />
       <div className="min-h-screen flex flex-col items-center bg-gradient-to-b from-blue-100 to-white py-10">
         <div className="bg-white rounded-2xl shadow-2xl p-8 flex flex-col md:flex-row w-full max-w-5xl animate-fadeIn">
-          {/* Product Image */}
+          {/* Hình ảnh sản phẩm */}
           <img
             src={product.image}
             alt={product.name}
             className="w-full md:w-1/2 h-auto rounded-xl shadow-md"
           />
 
-          {/* Product Details */}
+          {/* Chi tiết sản phẩm */}
           <div className="md:ml-10 flex flex-col justify-between mt-6 md:mt-0 w-full">
             <h1 className="text-4xl font-bold text-gray-900">{product.name}</h1>
             <div className="flex items-center mt-2">
@@ -104,17 +104,17 @@ const ProductDetail = () => {
             </div>
             <p className="text-lg text-gray-600 mt-2">{product.description}</p>
             <p className="text-md text-gray-500 mt-2">
-              Suitable for:{" "}
+              Phù hợp với:{" "}
               <span className="font-semibold">{product.skinType}</span>
             </p>
             <p className="text-2xl font-semibold text-blue-600 mt-4">
               ${product.price.toFixed(2)}
             </p>
 
-            {/* Ingredients */}
+            {/* Thành phần */}
             <div className="mt-6">
               <h3 className="text-xl font-semibold text-gray-800">
-                Ingredients
+                Thành phần
               </h3>
               <ul className="list-disc pl-5 text-gray-600">
                 {product.ingredients.map((ingredient, index) => (
@@ -123,38 +123,38 @@ const ProductDetail = () => {
               </ul>
             </div>
 
-            {/* Usage Instructions */}
+            {/* Hướng dẫn sử dụng */}
             <div className="mt-6">
               <h3 className="text-xl font-semibold text-gray-800">
-                How to Use
+                Cách sử dụng
               </h3>
               <p className="text-gray-600">{product.usage}</p>
             </div>
 
-            {/* Buttons */}
+            {/* Nút bấm */}
             <div className="mt-8 flex space-x-4">
               <button
                 className="w-full bg-blue-500 text-white py-3 rounded-xl font-semibold hover:bg-blue-700 transition-all flex items-center justify-center gap-2"
                 onClick={() => addToCart(product)}
               >
                 <FaShoppingCart />
-                Add to Cart
+                Thêm vào giỏ hàng
               </button>
               <button
                 className="w-full bg-gray-300 text-gray-900 py-3 rounded-xl font-semibold hover:bg-gray-400 transition-all flex items-center justify-center gap-2"
                 onClick={() => navigate(-1)}
               >
                 <FaArrowLeft />
-                Go Back
+                Quay lại
               </button>
             </div>
           </div>
         </div>
 
-        {/* Product Comparison */}
+        {/* So sánh sản phẩm */}
         <div className="mt-10 w-full max-w-5xl">
           <h2 className="text-2xl font-bold text-gray-800 mb-4">
-            Compare with:
+            So sánh với:
           </h2>
           <select
             className="border border-gray-300 rounded-lg p-2"
@@ -162,7 +162,7 @@ const ProductDetail = () => {
             defaultValue=""
           >
             <option value="" disabled>
-              Select a product
+              Chọn sản phẩm
             </option>
             {allProducts
               .filter((p) => p.id !== product.id)

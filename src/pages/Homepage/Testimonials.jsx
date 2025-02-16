@@ -1,35 +1,32 @@
-import React from 'react'
+import React from "react";
 import Slider from "react-slick";
-
-
-
 
 const TestimonialData = [
   {
-    "id": 1,
-    "name": "Maria",
-    "text": "I bought the Sky Beauty Illuminating Face Serum and I'm thrilled with the results! My skin is brighter and the dark spots have faded.  Sky Beauty's products are really effective!",
-    "img": "https://picsum.photos/101/101"
+    id: 1,
+    name: "Maria",
+    text: "Tôi đã mua Serum Dưỡng Da Sky Beauty và rất hài lòng với kết quả! Làn da của tôi sáng hơn và các vết thâm đã mờ đi. Sản phẩm của Sky Beauty thực sự hiệu quả!",
+    img: "https://picsum.photos/101/101",
   },
   {
-    "id": 2,
-    "name": "Giovanni",
-    "text": "The Sky Beauty Regenerating Night Cream is fantastic! I wake up with my skin soft and hydrated. I recommend it to everyone! Sky Beauty has become my go-to brand.",
-    "img": "https://picsum.photos/102/102"
+    id: 2,
+    name: "Giovanni",
+    text: "Kem Dưỡng Ban Đêm Sky Beauty thật tuyệt vời! Tôi thức dậy với làn da mềm mại và đủ ẩm. Tôi khuyên mọi người nên dùng! Sky Beauty đã trở thành thương hiệu yêu thích của tôi.",
+    img: "https://picsum.photos/102/102",
   },
   {
-    "id": 3,
-    "name": "Sofia",
-    "text": "The Sky Beauty Purifying Face Mask is a real lifesaver for my oily skin. I use it once a week and my pores are less visible. I love Sky Beauty!",
-    "img": "https://picsum.photos/104/104"
+    id: 3,
+    name: "Sofia",
+    text: "Mặt Nạ Làm Sạch Sky Beauty thực sự là cứu tinh cho làn da dầu của tôi. Tôi sử dụng mỗi tuần một lần và lỗ chân lông đã thu nhỏ đáng kể. Tôi rất thích Sky Beauty!",
+    img: "https://picsum.photos/104/104",
   },
   {
-    "id": 5,
-    "name": "Luca",
-    "text": "The Sky Beauty Refreshing Face Toner is perfect to complete my cleansing routine. It leaves my skin fresh and toned.  Sky Beauty products are now a staple in my routine.",
-    "img": "https://picsum.photos/103/103"
-  }
-]
+    id: 5,
+    name: "Luca",
+    text: "Toner Làm Sạch Sky Beauty là sản phẩm hoàn hảo để hoàn thiện quy trình làm sạch da của tôi. Nó giúp da tôi luôn tươi mát và săn chắc. Sky Beauty đã trở thành sản phẩm không thể thiếu trong quy trình chăm sóc da của tôi.",
+    img: "https://picsum.photos/103/103",
+  },
+];
 
 const Testimonials = () => {
   var settings = {
@@ -70,21 +67,20 @@ const Testimonials = () => {
     ],
   };
 
-
   return (
     <>
-    <div>
+      <div>
         {/* header section */}
         <div className="text-center mb-10 max-w-[600px] mx-auto">
           <p data-aos="fade-up" className="text-sm text-BLACK">
-            What our customers are saying
+            Khách hàng của chúng tôi nói gì
           </p>
           <h1 data-aos="fade-up" className="text-4xl font-bold text-[#6BBCFE]">
-            Testimonials
+            Đánh giá từ khách hàng
           </h1>
           <p data-aos="fade-up" className="text-xs text-gray-500">
-            Lorem ipsum dolor sit amet consectetur, adipisicing elit. Sit
-            asperiores modi Sit asperiores modi
+            Những trải nghiệm thực tế từ những khách hàng yêu thích sản phẩm của
+            chúng tôi.
           </p>
         </div>
         {/* Testimonial cards */}
@@ -119,10 +115,9 @@ const Testimonials = () => {
             ))}
           </Slider>
         </div>
-    </div>
-  </>
-
-  )
-}
+      </div>
+    </>
+  );
+};
 
 export default Testimonials;
