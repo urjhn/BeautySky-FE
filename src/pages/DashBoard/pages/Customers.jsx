@@ -94,7 +94,7 @@ const Customers = () => {
 
   return (
     <div className="p-6 bg-gray-100 min-h-screen">
-      <h1 className="text-3xl font-bold text-gray-900 mb-4">Customers</h1>
+      <h1 className="text-3xl font-bold text-gray-900 mb-4">Khách hàng</h1>
       <div className="bg-white p-4 rounded-lg shadow">
         {/* Search bar */}
         <div className="flex justify-between items-center mb-4">
@@ -112,7 +112,7 @@ const Customers = () => {
         <table className="w-full border-collapse bg-white shadow-md">
           <thead>
             <tr className="bg-gray-200">
-              <th className="p-3 text-left">Name</th>
+              <th className="p-3 text-left">Tên</th>
               <th className="p-3 text-left">Email</th>
               <th className="p-3 text-left">Orders</th>
               <th className="p-3 text-left">Status</th>

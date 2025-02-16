@@ -13,34 +13,34 @@ const ProductsData = [
     img: Img1,
     title: "DOU+M",
     rating: 5.0,
-    color: "white",
+    color: "Trắng",
     aosDelay: "0",
   },
   {
     id: 2,
     img: Img2,
-    title: "PURIFYING FOARMING GEL",
+    title: "GEL RỬA MẶT LÀM SẠCH",
     rating: 4.9,
     aosDelay: "200",
   },
   {
     id: 3,
     img: Img3,
-    title: "ASTRINGENT LOTION",
+    title: "NƯỚC HOA HỒNG SE KHÍT",
     rating: 4.9,
     aosDelay: "400",
   },
   {
     id: 4,
     img: Img4,
-    title: "ULTRA CONCENTRATED SERUM",
+    title: "SERUM TINH CHẤT ĐẬM ĐẶC",
     rating: 5.0,
     aosDelay: "600",
   },
   {
     id: 5,
     img: Img5,
-    title: "MICRO-PEELING PURIFYING GEL",
+    title: "GEL TẨY TẾ BÀO CHẾT & LÀM SẠCH",
     rating: 4.9,
     aosDelay: "800",
   },
@@ -53,13 +53,13 @@ const Products = () => {
         {/* Header section */}
         <div className="text-center mb-10 max-w-[600px] mx-auto">
           <p data-aos="fade-up" className="text-sm text-black">
-            Top Selling Products for you
+            Sản phẩm bán chạy nhất dành cho bạn
           </p>
           <h1
             data-aos="fade-up"
             className="text-4xl underline underline-offset-8 hover:underline decoration-1 decoration-black font-bold text-[#6BBCFE]"
           >
-            Products Lines
+            Dòng sản phẩm
           </h1>
         </div>
 
@@ -98,7 +98,7 @@ const Products = () => {
               to="/product"
               className="text-center bg-[#6bbcfe] text-white py-2 px-6 rounded-md hover:bg-blue-600 transition duration-300"
             >
-              View All Products
+              Xem tất cả sản phẩm
             </Link>
           </div>
         </div>

@@ -80,7 +80,7 @@ function Register() {
           {/* Form Section */}
           <div className="w-full md:w-1/2 p-10">
             <h3 className="text-3xl font-bold text-center text-[#6bbcfe] mb-6">
-              Create an Account
+              Tạo tài khoản
             </h3>
 
             {message && <p className="text-green-600 text-center">{message}</p>}
@@ -144,16 +144,16 @@ function Register() {
                     : "bg-[#6bbcfe] hover:bg-blue-700"
                 }`}
               >
-                {loading ? "Signing up..." : "Sign Up"}
+                {loading ? "Đang đăng ký..." : "Đăng ký"}
               </button>
             </form>
 
             {/* Already have an account */}
             <div className="mt-4 text-center">
               <p className="text-gray-600">
-                Already have an account?{" "}
+                Bạn đã có tài khoản ?{" "}
                 <Link to="/login" className="text-[#6bbcfe] hover:underline">
-                  Sign in
+                  Đăng nhập
                 </Link>
               </p>
             </div>

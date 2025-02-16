@@ -3,14 +3,14 @@ import { useLocation } from "react-router-dom";
 
 const PaymentSuccess = () => {
   const location = useLocation();
-  const [message, setMessage] = useState("Confirming payment...");
+  const [message, setMessage] = useState("Xác nhận thanh toán...");
 
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     if (params.get("vnp_ResponseCode") === "00") {
-      setMessage("Payment successfully!");
+      setMessage("Thanh toán thành công!");
     } else {
-      setMessage("Payment failed. Try again.");
+      setMessage("Thanh toán thất bại. Hãy thử lại.");
     }
   }, [location]);
 

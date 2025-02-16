@@ -13,23 +13,23 @@ const ImageList = [
   {
     id: 1,
     img: Image1,
-    title: "Upto 50% off on all",
+    title: "Giảm giá lên đến 50% trên tất cả",
     description:
-      "lorem His Life will forever be Changed dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+      "Cuộc sống của anh ấy sẽ thay đổi mãi mãi. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
   },
   {
     id: 2,
     img: Image2,
-    title: "30% off on all",
+    title: "Giảm 30% trên tất cả",
     description:
-      "Who's there lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+      "Ai đó đang ở đó? Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
   },
   {
     id: 3,
     img: Image3,
-    title: "70% off on all Products Sale",
+    title: "Giảm giá 70% cho tất cả sản phẩm",
     description:
-      "consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+      "Consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
   },
 ];
 
@@ -98,7 +98,7 @@ const Hero = ({ handleOrderPopup }) => {
                       to="/product"
                       className="bg-gradient-to-r from-[#5eb1f6] to-[#97caf4eb] hover:scale-105 duration-200 text-white py-2 px-4 rounded-full"
                     >
-                      Order Now
+                      Đặt hàng ngay
                     </Link>
                   </div>
                 </div>

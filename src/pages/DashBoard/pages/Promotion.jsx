@@ -26,18 +26,18 @@ const PromotionManagement = () => {
   return (
     <div className="p-6 bg-white shadow-lg rounded-lg">
       <h2 className="text-2xl font-bold mb-4 text-gray-800">
-        Promotion Management
+        Quản lí khuyến mãi
       </h2>
       <button className="bg-blue-500 text-white px-4 py-2 rounded-md flex items-center mb-4 hover:bg-blue-600">
-        <FaPlus className="mr-2" /> Add Promotion
+        <FaPlus className="mr-2" /> Thêm khuyến mãi
       </button>
 
       <table className="w-full bg-white border border-gray-200 rounded-lg overflow-hidden">
         <thead className="bg-gray-100">
           <tr>
-            <th className="py-3 px-4 border">Name</th>
-            <th className="py-3 px-4 border">Discount</th>
-            <th className="py-3 px-4 border">Expiry Date</th>
+            <th className="py-3 px-4 border">Tên</th>
+            <th className="py-3 px-4 border">Giảm giá</th>
+            <th className="py-3 px-4 border">Ngày hết hạn</th>
             <th className="py-3 px-4 border">Actions</th>
           </tr>
         </thead>
@@ -71,7 +71,7 @@ const PromotionManagement = () => {
               : "bg-blue-500 text-white hover:bg-blue-600"
           }`}
         >
-          Prev
+          Trước
         </button>
         {Array.from({ length: totalPages }, (_, i) => (
           <button
@@ -95,7 +95,7 @@ const PromotionManagement = () => {
               : "bg-blue-500 text-white hover:bg-blue-600"
           }`}
         >
-          Next
+          Tiếp
         </button>
       </div>
     </div>

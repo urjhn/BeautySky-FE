@@ -10,22 +10,22 @@ const ProductsData = [
   {
     id: 1,
     img: Img1,
-    title: "MICELLAR WATER",
-    description: "DEEP CLEANSING MAKEUP REMOVER FOR SENSITIVE SKIN.",
+    title: "NƯỚC TẨY TRANG MICELLAR",
+    description: "TẨY TRANG SÂU DÀNH CHO DA NHẠY CẢM.",
     price: 15.99,
   },
   {
     id: 2,
     img: Img2,
     title: "GOMMAGE",
-    description: "ULTRA-FREE EXFOLIATOR FOR SENSITIVE SKIN.",
+    description: "TẨY DA CHẾT NHẸ NHÀNG CHO DA NHẠY CẢM.",
     price: 19.99,
   },
   {
     id: 3,
     img: Img3,
-    title: "THERMAL SPRING WATER",
-    description: "TONER AND MIST.",
+    title: "NƯỚC KHOÁNG THIÊN NHIÊN",
+    description: "NƯỚC CÂN BẰNG VÀ XỊT KHOÁNG.",
     price: 12.99,
   },
 ];
@@ -40,16 +40,16 @@ const TopProducts = () => {
         {/* Header section */}
         <div className="text-center mb-10 max-w-[800px] mx-auto">
           <p data-aos="fade-up" className="text-sm text-black">
-            Top Rated Products for you
+            Sản phẩm được đánh giá cao nhất dành cho bạn
           </p>
           <h1
             data-aos="fade-up"
             className="text-center text-4xl underline underline-offset-8 hover:underline decoration-1 decoration-black font-bold text-[#6BBCFE]"
           >
-            Best Products
+            Sản phẩm tốt nhất
           </h1>
           <p data-aos="fade-up" className="text-xs text-gray-400 py-4">
-            Find your favourite Sky Beauty® product
+            Tìm sản phẩm yêu thích của bạn từ Sky Beauty®
           </p>
         </div>
 
@@ -92,7 +92,7 @@ const TopProducts = () => {
                   className="bg-primary hover:scale-105 duration-300 text-black py-1 px-4 rounded-full mt-4 group-hover:bg-yellow-300 group-hover:text-primary"
                   onClick={() => addToCart(product)}
                 >
-                  Order Now
+                  Đặt hàng ngay
                 </button>
               </div>
             </div>

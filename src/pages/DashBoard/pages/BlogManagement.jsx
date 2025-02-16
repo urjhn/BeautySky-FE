@@ -37,9 +37,7 @@ const BlogManagement = () => {
   return (
     <div className="p-6 bg-white rounded-lg shadow-md">
       <div className="flex justify-between items-center mb-4">
-        <h2 className="text-2xl font-semibold text-gray-700">
-          Blog Management
-        </h2>
+        <h2 className="text-2xl font-semibold text-gray-700">Quản lí Blogs</h2>
         <input
           type="text"
           placeholder="Search blogs..."
@@ -53,9 +51,9 @@ const BlogManagement = () => {
         <thead className="bg-gray-200 text-gray-700">
           <tr>
             <th className="py-2 px-4">ID</th>
-            <th className="py-2 px-4 text-left">Title</th>
-            <th className="py-2 px-4 text-left">Author</th>
-            <th className="py-2 px-4">Date</th>
+            <th className="py-2 px-4 text-left">Tiêu đề</th>
+            <th className="py-2 px-4 text-left">Tác giả</th>
+            <th className="py-2 px-4">Ngày sản xuất</th>
             <th className="py-2 px-4">Status</th>
             <th className="py-2 px-4">Actions</th>
           </tr>
@@ -80,13 +78,13 @@ const BlogManagement = () => {
               </td>
               <td className="py-2 px-4 flex justify-center space-x-3">
                 <button className="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600">
-                  Edit
+                  Sửa
                 </button>
                 <button
                   className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600"
                   onClick={() => handleDelete(blog.id)}
                 >
-                  Delete
+                  Xóa
                 </button>
               </td>
             </tr>
