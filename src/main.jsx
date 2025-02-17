@@ -28,7 +28,6 @@ import "slick-carousel/slick/slick-theme.css";
 import "./index.css";
 import { CartProvider } from "./context/CartContext.jsx"; // Import CartProvider
 import { AuthProvider } from "./context/AuthContext"; // Đúng đường dẫn
-import { AuthProvider } from "./context/AuthContext.jsx";
 import { ThemeProvider } from "./pages/DashBoard/context/ThemeContext.jsx";
 import RoutineBuilderPage from "./features/skincare-routine/RoutineBuilderPage";
 import "./index.css";
