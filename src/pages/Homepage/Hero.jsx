@@ -6,7 +6,7 @@ import Slider from "react-slick";
 import AOS from "aos";
 import "aos/dist/aos.css";
 import "slick-carousel/slick/slick.css";
-import "slick-carousel/slick/slick-theme.css"; // (Optional, but recommended)
+import "slick-carousel/slick/slick-theme.css";
 import { Link } from "react-router-dom";
 
 const ImageList = [
@@ -48,16 +48,14 @@ const Hero = ({ handleOrderPopup }) => {
   };
 
   return (
-    <div className="relative overflow-hidden min-h-[400px] sm:min-h-[500px] bg-whwh flex justify-center items-center dark:bg-gray-100 dark:text-white duration-200 ">
-      {/* background pattern */}
-      {/* hero section */}
+    <div className="relative overflow-hidden min-h-[400px] sm:min-h-[500px] flex justify-center items-center dark:bg-gray-100 dark:text-white duration-200">
       <div className="container m-2 pb-8 sm:pb-0">
         <Slider {...settings}>
           {ImageList.map((data) => (
-            <div>
-              <div className="grid grid-cols-1 sm:grid-cols-2">
-                {/* image section */}
-                <div className="order-1 sm:order-1">
+            <div key={data.id} className="p-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-8 bg-white dark:bg-gray-800 p-6 sm:p-12 rounded-xl shadow-[rgba(0,0,0,0.2)_-10px_10px_30px]">
+                {/* Image Section */}
+                <div className="order-1 sm:order-1 flex justify-center">
                   <div
                     data-aos="zoom-in"
                     data-aos-once="true"
@@ -66,13 +64,13 @@ const Hero = ({ handleOrderPopup }) => {
                     <img
                       src={data.img}
                       alt=""
-                      className="w-[300px] h-[300px] sm:h-[450px] sm:w-[450px] sm:scale-125 lg:scale-125 object-contain mx-auto"
+                      className="w-[300px] h-[300px] sm:h-[450px] sm:w-[450px] object-contain"
                     />
                   </div>
                 </div>
 
-                {/* text content section */}
-                <div className="flex flex-col justify-center gap-8 pt-12 sm:pt-0 tex-center sm:text-right order-2 sm:order-2 relative z-10 text-black">
+                {/* Text Content Section */}
+                <div className="flex flex-col justify-center gap-6 text-center sm:text-left order-2 sm:order-2 relative text-black dark:text-white">
                   <h1
                     data-aos="zoom-out"
                     data-aos-duration="500"
