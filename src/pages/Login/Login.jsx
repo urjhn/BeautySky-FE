@@ -1,6 +1,6 @@
 import { useContext, useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { AuthContext } from "../../context/AuthContext";
+import { AuthContext } from "../../context/AuthContext"; // Đảm bảo bạn import đúng AuthContext
 import { loginUser } from "../../services/authService";
 import { signInWithGoogle } from "../../services/firebase";
 import ReCAPTCHA from "react-google-recaptcha";
@@ -9,7 +9,7 @@ import Footer from "../../components/Footer/Footer";
 import loginImage from "../../assets/login/login.png";
 
 function Login() {
-  const { setUser } = useContext(AuthContext);
+  const { setUser } = useContext(AuthContext); // Sử dụng setUser từ context
   const navigate = useNavigate();
 
   const [formData, setFormData] = useState({ email: "", password: "" });
@@ -22,13 +22,13 @@ function Login() {
     const storedUser = localStorage.getItem("user");
     if (storedUser) {
       try {
-        setUser(JSON.parse(storedUser));
+        setUser(JSON.parse(storedUser)); // Đảm bảo setUser được gọi đúng
       } catch (err) {
         console.error("Lỗi khi phân tích dữ liệu người dùng:", err);
         localStorage.removeItem("user"); // Xóa dữ liệu lỗi
       }
     }
-  }, []);
+  }, [setUser]);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -49,16 +49,13 @@ function Login() {
       // Lưu thông tin user vào localStorage
       localStorage.setItem("user", JSON.stringify(data.user));
       localStorage.setItem("token", data.token);
-      localStorage.setItem("role", data.user.role);
 
-      setUser(data.user);
+      setUser(data.user); // Đảm bảo setUser được sử dụng đúng cách
 
-      // Điều hướng dựa trên vai trò
-      if (data.user.role === "Manager") navigate("/dashboard");
-      else if (data.user.role === "staff") navigate("/profile");
-      else navigate("/");
+      // Điều hướng chung đến trang profile sau khi đăng nhập
+      navigate("/profile");
     } catch (err) {
-      setError(err.message || "Login failed!");
+      setError(err.message || "Đăng nhập không thành công!");
     } finally {
       setLoading(false);
     }
@@ -68,7 +65,7 @@ function Login() {
     try {
       setLoading(true);
       const googleUser = await signInWithGoogle();
-      setUser(googleUser);
+      setUser(googleUser); // Đảm bảo setUser được sử dụng đúng cách
       localStorage.setItem("user", JSON.stringify(googleUser));
       navigate("/profile");
     } catch (err) {
