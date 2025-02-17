@@ -5,10 +5,11 @@ const Products = () => {
   const [products, setProducts] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [filter, setFilter] = useState("All");
+  const [editingProduct, setEditingProduct] = useState(null); // State to track the product being edited
+  const [showEditModal, setShowEditModal] = useState(false); // State to show/hide edit modal
   const productsPerPage = 5;
 
   useEffect(() => {
-    // Giả lập dữ liệu sản phẩm từ backend
     const sampleProducts = Array.from({ length: 20 }, (_, i) => ({
       id: i + 1,
       name: `Product ${i + 1}`,
@@ -19,16 +20,36 @@ const Products = () => {
     setProducts(sampleProducts);
   }, []);
 
-  // Lọc sản phẩm theo trạng thái
   const filteredProducts =
     filter === "All" ? products : products.filter((p) => p.status === filter);
 
-  // Tính số trang
   const totalPages = Math.ceil(filteredProducts.length / productsPerPage);
   const displayedProducts = filteredProducts.slice(
     (currentPage - 1) * productsPerPage,
     currentPage * productsPerPage
   );
+
+  const handleDelete = (id) => {
+    setProducts(products.filter((product) => product.id !== id));
+  };
+
+  const handleEdit = (product) => {
+    setEditingProduct(product);
+    setShowEditModal(true);
+  };
+
+  const handleSaveEdit = (editedProduct) => {
+    setProducts(
+      products.map((product) =>
+        product.id === editedProduct.id ? editedProduct : product
+      )
+    );
+    setShowEditModal(false);
+  };
+
+  const handleCancelEdit = () => {
+    setShowEditModal(false);
+  };
 
   return (
     <div className="p-6 bg-gray-100 min-h-screen">
@@ -39,7 +60,6 @@ const Products = () => {
         </button>
       </div>
 
-      {/* Bộ lọc sản phẩm */}
       <div className="mb-4">
         <select
           className="p-2 border rounded"
@@ -87,10 +107,16 @@ const Products = () => {
                   </span>
                 </td>
                 <td className="p-3 flex space-x-2">
-                  <button className="text-blue-600">
+                  <button
+                    className="text-blue-600"
+                    onClick={() => handleEdit(product)}
+                  >
                     <FaEdit />
                   </button>
-                  <button className="text-red-600">
+                  <button
+                    className="text-red-600"
+                    onClick={() => handleDelete(product.id)}
+                  >
                     <FaTrash />
                   </button>
                 </td>
@@ -99,7 +125,6 @@ const Products = () => {
           </tbody>
         </table>
 
-        {/* Phân trang */}
         <div className="mt-4 flex justify-center space-x-2">
           {[...Array(totalPages)].map((_, index) => (
             <button
@@ -116,6 +141,73 @@ const Products = () => {
           ))}
         </div>
       </div>
+
+      {/* Edit Modal */}
+      {showEditModal && (
+        <div className="fixed inset-0 bg-gray-500 bg-opacity-50 flex justify-center items-center">
+          <div className="bg-white p-6 rounded-lg w-1/3">
+            <h2 className="text-2xl font-bold mb-4">Edit Product</h2>
+            <div className="mb-4">
+              <label className="block mb-2">Product Name</label>
+              <input
+                type="text"
+                value={editingProduct.name}
+                onChange={(e) =>
+                  setEditingProduct({
+                    ...editingProduct,
+                    name: e.target.value,
+                  })
+                }
+                className="p-2 border rounded w-full"
+              />
+            </div>
+            <div className="mb-4">
+              <label className="block mb-2">Price</label>
+              <input
+                type="text"
+                value={editingProduct.price}
+                onChange={(e) =>
+                  setEditingProduct({
+                    ...editingProduct,
+                    price: e.target.value,
+                  })
+                }
+                className="p-2 border rounded w-full"
+              />
+            </div>
+            <div className="mb-4">
+              <label className="block mb-2">Status</label>
+              <select
+                value={editingProduct.status}
+                onChange={(e) =>
+                  setEditingProduct({
+                    ...editingProduct,
+                    status: e.target.value,
+                  })
+                }
+                className="p-2 border rounded w-full"
+              >
+                <option value="In Stock">In Stock</option>
+                <option value="Out of Stock">Out of Stock</option>
+              </select>
+            </div>
+            <div className="flex justify-end space-x-2">
+              <button
+                onClick={handleCancelEdit}
+                className="bg-gray-300 px-4 py-2 rounded"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => handleSaveEdit(editingProduct)}
+                className="bg-blue-600 text-white px-4 py-2 rounded"
+              >
+                Save
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

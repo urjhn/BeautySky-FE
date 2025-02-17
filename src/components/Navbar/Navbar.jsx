@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import { IoMdSearch } from "react-icons/io";
 import { FaShoppingCart } from "react-icons/fa";
@@ -6,6 +6,7 @@ import Logo from "../../assets/logo.png";
 import Namebrand from "../../assets/namebrand.png";
 import { NavbarMenu } from "../Navbar/data";
 import { useCart } from "../../context/CartContext";
+import { motion } from "framer-motion";
 
 const Navbar = () => {
   const { cartItems } = useCart();
@@ -14,8 +15,8 @@ const Navbar = () => {
   const [user, setUser] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState([]);
-  const [showDropdown, setShowDropdown] = useState(false);
   const [showProductDropdown, setShowProductDropdown] = useState(false);
+  const dropdownRef = useRef(null); // To detect click outside
 
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
@@ -27,6 +28,16 @@ const Navbar = () => {
         localStorage.removeItem("user");
       }
     }
+
+    // Close dropdown if clicked outside
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setShowProductDropdown(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   const handleSearch = async () => {
@@ -37,7 +48,7 @@ const Navbar = () => {
       );
       const data = await response.json();
       setSearchResults(data);
-      setShowDropdown(true);
+      setShowProductDropdown(true);
     } catch (error) {
       console.error("Lỗi tìm kiếm:", error);
     }
@@ -60,21 +71,25 @@ const Navbar = () => {
 
         <ul className="hidden md:flex items-center gap-8 text-gray-700 font-semibold">
           {NavbarMenu.map((item) => (
-            <li key={item.id} className="relative group">
+            <li key={item.id} className="relative">
               {item.submenu ? (
                 <>
                   <button
-                    onMouseEnter={() => setShowProductDropdown(true)}
-                    onMouseLeave={() => setShowProductDropdown(false)}
+                    onClick={() => setShowProductDropdown((prev) => !prev)} // Toggle on click
                     className="hover:text-[#6BBCFE] transition duration-300"
                   >
                     {item.title}
                   </button>
+
+                  {/* Animated Dropdown */}
                   {showProductDropdown && (
-                    <div
+                    <motion.div
+                      ref={dropdownRef} // Reference for outside click detection
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      transition={{ duration: 0.3 }}
                       className="absolute left-0 mt-2 w-56 bg-white shadow-lg rounded-lg py-2 z-50"
-                      onMouseEnter={() => setShowProductDropdown(true)}
-                      onMouseLeave={() => setShowProductDropdown(false)}
                     >
                       {item.submenu.map((sub, index) => (
                         <div key={index} className="p-2 border-b">
@@ -86,13 +101,14 @@ const Navbar = () => {
                               key={i}
                               to={link.link}
                               className="block px-4 py-2 text-gray-600 hover:bg-gray-100"
+                              onClick={() => setShowProductDropdown(false)} // Close dropdown on click
                             >
                               {link.name}
                             </Link>
                           ))}
                         </div>
                       ))}
-                    </div>
+                    </motion.div>
                   )}
                 </>
               ) : (
