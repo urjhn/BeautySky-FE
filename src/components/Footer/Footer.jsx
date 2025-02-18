@@ -2,6 +2,10 @@ import React from "react";
 import footerLogo from "../../assets/footer/logo.png";
 import footerNamebrand from "../../assets/footer/namebrand.png";
 import { FaFacebook, FaInstagram, FaLinkedin } from "react-icons/fa";
+import React from "react";
+import footerLogo from "../../assets/footer/logo.png";
+import footerNamebrand from "../../assets/footer/namebrand.png";
+import { FaFacebook, FaInstagram, FaLinkedin } from "react-icons/fa";
 
 const Footer = () => {
   return (
@@ -82,4 +86,5 @@ const Footer = () => {
   );
 };
 
+export default Footer;
 export default Footer;

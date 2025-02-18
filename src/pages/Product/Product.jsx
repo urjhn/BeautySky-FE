@@ -1,10 +1,13 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import Navbar from "../../components/Navbar/Navbar";
 import Footer from "../../components/Footer/Footer";
 import { useCart } from "../../context/CartContext";
+import { useCart } from "../../context/CartContext";
 
 const ProductsPage = () => {
+  const { addToCart } = useCart();
   const { addToCart } = useCart();
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedSkinType, setSelectedSkinType] = useState("All");
@@ -78,6 +81,7 @@ const ProductsPage = () => {
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
   );
+  const totalPages = Math.ceil(sortedProducts.length / itemsPerPage);
   const totalPages = Math.ceil(sortedProducts.length / itemsPerPage);
 
   return (
@@ -180,6 +184,21 @@ const ProductsPage = () => {
 };
 
 export default ProductsPage;
+
+// const [products, setProducts] = useState([]);
+
+// useEffect(() => {
+//   const fetchProducts = async () => {
+//     try {
+//       const data = await getProducts();
+//       setProducts(data);
+//     } catch (error) {
+//       console.error("Lỗi khi lấy sản phẩm:", error);
+//     }
+//   };
+
+//   fetchProducts();
+// });
 
 // const [products, setProducts] = useState([]);
 
