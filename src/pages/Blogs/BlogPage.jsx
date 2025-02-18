@@ -2,108 +2,50 @@ import { useState, useEffect } from "react";
 import Navbar from "../../components/Navbar/Navbar";
 import Footer from "../../components/Footer/Footer";
 
-// const Blogs = () => {
-//   const [blogs, setBlogs] = useState([]);
-//   const [loading, setLoading] = useState(true);
-
-//   useEffect(() => {
-//     fetch("https://your-api.com/blogs") // Thay bằng API thật của bạn
-//       .then((res) => res.json())
-//       .then((data) => {
-//         setBlogs(data);
-//         setLoading(false);
-//       })
-//       .catch((error) => {
-//         console.error("Error fetching blogs:", error);
-//         setLoading(false);
-//       });
-//   }, []);
-
-//   return (
-//     <>
-//       <Navbar />
-//       <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 p-6">
-//         <h2 className="text-4xl font-bold mb-6 text-blue-600">
-//           Our Latest Blogs
-//         </h2>
-//         {loading ? (
-//           <p className="text-gray-500 text-lg">Loading...</p>
-//         ) : (
-//           <div className="grid md:grid-cols-3 gap-8 max-w-6xl">
-//             {blogs.map((post) => (
-//               <div
-//                 key={post.id}
-//                 className="bg-white shadow-lg rounded-lg overflow-hidden transform transition duration-300 hover:scale-105 hover:shadow-2xl"
-//               >
-//                 <img
-//                   src={post.image}
-//                   alt={post.title}
-//                   className="w-full h-56 object-cover"
-//                 />
-//                 <div className="p-5">
-//                   <h3 className="text-xl font-bold mb-2 text-gray-800">
-//                     {post.title}
-//                   </h3>
-//                   <p className="text-gray-600 mb-4">{post.excerpt}</p>
-//                   <a
-//                     href={post.link}
-//                     className="text-white bg-blue-500 px-4 py-2 rounded-lg hover:bg-blue-700 transition"
-//                   >
-//                     Read More
-//                   </a>
-//                 </div>
-//               </div>
-//             ))}
-//           </div>
-//         )}
-//       </div>
-//       <Footer />
-//     </>
-//   );
-// };
-
-// export default Blogs;
-
 const Blogs = () => {
   const [selectedBlog, setSelectedBlog] = useState(null);
 
   const blogs = [
     {
       id: 1,
-      title: "Skincare Tips for Glowing Skin",
-      excerpt: "Discover the best skincare routine to achieve radiant skin.",
+      title: "Mẹo Chăm Sóc Da Cho Làn Da Rạng Rỡ",
+      excerpt: "Khám phá quy trình chăm sóc da tốt nhất để có làn da khỏe đẹp.",
       content:
-        "Achieving glowing skin requires a consistent skincare routine, healthy eating, and hydration. In this blog, we explore the best practices to keep your skin radiant.",
+        "Để có làn da rạng rỡ, bạn cần một quy trình chăm sóc da đều đặn, ăn uống lành mạnh và uống đủ nước. Trong bài viết này, chúng tôi sẽ chia sẻ những mẹo giúp da bạn luôn tươi sáng.",
       image: "https://via.placeholder.com/400x250",
     },
     {
       id: 2,
-      title: "The Benefits of Natural Ingredients",
-      excerpt: "Learn why natural skincare ingredients are the best choice.",
+      title: "Lợi Ích Của Thành Phần Tự Nhiên",
+      excerpt: "Tại sao nên chọn mỹ phẩm có thành phần thiên nhiên?",
       content:
-        "Natural ingredients are rich in vitamins and antioxidants that nourish the skin. This blog covers the benefits of using organic skincare products.",
+        "Các thành phần tự nhiên giàu vitamin và chất chống oxy hóa giúp nuôi dưỡng làn da. Bài viết này sẽ giúp bạn hiểu rõ lợi ích của việc sử dụng mỹ phẩm hữu cơ.",
       image: "https://via.placeholder.com/400x250",
     },
     {
       id: 3,
-      title: "How to Choose the Right Moisturizer",
-      excerpt: "Find the perfect moisturizer for your skin type.",
+      title: "Cách Chọn Kem Dưỡng Ẩm Phù Hợp",
+      excerpt: "Lựa chọn kem dưỡng ẩm phù hợp với loại da của bạn.",
       content:
-        "Choosing the right moisturizer depends on your skin type. This article will guide you on selecting the best moisturizer for your needs.",
+        "Chọn kem dưỡng ẩm phù hợp phụ thuộc vào loại da của bạn. Bài viết này sẽ hướng dẫn bạn cách chọn loại kem tốt nhất cho làn da của mình.",
       image: "https://via.placeholder.com/400x250",
     },
   ];
 
+  useEffect(() => {
+    if (selectedBlog) {
+      document.body.classList.add("overflow-hidden");
+    } else {
+      document.body.classList.remove("overflow-hidden");
+    }
+  }, [selectedBlog]);
+
   return (
     <>
       <Navbar />
-      <div
-        className={`relative flex flex-col items-center justify-center min-h-screen bg-gray-100 p-6 ${
-          selectedBlog ? "blur-sm" : ""
-        }`}
-      >
+      <div className="relative flex flex-col items-center justify-center min-h-screen bg-gray-100 p-6">
         <h2 className="text-4xl font-bold mb-6 text-[#6bbcfe]">
-          Our Latest Blogs
+          Bài Viết Mới Nhất
         </h2>
         <div className="grid md:grid-cols-3 gap-8 max-w-6xl">
           {blogs.map((post) => (
@@ -123,7 +65,7 @@ const Blogs = () => {
                 </h3>
                 <p className="text-gray-600 mb-4">{post.excerpt}</p>
                 <button className="text-white bg-blue-500 px-4 py-2 rounded-lg hover:bg-blue-700 transition">
-                  Read More
+                  Đọc Thêm
                 </button>
               </div>
             </div>
@@ -131,22 +73,23 @@ const Blogs = () => {
         </div>
       </div>
 
+      {/* Overlay Popup */}
       {selectedBlog && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-md p-6">
-          <div className="bg-white p-6 rounded-lg shadow-lg max-w-lg text-center">
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-md">
+          <div className="bg-white p-6 rounded-lg shadow-lg max-w-lg w-11/12 md:w-3/4 lg:w-1/2 max-h-[80vh] overflow-y-auto relative">
+            <button
+              className="absolute top-3 right-4 text-gray-500 hover:text-black text-2xl"
+              onClick={() => setSelectedBlog(null)}
+            >
+              &times;
+            </button>
             <h2 className="text-2xl font-bold mb-4">{selectedBlog.title}</h2>
             <img
               src={selectedBlog.image}
               alt={selectedBlog.title}
               className="w-full h-56 object-cover mb-4 rounded-md"
             />
-            <p className="text-gray-700 mb-4">{selectedBlog.content}</p>
-            <button
-              className="text-white bg-red-500 px-4 py-2 rounded-lg hover:bg-red-700 transition"
-              onClick={() => setSelectedBlog(null)}
-            >
-              Close
-            </button>
+            <p className="text-gray-700">{selectedBlog.content}</p>
           </div>
         </div>
       )}

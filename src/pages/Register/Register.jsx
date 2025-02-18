@@ -1,14 +1,13 @@
 import { useContext, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { AuthContext } from "../../context/AuthContext";
-import { registerUser } from "../../services/authService"; // Sử dụng registerUser từ service
-import { signInWithGoogle } from "../../services/firebase"; // Đảm bảo bạn có hàm này trong firebase service
+import { registerUser } from "../../services/authService"; // Assuming this function exists in your service
 import Navbar from "../../components/Navbar/Navbar";
 import Footer from "../../components/Footer/Footer";
-import registerImage from "../../assets/register/register.png";
+import registerImage from "../../assets/register/register.png"; // Adjust the image path if needed
 
 function Register() {
-  const { register } = useContext(AuthContext); // Sử dụng register từ context nếu cần
+  const { register } = useContext(AuthContext); // Using register from context if needed
   const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
@@ -32,38 +31,25 @@ function Register() {
     setError("");
     setLoading(true);
 
+    // Password validation
     if (formData.password !== formData.confirmPassword) {
-      setError("Passwords do not match!");
+      setError("Mật khẩu và xác nhận mật khẩu không khớp!");
       setLoading(false);
       return;
     }
 
     try {
-      // Gọi registerUser để thực hiện đăng ký qua API backend
+      // Calling registerUser to register via backend API
       const data = await registerUser(formData);
       setMessage(data.message);
 
-      // Lưu token vào localStorage sau khi đăng ký thành công
+      // Storing token in localStorage after successful registration
       localStorage.setItem("token", data.token);
 
-      // Điều hướng đến trang login sau khi đăng ký thành công
+      // Navigating to login page after successful registration
       setTimeout(() => navigate("/login"), 2000);
     } catch (err) {
       setError(err.message || "Đăng kí thất bại!");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Hàm đăng ký với Google
-  const handleGoogleSignup = async () => {
-    try {
-      setLoading(true);
-      const googleUser = await signInWithGoogle(); // Đảm bảo bạn có hàm này trong firebase service
-      alert(`Welcome ${googleUser.displayName}!`);
-      navigate("/profile");
-    } catch (error) {
-      setError("Google Sign-Up failed!");
     } finally {
       setLoading(false);
     }
@@ -97,7 +83,7 @@ function Register() {
                 <input
                   type="text"
                   name="username"
-                  placeholder="Username"
+                  placeholder="Tên người dùng"
                   value={formData.username}
                   onChange={handleChange}
                   className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500"
@@ -121,7 +107,7 @@ function Register() {
                 <input
                   type="password"
                   name="password"
-                  placeholder="Password"
+                  placeholder="Mật khẩu"
                   value={formData.password}
                   onChange={handleChange}
                   className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500"
@@ -133,7 +119,7 @@ function Register() {
                 <input
                   type="password"
                   name="confirmPassword"
-                  placeholder="Confirm Password"
+                  placeholder="Xác nhận mật khẩu"
                   value={formData.confirmPassword}
                   onChange={handleChange}
                   className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500"
@@ -163,25 +149,6 @@ function Register() {
                 </Link>
               </p>
             </div>
-
-            <div className="relative my-6">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t"></div>
-              </div>
-              <div className="relative flex justify-center text-sm">
-                <span className="bg-white px-2 text-gray-500">OR</span>
-              </div>
-            </div>
-
-            {/* Google Sign Up Button */}
-            <button
-              className="w-full flex items-center justify-center bg-red-500 text-white py-3 rounded-lg hover:bg-red-700 transition duration-300"
-              onClick={handleGoogleSignup}
-              disabled={loading}
-            >
-              <i className="fab fa-google mr-2"></i>
-              {loading ? "Signing up..." : "Sign up with Google"}
-            </button>
 
             <p className="text-center text-gray-500 text-xs mt-4">
               By signing up, you agree to our{" "}

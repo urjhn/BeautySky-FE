@@ -79,8 +79,14 @@ const ViewCart = () => {
             <span className="text-red-500">${totalPrice}</span>
           </div>
 
-          {/* Checkout Button */}
-          <div className="flex justify-end mt-6">
+          {/* Checkout and Back to Shop Buttons */}
+          <div className="flex justify-between mt-6">
+            <Link
+              to="/product"
+              className="bg-gray-300 text-gray-800 px-6 py-3 rounded-lg hover:bg-gray-400 shadow-md transform hover:scale-105 transition duration-300"
+            >
+              Quay lại cửa hàng
+            </Link>
             <Link
               to="/checkout"
               className="bg-[#6bbcfe] text-white px-6 py-3 rounded-lg hover:bg-blue-600 shadow-md transform hover:scale-105 transition duration-300"

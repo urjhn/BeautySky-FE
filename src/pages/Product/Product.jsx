@@ -67,58 +67,66 @@ const ProductsPage = () => {
   return (
     <>
       <Navbar />
-      <div className="flex bg-gradient-to-br from-blue-50 to-white min-h-screen py-10 px-6">
+      <div className="flex bg-gradient-to-br from-blue-100 to-white min-h-screen py-10 px-6">
         {/* Sidebar */}
-        <div className="w-1/4 p-5 bg-white shadow-xl rounded-xl h-fit sticky top-20">
-          <h2 className="text-xl font-bold mb-4 text-gray-700">
-            Lọc theo loại da
+        <div className="w-1/4 p-6 bg-white shadow-xl rounded-xl h-fit sticky top-20">
+          <h2 className="text-2xl font-semibold mb-4 text-gray-700">
+            Lọc sản phẩm
           </h2>
-          <select
-            value={selectedSkinType}
-            onChange={(e) => setSelectedSkinType(e.target.value)}
-            className="w-full p-3 border rounded-lg shadow-md bg-white focus:ring-2 focus:ring-blue-500 transition-all"
-          >
-            <option value="All">Tất cả</option>
-            <option value="Oily Skin">Da dầu</option>
-            <option value="Dry Skin">Da khô</option>
-            <option value="Normal Skin">Da thường</option>
-          </select>
 
-          <h2 className="text-xl font-bold mt-6 mb-4 text-gray-700">
-            Lọc theo loại sản phẩm
-          </h2>
-          <select
-            value={selectedCategory}
-            onChange={(e) => setSelectedCategory(e.target.value)}
-            className="w-full p-3 border rounded-lg shadow-md bg-white focus:ring-2 focus:ring-blue-500 transition-all"
-          >
-            <option value="All">Tất cả</option>
-            <option value="Tẩy trang">Tẩy trang</option>
-            <option value="Sữa rửa mặt">Sữa rửa mặt</option>
-            <option value="Toner">Toner</option>
-            <option value="Serum">Serum</option>
-            <option value="Kem trị mụn">Kem trị mụn</option>
-            <option value="Kem chống nắng">Kem chống nắng</option>
-          </select>
+          {/* Skin Type Filter */}
+          <div className="mb-6">
+            <h3 className="text-lg font-medium text-gray-800">Loại da</h3>
+            <select
+              value={selectedSkinType}
+              onChange={(e) => setSelectedSkinType(e.target.value)}
+              className="w-full p-4 border rounded-lg shadow-md bg-white focus:ring-2 focus:ring-blue-400 transition-all"
+            >
+              <option value="All">Tất cả</option>
+              <option value="Oily Skin">Da dầu</option>
+              <option value="Dry Skin">Da khô</option>
+              <option value="Normal Skin">Da thường</option>
+            </select>
+          </div>
+
+          {/* Category Filter */}
+          <div className="mb-6">
+            <h3 className="text-lg font-medium text-gray-800">Loại sản phẩm</h3>
+            <select
+              value={selectedCategory}
+              onChange={(e) => setSelectedCategory(e.target.value)}
+              className="w-full p-4 border rounded-lg shadow-md bg-white focus:ring-2 focus:ring-blue-400 transition-all"
+            >
+              <option value="All">Tất cả</option>
+              <option value="Tẩy trang">Tẩy trang</option>
+              <option value="Sữa rửa mặt">Sữa rửa mặt</option>
+              <option value="Toner">Toner</option>
+              <option value="Serum">Serum</option>
+              <option value="Kem trị mụn">Kem trị mụn</option>
+              <option value="Kem chống nắng">Kem chống nắng</option>
+            </select>
+          </div>
         </div>
 
         {/* Product List */}
         <div className="w-3/4 p-5">
-          <h1 className="text-4xl font-bold text-[#6bbcfe] mb-6 text-center">
+          <h1 className="text-4xl font-extrabold text-[#6bbcfe] mb-10 text-center">
             Sản phẩm chăm sóc da
           </h1>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+
+          {/* Product Grid */}
+          <div className="grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
             {currentProducts.map((product) => (
               <div
                 key={product.id}
-                className="bg-white p-6 rounded-xl shadow-lg hover:shadow-2xl transform transition-all duration-300 hover:scale-105 border border-gray-200 hover:border-[#6bbcfe]"
+                className="bg-white p-6 rounded-lg shadow-lg transition-all duration-300 hover:scale-105 transform hover:shadow-xl border border-gray-200 hover:border-[#6bbcfe]"
               >
                 <img
                   src={product.image}
                   alt={product.name}
-                  className="w-full h-48 object-cover rounded-lg mb-4"
+                  className="w-full h-48 object-cover rounded-lg mb-4 transition-all duration-300 transform hover:scale-110"
                 />
-                <h3 className="text-lg font-bold text-gray-900">
+                <h3 className="text-lg font-semibold text-gray-900">
                   {product.name}
                 </h3>
                 <p className="text-gray-500 mt-1">
@@ -131,7 +139,7 @@ const ProductsPage = () => {
                   ${product.price.toFixed(2)}
                 </p>
 
-                {/* Nút thêm vào giỏ hàng */}
+                {/* Add to Cart Button */}
                 <button
                   className="mt-4 w-full bg-gradient-to-r from-[#6bbcfe] to-[#6bbcfe] text-white py-2 rounded-lg hover:from-blue-500 hover:to-blue-700 transition-all shadow-md"
                   onClick={() => addToCart(product)}
@@ -139,7 +147,7 @@ const ProductsPage = () => {
                   🛒 Thêm vào giỏ hàng
                 </button>
 
-                {/* Nút xem chi tiết */}
+                {/* View Product Detail Button */}
                 <button
                   onClick={() => navigate(`/product/${product.id}`)}
                   className="mt-2 w-full bg-red-400 text-white py-2 rounded-lg hover:bg-red-600 transition-all shadow-lg"
@@ -151,24 +159,27 @@ const ProductsPage = () => {
           </div>
         </div>
       </div>
+
+      {/* Pagination */}
+      <div className="flex justify-center space-x-2 py-6">
+        {[...Array(totalPages)].map((_, index) => (
+          <button
+            key={index}
+            className={`px-4 py-2 rounded-lg ${
+              currentPage === index + 1
+                ? "bg-blue-600 text-white"
+                : "bg-gray-300 text-gray-700"
+            } transition-all`}
+            onClick={() => setCurrentPage(index + 1)}
+          >
+            {index + 1}
+          </button>
+        ))}
+      </div>
+
       <Footer />
     </>
   );
 };
 
 export default ProductsPage;
-
-// const [products, setProducts] = useState([]);
-
-// useEffect(() => {
-//   const fetchProducts = async () => {
-//     try {
-//       const data = await getProducts();
-//       setProducts(data);
-//     } catch (error) {
-//       console.error("Lỗi khi lấy sản phẩm:", error);
-//     }
-//   };
-
-//   fetchProducts();
-// });
