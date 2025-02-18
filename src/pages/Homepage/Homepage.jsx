@@ -19,7 +19,7 @@ const SkincareQuizPopup = ({ onClose }) => {
         initial={{ opacity: 0, scale: 0.8 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.3, ease: "easeOut" }}
-        className="bg-white p-8 rounded-2xl shadow-2xl w-[500px] relative text-center"
+        className="bg-white p-8 rounded-2xl shadow-2xl w-[900px] h-[500px] relative text-center"
       >
         {/* Nút đóng */}
         <button
@@ -33,7 +33,7 @@ const SkincareQuizPopup = ({ onClose }) => {
         <img
           src="https://cdn-icons-png.flaticon.com/512/3475/3475979.png"
           alt="Skincare Quiz"
-          className="w-32 mx-auto mb-4"
+          className="w-[250px] mx-auto mb-4"
         />
 
         {/* Tiêu đề */}
@@ -48,7 +48,7 @@ const SkincareQuizPopup = ({ onClose }) => {
         {/* Link đến trang Quiz */}
         <Link
           to="/quizz"
-          className="inline-block bg-gradient-to-r from-blue-500 to-blue-700 text-white px-5 py-3 rounded-lg shadow-lg text-lg hover:scale-105 transition-all duration-300"
+          className="inline-block bg-gradient-to-r from-[#6BBCFE] to-blue-500 text-white px-5 py-3 rounded-lg shadow-lg text-lg hover:scale-105 transition-all duration-300"
         >
           Bắt đầu ngay 🚀
         </Link>

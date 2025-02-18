@@ -1,12 +1,14 @@
 import { useContext, useState, useEffect } from "react";
+import { GoogleLogin } from "@react-oauth/google";
 import { Link, useNavigate } from "react-router-dom";
 import { AuthContext } from "../../context/AuthContext"; // Đảm bảo bạn import đúng AuthContext
 import { loginUser } from "../../services/authService";
-import { signInWithGoogle } from "../../services/firebase";
+// import { signInWithGoogle } from "../../services/firebase";
 import ReCAPTCHA from "react-google-recaptcha";
 import Navbar from "../../components/Navbar/Navbar";
 import Footer from "../../components/Footer/Footer";
 import loginImage from "../../assets/login/login.png";
+import axios from "axios";
 
 function Login() {
   const { setUser } = useContext(AuthContext); // Sử dụng setUser từ context
@@ -34,6 +36,32 @@ function Login() {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  // const handleSubmit = async (e) => {
+  //   e.preventDefault();
+  //   setError("");
+  //   if (!recaptchaToken) {
+  //     setError("Vui lòng hoàn thành xác minh reCAPTCHA.");
+  //     return;
+  //   }
+
+  //   try {
+  //     setLoading(true);
+  //     const data = await loginUser(formData);
+
+  //     // Lưu thông tin user vào localStorage
+  //     localStorage.setItem("user", JSON.stringify(data.user));
+  //     localStorage.setItem("token", data.token);
+
+  //     setUser(data.user); // Đảm bảo setUser được sử dụng đúng cách
+
+  //     // Điều hướng chung đến trang profile sau khi đăng nhập
+  //     navigate("/");
+  //   } catch (err) {
+  //     setError(err.message || "Đăng nhập không thành công!");
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
@@ -44,16 +72,23 @@ function Login() {
 
     try {
       setLoading(true);
-      const data = await loginUser(formData);
+      const data = await loginUser(formData); // Gọi API Backend để đăng nhập
 
-      // Lưu thông tin user vào localStorage
-      localStorage.setItem("user", JSON.stringify(data.user));
-      localStorage.setItem("token", data.token);
+      const { user, token } = data;
+      const { role } = user; // Lấy vai trò của người dùng
 
-      setUser(data.user); // Đảm bảo setUser được sử dụng đúng cách
+      // Lưu thông tin người dùng và token vào localStorage
+      localStorage.setItem("user", JSON.stringify(user));
+      localStorage.setItem("token", token);
 
-      // Điều hướng chung đến trang profile sau khi đăng nhập
-      navigate("/profile");
+      setUser(user); // Cập nhật thông tin người dùng trong Context
+
+      // Phân quyền: Điều hướng theo vai trò người dùng
+      if (role === "Manager") {
+        navigate("/dashboard"); // Chuyển hướng đến trang Dashboard
+      } else {
+        navigate("/"); // Chuyển hướng đến trang chính
+      }
     } catch (err) {
       setError(err.message || "Đăng nhập không thành công!");
     } finally {
@@ -61,15 +96,31 @@ function Login() {
     }
   };
 
-  const handleGoogleSignIn = async () => {
+  const handleGoogleSignIn = async (credentialResponse) => {
     try {
       setLoading(true);
-      const googleUser = await signInWithGoogle();
-      setUser(googleUser); // Đảm bảo setUser được sử dụng đúng cách
-      localStorage.setItem("user", JSON.stringify(googleUser));
-      navigate("/profile");
-    } catch (err) {
-      console.error("Google Sign-In Error", err);
+      const token = credentialResponse.credential;
+
+      // Gửi token này lên Backend để xác minh
+      const response = await axios.post("http://localhost:5000/auth/google", {
+        token, // Token từ Google login
+      });
+
+      // Lưu thông tin người dùng vào localStorage hoặc Context
+      localStorage.setItem("user", JSON.stringify(response.data.user)); // Lưu thông tin người dùng vào localStorage
+      localStorage.setItem("token", response.data.accessToken); // Lưu token vào localStorage
+
+      // Cập nhật thông tin người dùng trong AuthContext
+      setUser(response.data.user);
+
+      // Điều hướng người dùng đến trang chính (hoặc trang nào đó)
+      navigate("/");
+
+      // Reload lại trang nếu cần thiết
+      // window.location.reload();
+    } catch (error) {
+      console.error("Lỗi đăng nhập Google:", error);
+      setError("Đăng nhập Google không thành công!");
     } finally {
       setLoading(false);
     }
@@ -148,15 +199,10 @@ function Login() {
                 <span className="bg-white px-2 text-gray-500">OR</span>
               </div>
             </div>
-
-            <button
-              className="w-full flex items-center justify-center bg-red-500 text-white py-2 rounded-lg hover:bg-red-600 transition duration-300"
-              onClick={handleGoogleSignIn}
-              disabled={loading}
-            >
-              <i className="fab fa-google mr-2"></i>{" "}
-              {loading ? "Đang đăng nhập" : "Đăng nhập với Google"}
-            </button>
+            <GoogleLogin
+              onSuccess={handleGoogleSignIn}
+              onError={() => console.log("Đăng nhập không thành công!!")}
+            />
 
             <p className="text-center text-gray-500 text-xs mt-4">
               Terms & Conditions of FASCO

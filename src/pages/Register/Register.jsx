@@ -1,14 +1,14 @@
 import { useContext, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { AuthContext } from "../../context/AuthContext";
-import { signInWithGoogle } from "../../services/firebase";
-import { registerUser } from "../../services/authService";
+import { registerUser } from "../../services/authService"; // Sử dụng registerUser từ service
+import { signInWithGoogle } from "../../services/firebase"; // Đảm bảo bạn có hàm này trong firebase service
 import Navbar from "../../components/Navbar/Navbar";
 import Footer from "../../components/Footer/Footer";
 import registerImage from "../../assets/register/register.png";
 
 function Register() {
-  const { register } = useContext(AuthContext);
+  const { register } = useContext(AuthContext); // Sử dụng register từ context nếu cần
   const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
@@ -39,21 +39,27 @@ function Register() {
     }
 
     try {
+      // Gọi registerUser để thực hiện đăng ký qua API backend
       const data = await registerUser(formData);
       setMessage(data.message);
+
+      // Lưu token vào localStorage sau khi đăng ký thành công
       localStorage.setItem("token", data.token);
-      setTimeout(() => navigate("/dashboard"), 2000);
+
+      // Điều hướng đến trang login sau khi đăng ký thành công
+      setTimeout(() => navigate("/login"), 2000);
     } catch (err) {
-      setError(err.message || "Registration failed!");
+      setError(err.message || "Đăng kí thất bại!");
     } finally {
       setLoading(false);
     }
   };
 
+  // Hàm đăng ký với Google
   const handleGoogleSignup = async () => {
     try {
       setLoading(true);
-      const googleUser = await signInWithGoogle();
+      const googleUser = await signInWithGoogle(); // Đảm bảo bạn có hàm này trong firebase service
       alert(`Welcome ${googleUser.displayName}!`);
       navigate("/profile");
     } catch (error) {
@@ -158,7 +164,6 @@ function Register() {
               </p>
             </div>
 
-            {/* OR Divider */}
             <div className="relative my-6">
               <div className="absolute inset-0 flex items-center">
                 <div className="w-full border-t"></div>

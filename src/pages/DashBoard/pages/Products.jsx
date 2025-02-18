@@ -15,7 +15,7 @@ const Products = () => {
       name: `Product ${i + 1}`,
       price: `$${(Math.random() * 50 + 10).toFixed(2)}`,
       image: `/images/product${(i % 5) + 1}.jpg`,
-      status: i % 2 === 0 ? "In Stock" : "Out of Stock",
+      status: i % 2 === 0 ? "Còn hàng" : "Hết hàng",
     }));
     setProducts(sampleProducts);
   }, []);
@@ -54,9 +54,9 @@ const Products = () => {
   return (
     <div className="p-6 bg-gray-100 min-h-screen">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold text-gray-800">Products</h1>
+        <h1 className="text-3xl font-bold text-gray-800">Danh sách sản phẩm</h1>
         <button className="bg-blue-600 text-white px-4 py-2 rounded flex items-center">
-          <FaPlus className="mr-2" /> Add Product
+          <FaPlus className="mr-2" /> Thêm sản phẩm
         </button>
       </div>
 
@@ -67,8 +67,8 @@ const Products = () => {
           onChange={(e) => setFilter(e.target.value)}
         >
           <option value="All">Tất cả</option>
-          <option value="In Stock">Còn hàng</option>
-          <option value="Out of Stock">Hết hàng</option>
+          <option value="Còn hàng">Còn hàng</option>
+          <option value="Hết hàng">Hết hàng</option>
         </select>
       </div>
 
@@ -98,7 +98,7 @@ const Products = () => {
                 <td className="p-3">
                   <span
                     className={`px-2 py-1 rounded text-white ${
-                      product.status === "In Stock"
+                      product.status === "Còn hàng"
                         ? "bg-green-500"
                         : "bg-red-500"
                     }`}
@@ -146,9 +146,9 @@ const Products = () => {
       {showEditModal && (
         <div className="fixed inset-0 bg-gray-500 bg-opacity-50 flex justify-center items-center">
           <div className="bg-white p-6 rounded-lg w-1/3">
-            <h2 className="text-2xl font-bold mb-4">Edit Product</h2>
+            <h2 className="text-2xl font-bold mb-4">Chỉnh sửa sản phẩm</h2>
             <div className="mb-4">
-              <label className="block mb-2">Product Name</label>
+              <label className="block mb-2">Tên sản phẩm</label>
               <input
                 type="text"
                 value={editingProduct.name}
@@ -162,7 +162,7 @@ const Products = () => {
               />
             </div>
             <div className="mb-4">
-              <label className="block mb-2">Price</label>
+              <label className="block mb-2">Giá</label>
               <input
                 type="text"
                 value={editingProduct.price}
@@ -187,8 +187,8 @@ const Products = () => {
                 }
                 className="p-2 border rounded w-full"
               >
-                <option value="In Stock">In Stock</option>
-                <option value="Out of Stock">Out of Stock</option>
+                <option value="In Stock">Còn hàng</option>
+                <option value="Out of Stock">Hết hàng</option>
               </select>
             </div>
             <div className="flex justify-end space-x-2">

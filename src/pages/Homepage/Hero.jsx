@@ -94,7 +94,7 @@ const Hero = ({ handleOrderPopup }) => {
                   >
                     <Link
                       to="/product"
-                      className="bg-gradient-to-r from-[#5eb1f6] to-[#97caf4eb] hover:scale-105 duration-200 text-white py-2 px-4 rounded-full"
+                      className="bg-gradient-to-r from-[#6BBCFE] to-[#97caf4eb] hover:scale-105 duration-200 text-white py-2 px-4 rounded-full"
                     >
                       Đặt hàng ngay
                     </Link>
