@@ -47,3 +47,21 @@ export const NavbarMenu = [
     link: "/dashboard",
   },
 ];
+
+// export const skinTypeOptions = [
+//   { value: "All", label: "Tất cả" },
+//   { value: "Oily_Skin", label: "Da dầu" },
+//   { value: "Dry_Skin", label: "Da khô" },
+//   { value: "Normal_Skin", label: "Da thường" },
+//   { value: "Combination_Skin", label: "Da hỗn hợp" }
+// ];
+
+// export const categoryOptions = [
+//   { value: "All", label: "Tất cả" },
+//   { value: "Makeup_Remover", label: "Tẩy trang" },
+//   { value: "Cleanser", label: "Sữa rửa mặt" },
+//   { value: "Toner", label: "Toner" },
+//   { value: "Serum", label: "Serum" },
+//   { value: "Acne_Treatment", label: "Kem trị mụn" },
+//   { value: "Sunscreen", label: "Kem chống nắng" }
+// ];

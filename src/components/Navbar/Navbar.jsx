@@ -65,7 +65,9 @@ const Navbar = () => {
                 <>
                   <button
                     onMouseEnter={() => setShowProductDropdown(true)}
-                    onMouseLeave={() => setShowProductDropdown(false)}
+                    //Đoạn này cẩn sửa lại không link qua được phần product
+                    // onMouseLeave={() => setShowProductDropdown(false)}
+                    
                     className="hover:text-[#6BBCFE] transition duration-300"
                   >
                     {item.title}
