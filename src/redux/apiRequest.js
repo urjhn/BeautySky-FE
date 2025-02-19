@@ -11,22 +11,25 @@ import {
   registerSuccess,
 } from "./authSlice";
 import { getUsersFailed, getUsersStart, getUsersSuccess } from "./userSlice";
+import axiosInstance from "../config/axios/axiosInstance";
 
 export const loginUser = async (user, dispatch, navigate) => {
   dispatch(loginStart());
   try {
-    const res = await axios.post("/api/Accounts/Login", user);
+    const res = await axiosInstance.post("/Accounts/Login", user);
     dispatch(loginSuccess(res.data));
     navigate("/");
+    return res.data;
   } catch (err) {
     dispatch(loginFailed());
+    throw err;
   }
 };
 
 export const registerUser = async (user, dispatch, navigate) => {
   dispatch(registerStart());
   try {
-    await axios.post("/api/Accounts/Register", user);
+    await axiosInstance.post("/Accounts/Register", user);
     dispatch(registerSuccess());
     navigate("/login");
   } catch (err) {

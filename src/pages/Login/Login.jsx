@@ -21,7 +21,7 @@ function Login() {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
     const { email, password } = formData;
 
@@ -36,7 +36,7 @@ function Login() {
     }
 
     setLoading(true);
-    setError(""); // Clear any previous error
+    setError(""); // Xóa lỗi trước đó
 
     const newUser = {
       email,
@@ -44,16 +44,15 @@ function Login() {
       recaptchaToken,
     };
 
-    loginUser(newUser, dispatch, navigate)
-      .then(() => {
-        // Handle success (e.g., redirect or display success message)
-      })
-      .catch((err) => {
-        setError("Đăng nhập không thành công, vui lòng thử lại");
-      })
-      .finally(() => {
-        setLoading(false);
-      });
+    try {
+      await loginUser(newUser, dispatch, navigate);
+      // Nếu login thành công, có thể thực hiện các hành động sau
+      console.log("Đăng nhập thành công!");
+    } catch (err) {
+      setError("Đăng nhập không thành công, vui lòng thử lại");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleGoogleSignIn = async (credentialResponse) => {
