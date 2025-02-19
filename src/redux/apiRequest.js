@@ -26,7 +26,7 @@ export const loginUser = async (user, dispatch, navigate) => {
 export const registerUser = async (user, dispatch, navigate) => {
   dispatch(registerStart());
   try {
-    await axios.post("/api/Accounts/Register"), user;
+    await axios.post("/api/Accounts/Register", user);
     dispatch(registerSuccess());
     navigate("/login");
   } catch (err) {
