@@ -1,95 +1,43 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { FaUser, FaSearch } from "react-icons/fa";
+import { getAllUsers } from "../../../redux/apiRequest";
+import { useDispatch, useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
+import axios from "axios";
+import { createAxios } from "../../../createInstance";
+// import { jwtDecode } from "jwt-decode";
+import { loginSuccess } from "../../../redux/authSlice";
 
 const Customers = () => {
-  const allCustomers = [
-    {
-      id: 1,
-      name: "John Doe",
-      email: "john@example.com",
-      orders: 5,
-      active: true,
-    },
-    {
-      id: 2,
-      name: "Jane Smith",
-      email: "jane@example.com",
-      orders: 3,
-      active: false,
-    },
-    {
-      id: 3,
-      name: "Alice Brown",
-      email: "alice@example.com",
-      orders: 7,
-      active: true,
-    },
-    {
-      id: 4,
-      name: "David Johnson",
-      email: "david@example.com",
-      orders: 2,
-      active: true,
-    },
-    {
-      id: 5,
-      name: "Emily Davis",
-      email: "emily@example.com",
-      orders: 6,
-      active: false,
-    },
-    {
-      id: 6,
-      name: "Michael Wilson",
-      email: "michael@example.com",
-      orders: 4,
-      active: true,
-    },
-    {
-      id: 7,
-      name: "Sarah Taylor",
-      email: "sarah@example.com",
-      orders: 8,
-      active: false,
-    },
-    {
-      id: 8,
-      name: "Chris Martinez",
-      email: "chris@example.com",
-      orders: 1,
-      active: true,
-    },
-    {
-      id: 9,
-      name: "Jessica White",
-      email: "jessica@example.com",
-      orders: 3,
-      active: false,
-    },
-    {
-      id: 10,
-      name: "Daniel Harris",
-      email: "daniel@example.com",
-      orders: 9,
-      active: true,
-    },
-  ];
+  const user = useSelector((state) => state.auth.login?.currentUser);
+  const userList = useSelector((state) => state.users.users?.allUsers) || []; // Tránh lỗi undefined
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  let axiosJWT = createAxios(user, dispatch, loginSuccess);
+
+  useEffect(() => {
+    if (!user) {
+      navigate("/login");
+      return;
+    }
+    if (user?.accessToken) {
+      getAllUsers(user?.accessToken, dispatch, axiosJWT);
+    }
+  }, [user, dispatch, navigate]); // Thêm dependencies để cập nhật khi user thay đổi
 
   const [currentPage, setCurrentPage] = useState(1);
   const customersPerPage = 5;
 
-  // Tính toán chỉ số khách hàng hiển thị
+  // Nếu userList rỗng, không làm slice để tránh lỗi
+  const totalPages =
+    userList.length > 0 ? Math.ceil(userList.length / customersPerPage) : 1;
   const indexOfLastCustomer = currentPage * customersPerPage;
   const indexOfFirstCustomer = indexOfLastCustomer - customersPerPage;
-  const currentCustomers = allCustomers.slice(
+  const currentCustomers = userList.slice(
     indexOfFirstCustomer,
     indexOfLastCustomer
   );
 
-  // Tổng số trang
-  const totalPages = Math.ceil(allCustomers.length / customersPerPage);
-
-  // Chuyển trang khi click vào số
   const goToPage = (page) => setCurrentPage(page);
 
   return (
@@ -109,53 +57,59 @@ const Customers = () => {
         </div>
 
         {/* Customer Table */}
-        <table className="w-full border-collapse bg-white shadow-md">
-          <thead>
-            <tr className="bg-gray-200">
-              <th className="p-3 text-left">Tên</th>
-              <th className="p-3 text-left">Email</th>
-              <th className="p-3 text-left">Orders</th>
-              <th className="p-3 text-left">Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            {currentCustomers.map((customer) => (
-              <tr key={customer.id} className="border-t">
-                <td className="p-3 flex items-center gap-2">
-                  <FaUser className="text-blue-500" /> {customer.name}
-                </td>
-                <td className="p-3">{customer.email}</td>
-                <td className="p-3">{customer.orders}</td>
-                <td className="p-3">
-                  <span
-                    className={`px-3 py-1 rounded-full text-white text-sm ${
-                      customer.active ? "bg-green-500" : "bg-red-500"
-                    }`}
-                  >
-                    {customer.active ? "Active" : "Inactive"}
-                  </span>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        {userList.length > 0 ? (
+          <>
+            <table className="w-full border-collapse bg-white shadow-md">
+              <thead>
+                <tr className="bg-gray-200">
+                  <th className="p-3 text-left">Tên</th>
+                  <th className="p-3 text-left">Email</th>
+                  <th className="p-3 text-left">Orders</th>
+                  <th className="p-3 text-left">Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {currentCustomers.map((customer) => (
+                  <tr key={customer.id} className="border-t">
+                    <td className="p-3 flex items-center gap-2">
+                      <FaUser className="text-blue-500" /> {customer.name}
+                    </td>
+                    <td className="p-3">{customer.email}</td>
+                    <td className="p-3">{customer.orders}</td>
+                    <td className="p-3">
+                      <span
+                        className={`px-3 py-1 rounded-full text-white text-sm ${
+                          customer.active ? "bg-green-500" : "bg-red-500"
+                        }`}
+                      >
+                        {customer.active ? "Active" : "Inactive"}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
 
-        {/* Pagination Box */}
-        <div className="flex justify-center mt-4 gap-2">
-          {Array.from({ length: totalPages }, (_, index) => (
-            <button
-              key={index + 1}
-              onClick={() => goToPage(index + 1)}
-              className={`px-4 py-2 border rounded-md ${
-                currentPage === index + 1
-                  ? "bg-blue-500 text-white"
-                  : "bg-gray-200 text-gray-700"
-              }`}
-            >
-              {index + 1}
-            </button>
-          ))}
-        </div>
+            {/* Pagination Box */}
+            <div className="flex justify-center mt-4 gap-2">
+              {Array.from({ length: totalPages }, (_, index) => (
+                <button
+                  key={index + 1}
+                  onClick={() => goToPage(index + 1)}
+                  className={`px-4 py-2 border rounded-md ${
+                    currentPage === index + 1
+                      ? "bg-blue-500 text-white"
+                      : "bg-gray-200 text-gray-700"
+                  }`}
+                >
+                  {index + 1}
+                </button>
+              ))}
+            </div>
+          </>
+        ) : (
+          <p className="text-center text-gray-500">Không có khách hàng nào.</p>
+        )}
       </div>
     </div>
   );

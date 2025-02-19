@@ -3,10 +3,14 @@ import {
   loginFailed,
   loginStart,
   loginSuccess,
+  logoutFailed,
+  logoutStart,
+  logoutSuccess,
   registerFailed,
   registerStart,
   registerSuccess,
 } from "./authSlice";
+import { getUsersFailed, getUsersStart, getUsersSuccess } from "./userSlice";
 
 export const loginUser = async (user, dispatch, navigate) => {
   dispatch(loginStart());
@@ -27,5 +31,30 @@ export const registerUser = async (user, dispatch, navigate) => {
     navigate("/login");
   } catch (err) {
     dispatch(registerFailed());
+  }
+};
+
+export const getAllUsers = async (accessToken, dispatch, axiosJWT) => {
+  dispatch(getUsersStart());
+  try {
+    const res = await axiosJWT.get("/api/Accounts/Users", {
+      headers: { token: `Bearer ${accessToken}` },
+    });
+    dispatch(getUsersSuccess(res.data));
+  } catch (err) {
+    dispatch(getUsersFailed());
+  }
+};
+
+export const logOut = async (dispatch, navigate, accessToken, axiosJWT) => {
+  dispatch(logoutStart());
+  try {
+    await axiosJWT.post("", id, {
+      headers: { token: `Bearer ${accessToken}` },
+    });
+    dispatch(logoutSuccess());
+    navigate("/login");
+  } catch (err) {
+    dispatch(logoutFailed());
   }
 };

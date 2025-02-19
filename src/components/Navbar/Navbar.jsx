@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { IoMdSearch } from "react-icons/io";
 import { FaShoppingCart } from "react-icons/fa";
 import { useCart } from "../../context/CartContext";
@@ -7,12 +7,18 @@ import { NavbarMenu } from "../Navbar/data";
 import { motion } from "framer-motion";
 import Logo from "../../assets/logo.png";
 import Namebrand from "../../assets/namebrand.png";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import { logOut } from "../../redux/apiRequest";
+import { createAxios } from "../../createInstance";
+import { logoutSuccess } from "../../redux/authSlice";
 
 const Navbar = () => {
-  // const user = useSelector((state) => state.auth.login.currentUser);
-  const [user, setUser] = useState("Hai");
-  // const user = useSelector((state) => state.auth.login.currentUser);
+  const user = useSelector((state) => state.auth.login.currentUser);
+  const accessToken = user?.accessToken;
+  const id = user?._id;
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  let axiosJWT = createAxios(user, dispatch, logoutSuccess);
 
   const { cartItems } = useCart();
   const cartCount = cartItems.reduce((acc, item) => acc + item.quantity, 0);
@@ -31,7 +37,7 @@ const Navbar = () => {
 
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [setUser]);
+  }, []);
 
   const handleSearch = async () => {
     if (!searchQuery) return;
@@ -48,8 +54,7 @@ const Navbar = () => {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem("user");
-    setUser(null);
+    logOut(dispatch, id, navigate, accessToken, axiosJWT);
   };
 
   return (
@@ -150,7 +155,7 @@ const Navbar = () => {
           {user ? (
             <div className="flex items-center gap-4">
               <span className="hidden md:block text-gray-700">
-                Chào, {user}!
+                Chào, {user.username}!
               </span>
               {/* <Link to="/profile">
                 <img
