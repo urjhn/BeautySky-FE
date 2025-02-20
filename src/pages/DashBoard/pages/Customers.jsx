@@ -1,39 +1,67 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { FaUser, FaSearch } from "react-icons/fa";
-import { getAllUsers } from "../../../redux/apiRequest";
-import { useDispatch, useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
-import axios from "axios";
-import { createAxios } from "../../../createInstance";
-// import { jwtDecode } from "jwt-decode";
-import { loginSuccess } from "../../../redux/authSlice";
 
 const Customers = () => {
-  const user = useSelector((state) => state.auth.login?.currentUser);
-  const userList = useSelector((state) => state.users.users?.allUsers) || []; // Tránh lỗi undefined
-  const dispatch = useDispatch();
-  const navigate = useNavigate();
-  let axiosJWT = createAxios(user, dispatch, loginSuccess);
-
-  useEffect(() => {
-    if (!user) {
-      navigate("/login");
-      return;
-    }
-    if (user?.accessToken) {
-      getAllUsers(user?.accessToken, dispatch, axiosJWT);
-    }
-  }, [user, dispatch, navigate]); // Thêm dependencies để cập nhật khi user thay đổi
-
   const [currentPage, setCurrentPage] = useState(1);
   const customersPerPage = 5;
+  const [searchTerm, setSearchTerm] = useState("");
 
-  // Nếu userList rỗng, không làm slice để tránh lỗi
-  const totalPages =
-    userList.length > 0 ? Math.ceil(userList.length / customersPerPage) : 1;
+  // Dữ liệu mẫu
+  const userList = [
+    {
+      id: 1,
+      name: "Nguyễn Văn A",
+      email: "a@example.com",
+      orders: 10,
+      active: true,
+    },
+    {
+      id: 2,
+      name: "Trần Thị B",
+      email: "b@example.com",
+      orders: 5,
+      active: false,
+    },
+    {
+      id: 3,
+      name: "Lê Văn C",
+      email: "c@example.com",
+      orders: 8,
+      active: true,
+    },
+    {
+      id: 4,
+      name: "Phạm Minh D",
+      email: "d@example.com",
+      orders: 2,
+      active: true,
+    },
+    {
+      id: 5,
+      name: "Hoàng Thị E",
+      email: "e@example.com",
+      orders: 15,
+      active: false,
+    },
+    {
+      id: 6,
+      name: "Đinh Văn F",
+      email: "f@example.com",
+      orders: 7,
+      active: true,
+    },
+  ];
+
+  const filteredCustomers = userList.filter(
+    (customer) =>
+      customer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      customer.email.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const totalPages = Math.ceil(filteredCustomers.length / customersPerPage);
   const indexOfLastCustomer = currentPage * customersPerPage;
   const indexOfFirstCustomer = indexOfLastCustomer - customersPerPage;
-  const currentCustomers = userList.slice(
+  const currentCustomers = filteredCustomers.slice(
     indexOfFirstCustomer,
     indexOfLastCustomer
   );
@@ -52,12 +80,14 @@ const Customers = () => {
               type="text"
               placeholder="Search customers..."
               className="pl-10 pr-4 py-2 border rounded-md w-80"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
         </div>
 
         {/* Customer Table */}
-        {userList.length > 0 ? (
+        {filteredCustomers.length > 0 ? (
           <>
             <table className="w-full border-collapse bg-white shadow-md">
               <thead>

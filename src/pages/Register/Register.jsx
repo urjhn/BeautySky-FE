@@ -4,11 +4,11 @@ import Navbar from "../../components/Navbar/Navbar";
 import Footer from "../../components/Footer/Footer";
 import registerImage from "../../assets/register/register.png";
 import { useDispatch } from "react-redux";
-import { registerUser } from "../../redux/apiRequest";
+import { registerUser } from "../../services/apiRequest";
 
 function Register() {
   const [formData, setFormData] = useState({
-    fullname: "", // Thêm fullname vào state
+    fullname: "",
     username: "",
     email: "",
     phone: "",
@@ -18,7 +18,6 @@ function Register() {
   });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const dispatch = useDispatch();
   const navigate = useNavigate();
 
   const handleChange = (e) => {
@@ -46,19 +45,25 @@ function Register() {
     setError("");
 
     const newUser = {
-      fullname, // Gửi fullname lên API
+      fullname,
       username,
       email,
-      password,
       phone,
       address,
+      password,
       confirmPassword,
     };
 
     try {
-      await registerUser(newUser, dispatch, navigate);
+      await registerUser(newUser, navigate); // ✅ Gọi API đăng ký
+
+      console.log("Đăng ký thành công! Chuyển hướng đến trang đăng nhập...");
+      navigate("/login"); // ✅ Chuyển hướng sau khi đăng ký thành công
     } catch (err) {
-      setError("Đăng ký không thành công, vui lòng thử lại");
+      setError(
+        err.response?.data?.message ||
+          "Đăng ký không thành công, vui lòng thử lại"
+      );
     } finally {
       setLoading(false);
     }

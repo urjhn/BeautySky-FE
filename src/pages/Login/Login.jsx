@@ -5,8 +5,7 @@ import Navbar from "../../components/Navbar/Navbar";
 import Footer from "../../components/Footer/Footer";
 import loginImage from "../../assets/login/login.png";
 import axios from "axios";
-import { useDispatch } from "react-redux";
-import { loginUser } from "../../redux/apiRequest";
+import { loginUser } from "../../services/apiRequest";
 import { GoogleLogin } from "@react-oauth/google"; // Add this import
 
 function Login() {
@@ -15,7 +14,6 @@ function Login() {
   const [error, setError] = useState("");
   const [recaptchaToken, setRecaptchaToken] = useState("");
   const navigate = useNavigate();
-  const dispatch = useDispatch();
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -38,18 +36,24 @@ function Login() {
     setLoading(true);
     setError(""); // Xóa lỗi trước đó
 
-    const newUser = {
-      email,
-      password,
-      recaptchaToken,
-    };
+    const newUser = { email, password, recaptchaToken };
 
     try {
-      await loginUser(newUser, dispatch, navigate);
-      // Nếu login thành công, có thể thực hiện các hành động sau
-      console.log("Đăng nhập thành công!");
+      const res = await loginUser(newUser, navigate);
+
+      if (res) {
+        // ✅ Lưu user vào localStorage
+        localStorage.setItem("user", JSON.stringify(res.user));
+        localStorage.setItem("token", res.token);
+
+        console.log("Đăng nhập thành công!");
+        navigate("/"); // ✅ Chuyển hướng về trang chính
+      }
     } catch (err) {
-      setError("Đăng nhập không thành công, vui lòng thử lại");
+      setError(
+        err.response?.data?.message ||
+          "Đăng nhập không thành công, vui lòng thử lại"
+      );
     } finally {
       setLoading(false);
     }

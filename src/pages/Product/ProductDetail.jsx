@@ -3,13 +3,7 @@ import { useState, useEffect } from "react";
 import { useCart } from "../../context/CartContext";
 import Navbar from "../../components/Navbar/Navbar";
 import Footer from "../../components/Footer/Footer";
-import {
-  FaArrowLeft,
-  FaShoppingCart,
-  FaStar,
-  FaRegStar,
-  FaExchangeAlt,
-} from "react-icons/fa";
+import { FaArrowLeft, FaShoppingCart, FaStar, FaRegStar } from "react-icons/fa";
 
 const allProducts = [
   {

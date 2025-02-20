@@ -7,21 +7,18 @@ import { NavbarMenu } from "../Navbar/data";
 import { motion } from "framer-motion";
 import Logo from "../../assets/logo.png";
 import Namebrand from "../../assets/namebrand.png";
-import { useDispatch, useSelector } from "react-redux";
-import { logOut } from "../../redux/apiRequest";
-import { createAxios } from "../../createInstance";
-import { logoutSuccess } from "../../redux/authSlice";
+import { logoutUser } from "../../services/apiRequest"; // Import hàm logout
 
 const Navbar = () => {
-  const user = useSelector((state) => state.auth.login.currentUser);
-  const accessToken = user?.accessToken;
-  const id = user?._id;
-  const dispatch = useDispatch();
   const navigate = useNavigate();
-  let axiosJWT = createAxios(user, dispatch, logoutSuccess);
-
   const { cartItems } = useCart();
   const cartCount = cartItems.reduce((acc, item) => acc + item.quantity, 0);
+
+  // 🔹 Lấy user từ localStorage
+  const [user, setUser] = useState(() => {
+    const storedUser = localStorage.getItem("user");
+    return storedUser ? JSON.parse(storedUser) : null;
+  });
 
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState([]);
@@ -51,10 +48,6 @@ const Navbar = () => {
     } catch (error) {
       console.error("Lỗi tìm kiếm:", error);
     }
-  };
-
-  const handleLogout = () => {
-    logOut(dispatch, id, navigate, accessToken, axiosJWT);
   };
 
   return (
@@ -157,15 +150,8 @@ const Navbar = () => {
               <span className="hidden md:block text-gray-700">
                 Chào, {user.username}!
               </span>
-              {/* <Link to="/profile">
-                <img
-                  src={user.avatar || "https://via.placeholder.com/40"}
-                  alt="Ảnh đại diện"
-                  className="w-10 h-10 rounded-full border"
-                />
-              </Link> */}
               <button
-                onClick={handleLogout}
+                onClick={() => logoutUser(navigate)} // 🔹 Sử dụng hàm logout có sẵn
                 className="text-red-600 font-semibold hover:text-red-800"
               >
                 Đăng xuất
