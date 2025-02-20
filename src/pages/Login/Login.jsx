@@ -6,7 +6,7 @@ import Footer from "../../components/Footer/Footer";
 import loginImage from "../../assets/login/login.png";
 import axios from "axios";
 import { loginUser } from "../../services/apiRequest";
-import { GoogleLogin } from "@react-oauth/google"; // Add this import
+// import { GoogleLogin } from "@react-oauth/google"; // Add this import
 
 function Login() {
   const [formData, setFormData] = useState({ email: "", password: "" });
