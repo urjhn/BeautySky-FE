@@ -3,51 +3,13 @@ import { useState, useEffect } from "react";
 import { useCart } from "../../context/CartContext";
 import Navbar from "../../components/Navbar/Navbar";
 import Footer from "../../components/Footer/Footer";
+import products from "./DataFakeProduct"; // Import products
 import {
   FaArrowLeft,
   FaShoppingCart,
   FaStar,
   FaRegStar,
-  FaExchangeAlt,
 } from "react-icons/fa";
-
-const allProducts = [
-  {
-    id: "1",
-    name: "Sữa Rửa Mặt Dưỡng Ẩm",
-    skinType: "Da Khô",
-    price: 25.99,
-    image: "https://via.placeholder.com/400x300",
-    description:
-      "Sữa rửa mặt dưỡng ẩm nhẹ nhàng giúp làm sạch và nuôi dưỡng làn da.",
-    ingredients: ["Axit Hyaluronic", "Glycerin", "Lô Hội"],
-    usage: "Thoa lên da ướt và massage nhẹ nhàng. Rửa lại với nước ấm.",
-    rating: 4.5,
-  },
-  {
-    id: "2",
-    name: "Kem Dưỡng Ẩm Không Dầu",
-    skinType: "Da Dầu",
-    price: 30.99,
-    image: "https://via.placeholder.com/400x300",
-    description: "Kem dưỡng nhẹ, không gây nhờn, phù hợp với da dầu.",
-    ingredients: ["Niacinamide", "Axit Salicylic", "Chiết xuất Trà Xanh"],
-    usage: "Thoa một lượng nhỏ lên da sạch. Dùng sáng và tối.",
-    rating: 4.2,
-  },
-  {
-    id: "3",
-    name: "Nước Hoa Hồng Dịu Nhẹ",
-    skinType: "Da Nhạy Cảm",
-    price: 19.99,
-    image: "https://via.placeholder.com/400x300",
-    description:
-      "Nước hoa hồng nhẹ nhàng giúp làm dịu và cân bằng da nhạy cảm.",
-    ingredients: ["Cúc La Mã", "Chiết xuất Phỉ", "Nước Hoa Hồng"],
-    usage: "Thấm vào bông tẩy trang và lau nhẹ nhàng sau khi rửa mặt.",
-    rating: 4.0,
-  },
-];
 
 const ProductDetail = () => {
   const { id } = useParams();
@@ -57,12 +19,13 @@ const ProductDetail = () => {
   const [compareProduct, setCompareProduct] = useState(null);
 
   useEffect(() => {
-    const foundProduct = allProducts.find((p) => p.id === id);
+    // Tìm sản phẩm từ mảng products đã import
+    const foundProduct = products.find((p) => p.id === parseInt(id));  // Chú ý: Chuyển id sang số
     setProduct(foundProduct);
   }, [id]);
 
   const handleCompareChange = (e) => {
-    const selectedProduct = allProducts.find((p) => p.id === e.target.value);
+    const selectedProduct = products.find((p) => p.id === parseInt(e.target.value)); // Chú ý: Chuyển id sang số
     setCompareProduct(selectedProduct);
   };
 
@@ -100,7 +63,7 @@ const ProductDetail = () => {
           <div className="md:ml-10 flex flex-col justify-between mt-6 md:mt-0 w-full">
             <h1 className="text-4xl font-bold text-gray-900">{product.name}</h1>
             <div className="flex items-center mt-2">
-              {renderStars(product.rating)}
+              {renderStars(product.rating || 0)} {/* Thêm giá trị mặc định */}
             </div>
             <p className="text-lg text-gray-600 mt-2">{product.description}</p>
             <p className="text-md text-gray-500 mt-2">
@@ -117,7 +80,7 @@ const ProductDetail = () => {
                 Thành phần
               </h3>
               <ul className="list-disc pl-5 text-gray-600">
-                {product.ingredients.map((ingredient, index) => (
+                {product.ingredients?.map((ingredient, index) => (  // Optional chaining
                   <li key={index}>{ingredient}</li>
                 ))}
               </ul>
@@ -164,7 +127,7 @@ const ProductDetail = () => {
             <option value="" disabled>
               Chọn sản phẩm
             </option>
-            {allProducts
+            {products
               .filter((p) => p.id !== product.id)
               .map((p) => (
                 <option key={p.id} value={p.id}>
@@ -185,7 +148,7 @@ const ProductDetail = () => {
                   {compareProduct.name}
                 </h1>
                 <div className="flex items-center mt-2">
-                  {renderStars(compareProduct.rating)}
+                  {renderStars(compareProduct.rating || 0)}
                 </div>
                 <p className="text-lg text-gray-600 mt-2">
                   {compareProduct.description}
