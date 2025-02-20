@@ -39,6 +39,7 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/login" element={<Login />} />
+            {/* <Route path="/api/Google/google-response" element={<Login />} /> */}
             <Route path="/register" element={<Register />} />
             <Route path="/product" element={<Product />} />
             <Route path="/product/:id" element={<ProductDetail />} />

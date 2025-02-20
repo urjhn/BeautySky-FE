@@ -23,10 +23,12 @@ export const loginUser = async (user, navigate) => {
 // 🔹 ĐĂNG KÝ (Gọi API từ BE)
 export const registerUser = async (user, navigate) => {
   try {
-    await axiosInstance.post("/Accounts/Register", user);
+    const response = await axiosInstance.post("/Accounts/Register", user);
+    console.log("Register response:", response.data); // Log phản hồi từ API
     navigate("/login"); // Chuyển hướng đến trang đăng nhập
   } catch (err) {
     console.error("Register failed", err.response?.data || err.message);
+    throw err; // Ném lỗi để hàm gọi có thể xử lý
   }
 };
 

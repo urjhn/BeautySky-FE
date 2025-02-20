@@ -3,7 +3,6 @@ import { Link, useNavigate } from "react-router-dom";
 import Navbar from "../../components/Navbar/Navbar";
 import Footer from "../../components/Footer/Footer";
 import registerImage from "../../assets/register/register.png";
-import { useDispatch } from "react-redux";
 import { registerUser } from "../../services/apiRequest";
 
 function Register() {
