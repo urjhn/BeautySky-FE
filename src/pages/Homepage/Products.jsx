@@ -98,7 +98,7 @@ const Products = () => {
         <div className="flex justify-center mt-12">
           <Link
             to="/product"
-            className="text-center bg-gradient-to-r from-[#5eb1f6] to-[#97caf4eb] hover:scale-105 duration-200 text-white py-3 px-8 rounded-full shadow-lg"
+            className="text-center bg-gradient-to-r from-[#419fed] to-[#97caf4eb] hover:scale-105 duration-200 text-white py-3 px-8 rounded-full shadow-lg"
           >
             Xem tất cả sản phẩm
           </Link>

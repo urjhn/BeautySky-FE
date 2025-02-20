@@ -167,9 +167,16 @@ const Navbar = () => {
           {/* User Section */}
           {user ? (
             <div className="flex items-center gap-4">
-              <span className="hidden md:block text-gray-700">
-                Chào, {user.username}!
-              </span>
+              <Link to="/profile" className="flex items-center gap-2">
+                <img
+                  src={user.avatar || "https://via.placeholder.com/40"}
+                  alt="Avatar"
+                  className="w-10 h-10 rounded-full border"
+                />
+                <span className="hidden md:block text-gray-700">
+                  Chào {user.username} !
+                </span>
+              </Link>
               <button
                 onClick={handleLogout}
                 className="text-red-600 font-semibold hover:text-red-800"
