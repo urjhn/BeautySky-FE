@@ -1,7 +1,8 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom"; // Import useNavigate
 import Navbar from "../../components/Navbar/Navbar";
 import Footer from "../../components/Footer/Footer";
+import { useCart } from "../../context/CartContext";
 import {
   CheckCircleIcon,
   XCircleIcon,
@@ -10,9 +11,27 @@ import {
 } from "@heroicons/react/24/solid";
 
 const CheckoutPage = () => {
+  const { cartItems, totalPrice } = useCart();
   const [paymentMethod, setPaymentMethod] = useState("VNPay");
   const [paymentStatus, setPaymentStatus] = useState(null);
   const [loading, setLoading] = useState(false);
+
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    address: "",
+  });
+
+  const navigate = useNavigate(); // Initialize useNavigate hook
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prevData) => ({
+      ...prevData,
+      [name]: value,
+    }));
+  };
 
   const handlePayment = async () => {
     setLoading(true);
@@ -26,6 +45,17 @@ const CheckoutPage = () => {
       const result = await response.json();
       setLoading(false);
       setPaymentStatus(result.success ? "success" : "error");
+
+      if (result.success) {
+        // Save user information and cart data to localStorage
+        const checkoutData = {
+          ...formData,
+          cartItems,
+          paymentMethod,
+          totalPrice,
+        };
+        localStorage.setItem("checkoutData", JSON.stringify(checkoutData));
+      }
     } catch (error) {
       console.error("Lỗi thanh toán:", error);
       setPaymentStatus("error");
@@ -48,26 +78,38 @@ const CheckoutPage = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <input
                   type="text"
+                  name="name"
                   placeholder="Họ và tên"
                   required
                   className="p-3 border rounded-lg w-full focus:ring-2 focus:ring-blue-500"
+                  value={formData.name}
+                  onChange={handleInputChange}
                 />
                 <input
                   type="email"
+                  name="email"
                   placeholder="Địa chỉ Email"
                   required
                   className="p-3 border rounded-lg w-full focus:ring-2 focus:ring-blue-500"
+                  value={formData.email}
+                  onChange={handleInputChange}
                 />
                 <input
                   type="tel"
+                  name="phone"
                   placeholder="Số điện thoại"
                   required
                   className="p-3 border rounded-lg w-full focus:ring-2 focus:ring-blue-500"
+                  value={formData.phone}
+                  onChange={handleInputChange}
                 />
                 <textarea
+                  name="address"
                   placeholder="Địa chỉ giao hàng"
                   required
                   className="p-3 border rounded-lg w-full focus:ring-2 focus:ring-blue-500"
+                  value={formData.address}
+                  onChange={handleInputChange}
                 />
               </div>
             </section>
@@ -78,27 +120,29 @@ const CheckoutPage = () => {
                 Tóm tắt đơn hàng
               </h2>
               <div className="bg-gray-100 p-4 rounded-lg space-y-4">
-                <div className="flex items-center justify-between text-gray-700">
-                  <img
-                    src="/images/product1.jpg"
-                    alt="Sản phẩm 1"
-                    className="w-12 h-12 rounded"
-                  />
-                  <span>Sản phẩm 1</span>
-                  <span>$25.99</span>
-                </div>
-                <div className="flex items-center justify-between text-gray-700">
-                  <img
-                    src="/images/product2.jpg"
-                    alt="Sản phẩm 2"
-                    className="w-12 h-12 rounded"
-                  />
-                  <span>Sản phẩm 2</span>
-                  <span>$30.99</span>
-                </div>
+                {cartItems.length > 0 ? (
+                  cartItems.map((item) => (
+                    <div
+                      key={item.id}
+                      className="flex items-center justify-between text-gray-700"
+                    >
+                      <img
+                        src={item.image}
+                        alt={item.name}
+                        className="w-12 h-12 rounded"
+                      />
+                      <span>{item.name}</span>
+                      <span>${item.price.toFixed(2)}</span>
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-center text-gray-600 text-lg">
+                    Giỏ hàng của bạn trống.
+                  </p>
+                )}
                 <div className="flex justify-between font-bold text-gray-900 mt-2 border-t pt-2">
                   <span>Tổng cộng:</span>
-                  <span>$56.98</span>
+                  <span>${totalPrice}</span>
                 </div>
               </div>
             </section>
@@ -132,18 +176,27 @@ const CheckoutPage = () => {
               </div>
             </section>
 
-            {/* Nút thanh toán */}
-            <button
-              type="button"
-              className="w-full bg-blue-500 text-white py-3 rounded-lg font-bold hover:bg-blue-600 transition flex justify-center items-center"
-              onClick={handlePayment}
-              disabled={loading}
-            >
-              {loading ? (
-                <span className="animate-spin h-5 w-5 border-b-2 border-white mr-2"></span>
-              ) : null}
-              {loading ? "Đang xử lý..." : "Tiến hành thanh toán"}
-            </button>
+            {/* Nút thanh toán và quay lại giỏ hàng */}
+            <div className="flex justify-between gap-4">
+              <button
+                type="button"
+                className="w-full bg-gray-500 text-white py-3 rounded-lg font-bold hover:bg-gray-600 transition"
+                onClick={() => navigate("/viewcart")}
+              >
+                Quay lại giỏ hàng
+              </button>
+              <button
+                type="button"
+                className="w-full bg-blue-500 text-white py-3 rounded-lg font-bold hover:bg-blue-600 transition flex justify-center items-center"
+                onClick={handlePayment}
+                disabled={loading}
+              >
+                {loading ? (
+                  <span className="animate-spin h-5 w-5 border-b-2 border-white mr-2"></span>
+                ) : null}
+                {loading ? "Đang xử lý..." : "Tiến hành thanh toán"}
+              </button>
+            </div>
           </form>
 
           {/* Trạng thái thanh toán */}

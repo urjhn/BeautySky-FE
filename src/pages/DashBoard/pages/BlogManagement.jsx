@@ -34,6 +34,13 @@ const BlogManagement = () => {
   const indexOfFirstBlog = indexOfLastBlog - blogsPerPage;
   const currentBlogs = filteredBlogs.slice(indexOfFirstBlog, indexOfLastBlog);
 
+  // Handle Edit Blog (this can open a modal or navigate to an edit page)
+  const handleEdit = (id) => {
+    alert(`Editing blog with ID: ${id}`);
+    // You can implement an editing modal or navigate to an edit page
+    // Example: redirect to a blog edit page or open a modal
+  };
+
   return (
     <div className="p-6 bg-white rounded-lg shadow-md">
       <div className="flex justify-between items-center mb-4">
@@ -77,12 +84,15 @@ const BlogManagement = () => {
                 </span>
               </td>
               <td className="py-2 px-4 flex justify-center space-x-3">
-                <button className="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600">
+                <button
+                  className="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600"
+                  onClick={() => handleEdit(blog.id)} // Edit action
+                >
                   Sửa
                 </button>
                 <button
                   className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600"
-                  onClick={() => handleDelete(blog.id)}
+                  onClick={() => handleDelete(blog.id)} // Delete action
                 >
                   Xóa
                 </button>

@@ -5,6 +5,7 @@ const CartContext = createContext();
 export const CartProvider = ({ children }) => {
   const [cartItems, setCartItems] = useState([]);
 
+  // Add a product to the cart or increase quantity if already in the cart
   const addToCart = (product) => {
     setCartItems((prevCart) => {
       const existingItem = prevCart.find((item) => item.id === product.id);
@@ -19,10 +20,12 @@ export const CartProvider = ({ children }) => {
     });
   };
 
+  // Remove a product from the cart
   const removeFromCart = (id) => {
     setCartItems((prevCart) => prevCart.filter((item) => item.id !== id));
   };
 
+  // Update the quantity of a product in the cart
   const updateQuantity = (id, delta) => {
     setCartItems((prevCart) =>
       prevCart.map((item) =>
@@ -33,13 +36,25 @@ export const CartProvider = ({ children }) => {
     );
   };
 
+  // Calculate the total price of all items in the cart
+  const totalPrice = cartItems
+    .reduce((acc, item) => acc + item.price * item.quantity, 0)
+    .toFixed(2);
+
   return (
     <CartContext.Provider
-      value={{ cartItems, addToCart, removeFromCart, updateQuantity }}
+      value={{
+        cartItems,
+        addToCart,
+        removeFromCart,
+        updateQuantity,
+        totalPrice,
+      }}
     >
       {children}
     </CartContext.Provider>
   );
 };
 
+// Custom hook to access cart data
 export const useCart = () => useContext(CartContext);

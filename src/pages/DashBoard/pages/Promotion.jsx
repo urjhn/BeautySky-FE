@@ -16,6 +16,12 @@ const PAGE_SIZE = 4;
 
 const PromotionManagement = () => {
   const [currentPage, setCurrentPage] = useState(1);
+  const [newPromotion, setNewPromotion] = useState({
+    name: "",
+    discount: "",
+    expiry: "",
+  });
+  const [showModal, setShowModal] = useState(false);
 
   const totalPages = Math.ceil(promotionsData.length / PAGE_SIZE);
   const paginatedPromotions = promotionsData.slice(
@@ -23,15 +29,39 @@ const PromotionManagement = () => {
     currentPage * PAGE_SIZE
   );
 
+  const handleAddPromotion = () => {
+    promotionsData.push({
+      id: promotionsData.length + 1,
+      name: newPromotion.name,
+      discount: newPromotion.discount,
+      expiry: newPromotion.expiry,
+    });
+    setShowModal(false);
+  };
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setNewPromotion((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
   return (
     <div className="p-6 bg-white shadow-lg rounded-lg">
       <h2 className="text-2xl font-bold mb-4 text-gray-800">
         Quản lí khuyến mãi
       </h2>
-      <button className="bg-blue-500 text-white px-4 py-2 rounded-md flex items-center mb-4 hover:bg-blue-600">
+
+      {/* Add Promotion Button */}
+      <button
+        onClick={() => setShowModal(true)}
+        className="bg-blue-500 text-white px-4 py-2 rounded-md flex items-center mb-4 hover:bg-blue-600"
+      >
         <FaPlus className="mr-2" /> Thêm khuyến mãi
       </button>
 
+      {/* Promotions Table */}
       <table className="w-full bg-white border border-gray-200 rounded-lg overflow-hidden">
         <thead className="bg-gray-100">
           <tr>
@@ -98,6 +128,61 @@ const PromotionManagement = () => {
           Tiếp
         </button>
       </div>
+
+      {/* Modal for Adding Promotion */}
+      {showModal && (
+        <div className="fixed inset-0 bg-gray-500 bg-opacity-50 flex justify-center items-center z-50">
+          <div className="bg-white p-6 rounded-lg shadow-lg w-1/3">
+            <h3 className="text-xl font-semibold mb-4">Thêm khuyến mãi</h3>
+            <div>
+              <label className="block mb-2">Tên khuyến mãi</label>
+              <input
+                type="text"
+                name="name"
+                value={newPromotion.name}
+                onChange={handleInputChange}
+                className="w-full p-2 border border-gray-300 rounded-md mb-4"
+                placeholder="Nhập tên khuyến mãi"
+              />
+            </div>
+            <div>
+              <label className="block mb-2">Giảm giá</label>
+              <input
+                type="text"
+                name="discount"
+                value={newPromotion.discount}
+                onChange={handleInputChange}
+                className="w-full p-2 border border-gray-300 rounded-md mb-4"
+                placeholder="Nhập mức giảm giá"
+              />
+            </div>
+            <div>
+              <label className="block mb-2">Ngày hết hạn</label>
+              <input
+                type="date"
+                name="expiry"
+                value={newPromotion.expiry}
+                onChange={handleInputChange}
+                className="w-full p-2 border border-gray-300 rounded-md mb-4"
+              />
+            </div>
+            <div className="flex justify-between">
+              <button
+                onClick={() => setShowModal(false)}
+                className="bg-gray-300 px-4 py-2 rounded-md hover:bg-gray-400"
+              >
+                Hủy
+              </button>
+              <button
+                onClick={handleAddPromotion}
+                className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600"
+              >
+                Thêm
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

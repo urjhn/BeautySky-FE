@@ -1,78 +1,89 @@
-import { useContext, useState, useEffect } from "react";
+import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { AuthContext } from "../../context/AuthContext";
-import { loginUser } from "../../services/authService";
-import { signInWithGoogle } from "../../services/firebase";
 import ReCAPTCHA from "react-google-recaptcha";
 import Navbar from "../../components/Navbar/Navbar";
 import Footer from "../../components/Footer/Footer";
 import loginImage from "../../assets/login/login.png";
+import axios from "axios";
+import { loginUser } from "../../services/apiRequest";
+// import { GoogleLogin } from "@react-oauth/google"; // Add this import
 
 function Login() {
-  const { setUser } = useContext(AuthContext);
-  const navigate = useNavigate();
-
   const [formData, setFormData] = useState({ email: "", password: "" });
-  const [recaptchaToken, setRecaptchaToken] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-
-  // Lấy user từ localStorage nếu có
-  useEffect(() => {
-    const storedUser = localStorage.getItem("user");
-    if (storedUser) {
-      try {
-        setUser(JSON.parse(storedUser));
-      } catch (err) {
-        console.error("Lỗi khi phân tích dữ liệu người dùng:", err);
-        localStorage.removeItem("user"); // Xóa dữ liệu lỗi
-      }
-    }
-  }, []);
+  const [recaptchaToken, setRecaptchaToken] = useState("");
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = async (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
-    setError("");
-    if (!recaptchaToken) {
-      setError("Vui lòng hoàn thành xác minh reCAPTCHA.");
+    const { email, password } = formData;
+
+    if (!email || !password) {
+      setError("Vui lòng điền đầy đủ thông tin");
       return;
     }
 
+    if (!recaptchaToken) {
+      setError("Vui lòng xác minh reCAPTCHA");
+      return;
+    }
+
+    setLoading(true);
+    setError(""); // Xóa lỗi trước đó
+
+    const newUser = { email, password, recaptchaToken };
+
     try {
-      setLoading(true);
-      const data = await loginUser(formData);
+      const res = await loginUser(newUser, navigate);
 
-      // Lưu thông tin user vào localStorage
-      localStorage.setItem("user", JSON.stringify(data.user));
-      localStorage.setItem("token", data.token);
-      localStorage.setItem("role", data.user.role);
+      if (res) {
+        // ✅ Lưu user, token và role vào localStorage
+        localStorage.setItem("user", JSON.stringify(res.user));
+        localStorage.setItem("token", res.token);
+        localStorage.setItem("role", res.user.role); // ➜ Lưu role
 
-      setUser(data.user);
+        console.log("Đăng nhập thành công!");
 
-      // Điều hướng dựa trên vai trò
-      if (data.user.role === "Manager") navigate("/dashboard");
-      else if (data.user.role === "staff") navigate("/profile");
-      else navigate("/");
+        // ➜ Điều hướng theo role
+        if (res.user.role === "Manager") {
+          navigate("/dashboard");
+        } else if (res.user.role === "Staff") {
+          navigate("/dashboard");
+        } else {
+          navigate("/"); // ✅ Quay về trang chủ nhưng vẫn giữ trạng thái đăng nhập
+        }
+      }
     } catch (err) {
-      setError(err.message || "Login failed!");
+      setError(
+        err.response?.data?.message ||
+          "Đăng nhập không thành công, vui lòng thử lại"
+      );
     } finally {
       setLoading(false);
     }
   };
 
-  const handleGoogleSignIn = async () => {
+  const handleGoogleSignIn = async (credentialResponse) => {
     try {
       setLoading(true);
-      const googleUser = await signInWithGoogle();
-      setUser(googleUser);
-      localStorage.setItem("user", JSON.stringify(googleUser));
-      navigate("/profile");
-    } catch (err) {
-      console.error("Google Sign-In Error", err);
+      const token = credentialResponse.credential;
+
+      const response = await axios.post("http://localhost:5000/auth/google", {
+        token,
+      });
+
+      localStorage.setItem("user", JSON.stringify(response.data.user));
+      localStorage.setItem("token", response.data.accessToken);
+
+      navigate("/");
+    } catch (error) {
+      console.error("Lỗi đăng nhập Google:", error);
+      setError("Đăng nhập Google không thành công!");
     } finally {
       setLoading(false);
     }
@@ -94,7 +105,8 @@ function Login() {
             <h3 className="text-2xl font-semibold text-center mb-4">
               Đăng nhập
             </h3>
-            <form onSubmit={handleSubmit} className="space-y-4">
+            {error && <p className="text-red-600 text-center mb-4">{error}</p>}
+            <form onSubmit={handleLogin} className="space-y-4">
               <input
                 type="email"
                 name="email"
@@ -107,7 +119,7 @@ function Login() {
               <input
                 type="password"
                 name="password"
-                placeholder="Password"
+                placeholder="Mật khẩu"
                 value={formData.password}
                 onChange={handleChange}
                 className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500"
@@ -118,8 +130,6 @@ function Login() {
                 sitekey="6LdigtQqAAAAANHvagd73iYJm0B4n2mQjXvf9aX9"
                 onChange={setRecaptchaToken}
               />
-
-              {error && <p className="text-red-500 text-sm">{error}</p>}
 
               <button
                 type="submit"
@@ -148,18 +158,14 @@ function Login() {
                 <div className="w-full border-t"></div>
               </div>
               <div className="relative flex justify-center text-sm">
-                <span className="bg-white px-2 text-gray-500">OR</span>
+                <span className="bg-white px-2 text-gray-500">HOẶC</span>
               </div>
             </div>
 
-            <button
-              className="w-full flex items-center justify-center bg-red-500 text-white py-2 rounded-lg hover:bg-red-600 transition duration-300"
-              onClick={handleGoogleSignIn}
-              disabled={loading}
-            >
-              <i className="fab fa-google mr-2"></i>{" "}
-              {loading ? "Đang đăng nhập" : "Đăng nhập với Google"}
-            </button>
+            <GoogleLogin
+              onSuccess={handleGoogleSignIn}
+              onError={() => console.log("Đăng nhập không thành công!")}
+            />
 
             <p className="text-center text-gray-500 text-xs mt-4">
               Terms & Conditions of FASCO

@@ -1,32 +1,41 @@
-import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import React, { useEffect, useRef, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { IoMdSearch } from "react-icons/io";
 import { FaShoppingCart } from "react-icons/fa";
+import { useCart } from "../../context/CartContext";
+import { NavbarMenu } from "../Navbar/data";
+import { motion } from "framer-motion";
 import Logo from "../../assets/logo.png";
 import Namebrand from "../../assets/namebrand.png";
-import { NavbarMenu } from "../Navbar/data";
-import { useCart } from "../../context/CartContext";
+import { logoutUser } from "../../services/apiRequest"; // Import hàm logout
 
 const Navbar = () => {
+  const navigate = useNavigate();
   const { cartItems } = useCart();
   const cartCount = cartItems.reduce((acc, item) => acc + item.quantity, 0);
 
-  const [user, setUser] = useState(null);
+  // 🔹 Lấy user & role từ localStorage
+  const [user, setUser] = useState(() => {
+    const storedUser = localStorage.getItem("user");
+    return storedUser ? JSON.parse(storedUser) : null;
+  });
+
+  const role = localStorage.getItem("role"); // Lấy vai trò của user
+
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState([]);
-  const [showDropdown, setShowDropdown] = useState(false);
   const [showProductDropdown, setShowProductDropdown] = useState(false);
+  const dropdownRef = useRef(null);
 
   useEffect(() => {
-    const storedUser = localStorage.getItem("user");
-    if (storedUser) {
-      try {
-        setUser(JSON.parse(storedUser));
-      } catch (error) {
-        console.error("Lỗi khi phân tích dữ liệu người dùng:", error);
-        localStorage.removeItem("user");
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setShowProductDropdown(false);
       }
-    }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   const handleSearch = async () => {
@@ -37,20 +46,22 @@ const Navbar = () => {
       );
       const data = await response.json();
       setSearchResults(data);
-      setShowDropdown(true);
+      setShowProductDropdown(true);
     } catch (error) {
       console.error("Lỗi tìm kiếm:", error);
     }
   };
 
   const handleLogout = () => {
-    localStorage.removeItem("user");
+    logoutUser(navigate);
     setUser(null);
+    localStorage.removeItem("role"); // Xóa role khi đăng xuất
   };
 
   return (
     <nav className="bg-white shadow-md">
       <div className="container mx-auto flex justify-between items-center py-4 px-6">
+        {/* Logo */}
         <div className="flex items-center">
           <Link to="/" className="flex items-center">
             <img src={Logo} alt="Logo" className="w-16" />
@@ -58,22 +69,28 @@ const Navbar = () => {
           </Link>
         </div>
 
+        {/* Menu */}
         <ul className="hidden md:flex items-center gap-8 text-gray-700 font-semibold">
           {NavbarMenu.map((item) => (
-            <li key={item.id} className="relative group">
+            <li key={item.id} className="relative">
               {item.submenu ? (
                 <>
                   <button
                     onMouseEnter={() => setShowProductDropdown(true)}
+                    onClick={() => setShowProductDropdown((prev) => !prev)}
                     className="hover:text-[#6BBCFE] transition duration-300"
                   >
                     {item.title}
                   </button>
+
                   {showProductDropdown && (
-                    <div
+                    <motion.div
+                      ref={dropdownRef}
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      transition={{ duration: 0.3 }}
                       className="absolute left-0 mt-2 w-56 bg-white shadow-lg rounded-lg py-2 z-50"
-                      onMouseEnter={() => setShowProductDropdown(true)}
-                      onMouseLeave={() => setShowProductDropdown(false)}
                     >
                       {item.submenu.map((sub, index) => (
                         <div key={index} className="p-2 border-b">
@@ -85,13 +102,14 @@ const Navbar = () => {
                               key={i}
                               to={link.link}
                               className="block px-4 py-2 text-gray-600 hover:bg-gray-100"
+                              onClick={() => setShowProductDropdown(false)}
                             >
                               {link.name}
                             </Link>
                           ))}
                         </div>
                       ))}
-                    </div>
+                    </motion.div>
                   )}
                 </>
               ) : (
@@ -104,9 +122,23 @@ const Navbar = () => {
               )}
             </li>
           ))}
+
+          {/* Hiển thị Dashboard nếu user là Manager hoặc Staff */}
+          {(role === "Manager" || role === "Staff") && (
+            <li>
+              <Link
+                to="/dashboard"
+                className="hover:text-[#6BBCFE] transition duration-300"
+              >
+                Quản lý
+              </Link>
+            </li>
+          )}
         </ul>
 
+        {/* Search, Cart, User */}
         <div className="flex items-center gap-6">
+          {/* Search Bar */}
           <div className="relative">
             <input
               type="text"
@@ -120,6 +152,7 @@ const Navbar = () => {
             </button>
           </div>
 
+          {/* Cart */}
           <Link
             to="/viewcart"
             className="relative flex items-center bg-gradient-to-r from-[#6BBCFE] to-[#0272cd] text-white py-2 px-4 rounded-full"
@@ -132,14 +165,18 @@ const Navbar = () => {
             )}
           </Link>
 
+          {/* User Section */}
           {user ? (
             <div className="flex items-center gap-4">
-              <Link to="/profile">
+              <Link to="/profile" className="flex items-center gap-2">
                 <img
-                  src={user.photoURL || "https://via.placeholder.com/40"}
-                  alt="Ảnh đại diện"
+                  src={user.avatar || "https://via.placeholder.com/40"}
+                  alt="Avatar"
                   className="w-10 h-10 rounded-full border"
                 />
+                <span className="hidden md:block text-gray-700">
+                  Chào {user.username} !
+                </span>
               </Link>
               <button
                 onClick={handleLogout}
@@ -149,12 +186,20 @@ const Navbar = () => {
               </button>
             </div>
           ) : (
-            <Link
-              to="/login"
-              className="hidden md:block hover:bg-[#6BBCFE] text-primary font-semibold hover:text-white rounded-md border-2 border-[#6BBFCE] px-6 py-2 transition duration-200"
-            >
-              Đăng nhập
-            </Link>
+            <div className="flex gap-4">
+              <Link
+                to="/login"
+                className="hover:bg-[#6BBCFE] text-primary font-semibold hover:text-white rounded-md border-2 border-[#6BBFCE] px-6 py-2 transition duration-200"
+              >
+                Đăng nhập
+              </Link>
+              <Link
+                to="/register"
+                className="hover:bg-[#6BBCFE] text-primary font-semibold hover:text-white rounded-md border-2 border-[#6BBFCE] px-6 py-2 transition duration-200"
+              >
+                Đăng ký
+              </Link>
+            </div>
           )}
         </div>
       </div>

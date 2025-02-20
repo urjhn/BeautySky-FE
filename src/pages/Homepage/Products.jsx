@@ -51,56 +51,57 @@ const Products = () => {
     <div className="mt-14 mb-12">
       <div className="container">
         {/* Header section */}
-        <div className="text-center mb-10 max-w-[600px] mx-auto">
-          <p data-aos="fade-up" className="text-sm text-black">
+        <div className="text-center mb-12 max-w-[600px] mx-auto">
+          <p data-aos="fade-up" className="text-sm text-gray-600">
             Sản phẩm bán chạy nhất dành cho bạn
           </p>
           <h1
             data-aos="fade-up"
-            className="text-4xl underline underline-offset-8 hover:underline decoration-1 decoration-black font-bold text-[#6BBCFE]"
+            className="text-4xl font-bold text-[#6BBCFE] underline underline-offset-8 decoration-2 decoration-black"
           >
             Dòng sản phẩm
           </h1>
         </div>
 
         {/* Body section */}
-        <div>
-          <div className="grid grid-cols-1 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 place-items-center gap-5">
-            {/* Card section */}
-            {ProductsData.map((data) => (
-              <Link to={`/product/${data.id}`} key={data.id}>
-                <div
-                  data-aos="fade-up"
-                  data-aos-delay={data.aosDelay}
-                  className="space-y-3 cursor-pointer hover:scale-105 transition-transform duration-300"
-                >
-                  <img
-                    src={data.img}
-                    alt={data.title}
-                    className="h-[220px] w-[150px] object-cover rounded-md"
-                  />
-                  <div>
-                    <h3 className="font-semibold">{data.title}</h3>
-                    <p className="text-sm text-gray-600">{data.color}</p>
-                    <div className="flex items-center gap-1">
-                      <FaStar className="text-yellow-400" />
-                      <span>{data.rating}</span>
-                    </div>
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 place-items-center gap-6">
+          {ProductsData.map((data) => (
+            <Link to={`/product/${data.id}`} key={data.id}>
+              <div
+                data-aos="fade-up"
+                data-aos-delay={data.aosDelay}
+                className="bg-white p-4 rounded-xl shadow-md hover:shadow-xl transition-shadow duration-300 transform hover:scale-110 text-center cursor-pointer"
+              >
+                <img
+                  src={data.img}
+                  alt={data.title}
+                  className="h-[250px] w-[180px] object-cover rounded-lg"
+                />
+                <div className="mt-3">
+                  <h3 className="font-semibold text-lg text-gray-900">
+                    {data.title}
+                  </h3>
+                  {data.color && (
+                    <p className="text-sm text-gray-500">{data.color}</p>
+                  )}
+                  <div className="flex items-center justify-center gap-1 mt-1">
+                    <FaStar className="text-yellow-400" />
+                    <span className="text-sm font-medium">{data.rating}</span>
                   </div>
                 </div>
-              </Link>
-            ))}
-          </div>
-
-          {/* View all button */}
-          <div className="flex justify-center mt-10">
-            <Link
-              to="/product"
-              className="text-center bg-[#6bbcfe] text-white py-2 px-6 rounded-md hover:bg-blue-600 transition duration-300"
-            >
-              Xem tất cả sản phẩm
+              </div>
             </Link>
-          </div>
+          ))}
+        </div>
+
+        {/* View all button */}
+        <div className="flex justify-center mt-12">
+          <Link
+            to="/product"
+            className="text-center bg-gradient-to-r from-[#419fed] to-[#97caf4eb] hover:scale-105 duration-200 text-white py-3 px-8 rounded-full shadow-lg"
+          >
+            Xem tất cả sản phẩm
+          </Link>
         </div>
       </div>
     </div>

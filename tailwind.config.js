@@ -8,6 +8,9 @@ export default {
         primary: "#6BBCFE",
         secondary: "#248ce0",
       },
+      // fontFamily: {
+      //   sans: ["Inter", "sans-serif"],
+      // },
       container: {
         center: true,
         padding: {

@@ -87,15 +87,14 @@ const Testimonials = () => {
         <div data-aos="zoom-in">
           <Slider {...settings}>
             {TestimonialData.map((data) => (
-              <div className="my-6">
-                <div
-                  key={data.id}
-                  className="flex flex-col gap-4 shadow-lg py-8 px-6 mx-4 rounded-xl dark:bg-sky-100 bg-[#6BBCFE]/10 relative"
-                >
+              <div key={data.id} className="my-6">
+                {" "}
+                {/* Di chuyển key vào đây */}
+                <div className="flex flex-col gap-4 shadow-lg py-8 px-6 mx-4 rounded-xl dark:bg-sky-100 bg-[#6BBCFE]/10 relative">
                   <div className="mb-4">
                     <img
                       src={data.img}
-                      alt=""
+                      alt={data.name}
                       className="rounded-full w-20 h-20"
                     />
                   </div>

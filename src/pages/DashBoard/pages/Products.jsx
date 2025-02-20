@@ -5,41 +5,61 @@ const Products = () => {
   const [products, setProducts] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [filter, setFilter] = useState("All");
+  const [editingProduct, setEditingProduct] = useState(null); // State to track the product being edited
+  const [showEditModal, setShowEditModal] = useState(false); // State to show/hide edit modal
   const productsPerPage = 5;
 
   useEffect(() => {
-    // Giả lập dữ liệu sản phẩm từ backend
     const sampleProducts = Array.from({ length: 20 }, (_, i) => ({
       id: i + 1,
       name: `Product ${i + 1}`,
       price: `$${(Math.random() * 50 + 10).toFixed(2)}`,
       image: `/images/product${(i % 5) + 1}.jpg`,
-      status: i % 2 === 0 ? "In Stock" : "Out of Stock",
+      status: i % 2 === 0 ? "Còn hàng" : "Hết hàng",
     }));
     setProducts(sampleProducts);
   }, []);
 
-  // Lọc sản phẩm theo trạng thái
   const filteredProducts =
     filter === "All" ? products : products.filter((p) => p.status === filter);
 
-  // Tính số trang
   const totalPages = Math.ceil(filteredProducts.length / productsPerPage);
   const displayedProducts = filteredProducts.slice(
     (currentPage - 1) * productsPerPage,
     currentPage * productsPerPage
   );
 
+  const handleDelete = (id) => {
+    setProducts(products.filter((product) => product.id !== id));
+  };
+
+  const handleEdit = (product) => {
+    setEditingProduct(product);
+    setShowEditModal(true);
+  };
+
+  const handleSaveEdit = (editedProduct) => {
+    setProducts(
+      products.map((product) =>
+        product.id === editedProduct.id ? editedProduct : product
+      )
+    );
+    setShowEditModal(false);
+  };
+
+  const handleCancelEdit = () => {
+    setShowEditModal(false);
+  };
+
   return (
     <div className="p-6 bg-gray-100 min-h-screen">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold text-gray-800">Products</h1>
+        <h1 className="text-3xl font-bold text-gray-800">Danh sách sản phẩm</h1>
         <button className="bg-blue-600 text-white px-4 py-2 rounded flex items-center">
-          <FaPlus className="mr-2" /> Add Product
+          <FaPlus className="mr-2" /> Thêm sản phẩm
         </button>
       </div>
 
-      {/* Bộ lọc sản phẩm */}
       <div className="mb-4">
         <select
           className="p-2 border rounded"
@@ -47,8 +67,8 @@ const Products = () => {
           onChange={(e) => setFilter(e.target.value)}
         >
           <option value="All">Tất cả</option>
-          <option value="In Stock">Còn hàng</option>
-          <option value="Out of Stock">Hết hàng</option>
+          <option value="Còn hàng">Còn hàng</option>
+          <option value="Hết hàng">Hết hàng</option>
         </select>
       </div>
 
@@ -78,7 +98,7 @@ const Products = () => {
                 <td className="p-3">
                   <span
                     className={`px-2 py-1 rounded text-white ${
-                      product.status === "In Stock"
+                      product.status === "Còn hàng"
                         ? "bg-green-500"
                         : "bg-red-500"
                     }`}
@@ -87,10 +107,16 @@ const Products = () => {
                   </span>
                 </td>
                 <td className="p-3 flex space-x-2">
-                  <button className="text-blue-600">
+                  <button
+                    className="text-blue-600"
+                    onClick={() => handleEdit(product)}
+                  >
                     <FaEdit />
                   </button>
-                  <button className="text-red-600">
+                  <button
+                    className="text-red-600"
+                    onClick={() => handleDelete(product.id)}
+                  >
                     <FaTrash />
                   </button>
                 </td>
@@ -99,7 +125,6 @@ const Products = () => {
           </tbody>
         </table>
 
-        {/* Phân trang */}
         <div className="mt-4 flex justify-center space-x-2">
           {[...Array(totalPages)].map((_, index) => (
             <button
@@ -116,6 +141,73 @@ const Products = () => {
           ))}
         </div>
       </div>
+
+      {/* Edit Modal */}
+      {showEditModal && (
+        <div className="fixed inset-0 bg-gray-500 bg-opacity-50 flex justify-center items-center">
+          <div className="bg-white p-6 rounded-lg w-1/3">
+            <h2 className="text-2xl font-bold mb-4">Chỉnh sửa sản phẩm</h2>
+            <div className="mb-4">
+              <label className="block mb-2">Tên sản phẩm</label>
+              <input
+                type="text"
+                value={editingProduct.name}
+                onChange={(e) =>
+                  setEditingProduct({
+                    ...editingProduct,
+                    name: e.target.value,
+                  })
+                }
+                className="p-2 border rounded w-full"
+              />
+            </div>
+            <div className="mb-4">
+              <label className="block mb-2">Giá</label>
+              <input
+                type="text"
+                value={editingProduct.price}
+                onChange={(e) =>
+                  setEditingProduct({
+                    ...editingProduct,
+                    price: e.target.value,
+                  })
+                }
+                className="p-2 border rounded w-full"
+              />
+            </div>
+            <div className="mb-4">
+              <label className="block mb-2">Status</label>
+              <select
+                value={editingProduct.status}
+                onChange={(e) =>
+                  setEditingProduct({
+                    ...editingProduct,
+                    status: e.target.value,
+                  })
+                }
+                className="p-2 border rounded w-full"
+              >
+                <option value="In Stock">Còn hàng</option>
+                <option value="Out of Stock">Hết hàng</option>
+              </select>
+            </div>
+            <div className="flex justify-end space-x-2">
+              <button
+                onClick={handleCancelEdit}
+                className="bg-gray-300 px-4 py-2 rounded"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => handleSaveEdit(editingProduct)}
+                className="bg-blue-600 text-white px-4 py-2 rounded"
+              >
+                Save
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
