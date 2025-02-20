@@ -9,7 +9,6 @@ import ProductList from "./ProductList";
 
 const ProductsPage = () => {
   const { addToCart } = useCart();
-  const { addToCart } = useCart();
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedSkinType, setSelectedSkinType] = useState("All");
   const [selectedCategory, setSelectedCategory] = useState("All");

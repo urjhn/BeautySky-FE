@@ -7,8 +7,14 @@ const ProductList = ({ products }) => {
     const { addToCart } = useCart();
 
     const handleAddToCart = (product) => {
-        addToCart(product);
-        navigate('/viewCart'); // Điều hướng đến trang giỏ hàng sau khi thêm sản phẩm
+        addToCart({
+            id: product.id,
+            name: product.name,
+            price: product.price,
+            image: product.image,
+            quantity: 1
+        });
+        // Không điều hướng ngay đến trang giỏ hàng
     };
 
     const handleViewDetails = (productId) => {
@@ -49,14 +55,18 @@ const ProductList = ({ products }) => {
                             </div>
                             <div className="mt-2 space-y-2">
                                 <button
-                                    className="w-full bg-gradient-to-r from-[#6bbcfe] to-[#6bbcfe] text-white py-2 rounded-lg hover:from-blue-500 hover:to-blue-700 transition-all shadow-md"
+                                    className="w-full bg-[#89CFF0] text-white py-2 rounded-lg 
+                                    hover:bg-[#6BBCFE] transition-all duration-300 
+                                    shadow-md transform hover:scale-[1.02]"
                                     onClick={() => handleAddToCart(product)}
                                 >
                                     Thêm vào giỏ hàng
                                 </button>
                                 <button
                                     onClick={() => handleViewDetails(product.id)}
-                                    className="w-full bg-red-400 text-white py-2 rounded-lg hover:bg-red-600 transition-all shadow-lg"
+                                    className="w-full bg-[#FF9999] text-white py-2 rounded-lg 
+                                    hover:bg-[#FF6666] transition-all duration-300 
+                                    shadow-lg transform hover:scale-[1.02]"
                                 >
                                     Xem chi tiết
                                 </button>
