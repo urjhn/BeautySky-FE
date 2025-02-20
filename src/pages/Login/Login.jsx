@@ -42,12 +42,21 @@ function Login() {
       const res = await loginUser(newUser, navigate);
 
       if (res) {
-        // ✅ Lưu user vào localStorage
+        // ✅ Lưu user, token và role vào localStorage
         localStorage.setItem("user", JSON.stringify(res.user));
         localStorage.setItem("token", res.token);
+        localStorage.setItem("role", res.user.role); // ➜ Lưu role
 
         console.log("Đăng nhập thành công!");
-        navigate("/"); // ✅ Chuyển hướng về trang chính
+
+        // ➜ Điều hướng theo role
+        if (res.user.role === "Manager") {
+          navigate("/dashboard");
+        } else if (res.user.role === "Staff") {
+          navigate("/dashboard");
+        } else {
+          navigate("/"); // ✅ Quay về trang chủ nhưng vẫn giữ trạng thái đăng nhập
+        }
       }
     } catch (err) {
       setError(

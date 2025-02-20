@@ -14,11 +14,13 @@ const Navbar = () => {
   const { cartItems } = useCart();
   const cartCount = cartItems.reduce((acc, item) => acc + item.quantity, 0);
 
-  // 🔹 Lấy user từ localStorage
+  // 🔹 Lấy user & role từ localStorage
   const [user, setUser] = useState(() => {
     const storedUser = localStorage.getItem("user");
     return storedUser ? JSON.parse(storedUser) : null;
   });
+
+  const role = localStorage.getItem("role"); // Lấy vai trò của user
 
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState([]);
@@ -48,6 +50,12 @@ const Navbar = () => {
     } catch (error) {
       console.error("Lỗi tìm kiếm:", error);
     }
+  };
+
+  const handleLogout = () => {
+    logoutUser(navigate);
+    setUser(null);
+    localStorage.removeItem("role"); // Xóa role khi đăng xuất
   };
 
   return (
@@ -113,6 +121,18 @@ const Navbar = () => {
               )}
             </li>
           ))}
+
+          {/* Hiển thị Dashboard nếu user là Manager hoặc Staff */}
+          {(role === "Manager" || role === "Staff") && (
+            <li>
+              <Link
+                to="/dashboard"
+                className="hover:text-[#6BBCFE] transition duration-300"
+              >
+                Quản lý
+              </Link>
+            </li>
+          )}
         </ul>
 
         {/* Search, Cart, User */}
@@ -151,19 +171,27 @@ const Navbar = () => {
                 Chào, {user.username}!
               </span>
               <button
-                onClick={() => logoutUser(navigate)} // 🔹 Sử dụng hàm logout có sẵn
+                onClick={handleLogout}
                 className="text-red-600 font-semibold hover:text-red-800"
               >
                 Đăng xuất
               </button>
             </div>
           ) : (
-            <Link
-              to="/login"
-              className="hidden md:block hover:bg-[#6BBCFE] text-primary font-semibold hover:text-white rounded-md border-2 border-[#6BBFCE] px-6 py-2 transition duration-200"
-            >
-              Đăng nhập
-            </Link>
+            <div className="flex gap-4">
+              <Link
+                to="/login"
+                className="hover:bg-[#6BBCFE] text-primary font-semibold hover:text-white rounded-md border-2 border-[#6BBFCE] px-6 py-2 transition duration-200"
+              >
+                Đăng nhập
+              </Link>
+              <Link
+                to="/register"
+                className="hover:bg-[#6BBCFE] text-primary font-semibold hover:text-white rounded-md border-2 border-[#6BBFCE] px-6 py-2 transition duration-200"
+              >
+                Đăng ký
+              </Link>
+            </div>
           )}
         </div>
       </div>
