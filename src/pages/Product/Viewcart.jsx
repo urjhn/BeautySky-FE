@@ -5,6 +5,7 @@ import Navbar from "../../components/Navbar/Navbar";
 import Footer from "../../components/Footer/Footer";
 import { motion } from "framer-motion";
 import { FaTrash, FaPlus, FaMinus } from "react-icons/fa";
+import { formatCurrency } from "../../utils/formatCurrency";
 
 const ViewCart = () => {
   const { cartItems, removeFromCart, updateQuantity } = useCart();
@@ -93,7 +94,7 @@ const ViewCart = () => {
           {/* Tổng tiền */}
           <div className="flex justify-between mt-6 text-xl font-bold">
             <span>Tổng tiền:</span>
-            <span className="text-red-500">${totalPrice}</span>
+            <span className="text-red-500">${formatCurrency(totalPrice)}</span>
           </div>
 
           {/* Nút "Quay lại cửa hàng" & "Thanh toán" */}
@@ -106,7 +107,7 @@ const ViewCart = () => {
             </Link>
 
             <Link
-              to={cartItems.length > 0 ? "/checkout" : "#"}
+              to={cartItems.length > 0 ? "/checkoutinfo" : "#"}
               onClick={handleCheckoutClick}
               className={`px-6 py-3 rounded-lg shadow-md transform transition duration-300 ${
                 cartItems.length > 0

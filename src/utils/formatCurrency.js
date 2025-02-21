@@ -1,10 +1,6 @@
-export function formatCurrency(amount, locale = "en-US", currency = "USD") {
-  return new Intl.NumberFormat(locale, {
+export const formatCurrency = (amount) => {
+  return new Intl.NumberFormat("vi-VN", {
     style: "currency",
-    currency: currency,
+    currency: "VND",
   }).format(amount);
-}
-
-// Ví dụ sử dụng
-console.log(formatCurrency(1000)); // $1,000.00
-console.log(formatCurrency(1000, "vi-VN", "VND")); // 1.000 ₫
+};

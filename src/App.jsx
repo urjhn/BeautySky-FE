@@ -5,7 +5,10 @@ import Login from "./pages/Login/Login.jsx";
 import Register from "./pages/Register/Register.jsx";
 import Product from "./pages/Product/Product.jsx";
 import ProductDetail from "./pages/Product/ProductDetail.jsx";
-import Checkout from "./pages/Checkout/Checkout.jsx";
+import CheckoutInfomation from "./pages/Checkout/CheckoutInformation.jsx";
+import CheckoutProcess from "./pages/Checkout/CheckoutProcess.jsx";
+import PaymentSuccess from "./pages/Checkout/PaymentSuccess.jsx";
+import ViewOrder from "./pages/Checkout/ViewOrder.jsx";
 import Viewcart from "./pages/Product/Viewcart.jsx";
 import Quizz from "./features/quiz/QuizPage.jsx";
 import Error from "./pages/Errors/NotFoundPage.jsx";
@@ -46,7 +49,10 @@ const App = () => (
             <Route path="/register" element={<Register />} />
             <Route path="/product" element={<Product />} />
             <Route path="/product/:id" element={<ProductDetail />} />
-            <Route path="/checkout" element={<Checkout />} />
+            <Route path="/checkoutinfo" element={<CheckoutInfomation />} />
+            <Route path="/checkoutprocess" element={<CheckoutProcess />} />
+            <Route path="/paymentsuccess" element={<PaymentSuccess />} />
+            <Route path="/vieworder" element={<ViewOrder />} />
             <Route path="/viewcart" element={<Viewcart />} />
             <Route path="/contact" element={<Contact />} />
             <Route path="/quizz" element={<Quizz />} />
