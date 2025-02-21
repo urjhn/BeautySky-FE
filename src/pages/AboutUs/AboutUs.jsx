@@ -27,7 +27,7 @@ const AboutUs = () => {
           className="relative w-full h-screen flex items-center justify-center bg-cover bg-center"
           style={{
             backgroundImage:
-              "url('https://source.unsplash.com/1600x900/?skincare,beauty')",
+              "url('https://imageskincare.vn/wp-content/uploads/2022/04/cac-san-pham-image-skincare.jpeg')",
           }}
         >
           <div className="absolute inset-0 bg-black bg-opacity-50"></div>
@@ -55,7 +55,7 @@ const AboutUs = () => {
         <section className="container mx-auto py-16 px-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-10 items-center">
             <motion.img
-              src="https://source.unsplash.com/600x400/?cosmetics,beauty"
+              src="https://tiki.vn/blog/wp-content/uploads/2023/02/review-la-roche-posay-1.jpg"
               alt="Mỹ phẩm thiên nhiên"
               className="rounded-lg shadow-lg hover:shadow-2xl transition duration-300"
               initial={{ opacity: 0, scale: 0.8 }}
