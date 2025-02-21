@@ -1,28 +1,37 @@
-import { createContext, useContext, useEffect, useState } from "react";
+// import { createContext, useContext, useEffect, useState } from "react";
 
-const UserContext = createContext();
+// const UserContext = createContext();
 
-export const UserProvider = ({ children }) => {
-  const [user, setUser] = useState(() => {
-    const storedUser = localStorage.getItem("user");
-    return storedUser ? JSON.parse(storedUser) : null;
-  });
+// export const UserProvider = ({ children }) => {
+//   const [user, setUser] = useState(null);
 
-  useEffect(() => {
-    if (user) {
-      localStorage.setItem("user", JSON.stringify(user));
-    } else {
-      localStorage.removeItem("user"); // Xóa nếu user null để tránh lỗi dữ liệu
-    }
-  }, [user]);
+//   // useEffect(() => {
+//   //   const storedUser = localStorage.getItem("user");
+//   //   if (storedUser) {
+//   //     setUser(JSON.parse(storedUser));
+//   //   }
+//   // }, []);
 
-  return (
-    <UserContext.Provider value={{ user, setUser }}>
-      {children}
-    </UserContext.Provider>
-  );
-};
+//   useEffect(() => {
+//     try {
+//       const storedUser = localStorage.getItem("user");
+//       if (storedUser) {
+//         setUser(JSON.parse(storedUser));
+//       }
+//     } catch (error) {
+//       console.error("Error parsing user data from localStorage:", error);
+//       // Xóa dữ liệu không hợp lệ khỏi localStorage nếu cần thiết
+//       localStorage.removeItem("user");
+//     }
+//   }, []);
+  
+//   return (
+//     <UserContext.Provider value={{ user, setUser }}>
+//       {children}
+//     </UserContext.Provider>
+//   );
+// };
 
-export const useUser = () => {
-  return useContext(UserContext);
-};
+// export const useUser = () => {
+//   return useContext(UserContext);
+// };

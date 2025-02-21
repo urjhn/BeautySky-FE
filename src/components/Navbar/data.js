@@ -51,6 +51,11 @@ export const NavbarMenu = [
     title: "Test Skin Type",
     link: "/quizz",
   },
+  {
+    id: 7,
+    title: "Dashboard",
+    link: "/dashboard",
+  },
 ];
 
 // export const skinTypeOptions = [

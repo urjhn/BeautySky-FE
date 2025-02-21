@@ -71,7 +71,7 @@ const Navbar = () => {
         </div>
 
         {/* Menu */}
-        <ul className="hidden md:flex items-center gap-8 text-gray-700 font-semibold">
+        <ul className="hidden md:flex items-center gap-4 text-gray-700 font-semibold">
           {NavbarMenu.map((item) => (
             <li key={item.id} className="relative">
               {item.submenu ? (

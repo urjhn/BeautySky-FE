@@ -27,9 +27,7 @@ import AboutUs from "./pages/AboutUs/AboutUs.jsx";
 import { CartProvider } from "./context/CartContext.jsx";
 import { ThemeProvider } from "./pages/DashBoard/context/ThemeContext.jsx";
 import { GoogleOAuthProvider } from "@react-oauth/google";
-import { UserProvider } from "./context/UserContext.jsx";
-
-import ProtectedRoute from "./context/ProtectedRoute.jsx"; // Import ProtectedRoute
+// import { UserProvider } from "./context/UserContext.jsx";
 
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
@@ -39,7 +37,7 @@ const App = () => (
   <GoogleOAuthProvider clientId="97056897827-v2rgbcjteb21e5ogji3aff65toeg0bc6.apps.googleusercontent.com">
     <CartProvider>
       <ThemeProvider>
-        <UserProvider>
+        {/* <UserProvider> */}
           <Router>
             <Routes>
               <Route path="/" element={<Home />} />
@@ -57,36 +55,20 @@ const App = () => (
               <Route path="/profile" element={<UserProfile />} />
               <Route path="/routine-builder" element={<RoutineBuilderPage />} />
 
-              {/* 🔒 Bảo vệ trang Dashboard bằng ProtectedRoute */}
-              <Route
-                path="/dashboard"
-                element={
-                  <ProtectedRoute
-                    element={<DashboardLayout />}
-                    allowedRoles={["Manager", "Staff"]}
-                  />
-                }
-              >
+              {/* Dashboard Routes */}
+              <Route path="/dashboard" element={<DashboardLayout />}>
                 <Route index element={<Dashboard />} />
                 <Route path="blogs" element={<BlogManagement />} />
                 <Route path="promotions" element={<Promotion />} />
                 <Route path="customers" element={<Customers />} />
-                <Route
-                  path="orders"
-                  element={
-                    <ProtectedRoute
-                      element={<Order />}
-                      allowedRoles={["Staff"]}
-                    />
-                  }
-                />
+                <Route path="orders" element={<Order />} />
                 <Route path="products" element={<Products />} />
                 <Route path="reports" element={<Report />} />
                 <Route path="settings" element={<Setting />} />
               </Route>
             </Routes>
           </Router>
-        </UserProvider>
+        {/* </UserProvider> */}
       </ThemeProvider>
     </CartProvider>
   </GoogleOAuthProvider>
