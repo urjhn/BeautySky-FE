@@ -18,6 +18,7 @@ const Navbar = () => {
   const [user, setUser] = useState(() => {
     const storedUser = localStorage.getItem("user");
     return storedUser || null;
+    // return storedUser ? JSON.parse(storedUser) : null;
   });
 
   const role = localStorage.getItem("role"); // Lấy vai trò của user

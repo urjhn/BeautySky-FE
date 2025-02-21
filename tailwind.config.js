@@ -4,13 +4,13 @@ export default {
   darkMode: "class",
   theme: {
     extend: {
-      colors: {
+      color: {
         primary: "#6BBCFE",
         secondary: "#248ce0",
       },
-      fontFamily: {
-        sans: ["Playwrite AU NSW", "sans-serif"],
-      },
+      // fontFamily: {
+      //   sans: ["Inter", "sans-serif"],
+      // },
       container: {
         center: true,
         padding: {
