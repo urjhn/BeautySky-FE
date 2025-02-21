@@ -60,3 +60,27 @@ export const logoutUser = async (navigate) => {
     console.error("Logout failed", err.response?.data || err.message);
   }
 };
+// 🔹 GỌI API LẤY DANH SÁCH SẢN PHẨM
+export const fetchProducts = async () => {
+  try {
+    const response = await axiosInstance.get("/products"); //Chỉnh lại ở đây theo API BE
+    return response.data;
+  } catch (err) {
+    console.error("Lỗi khi tải sản phẩm", err.response?.data || err.message);
+    throw err;
+  }
+};
+
+// 🔹 GỌI API LẤY CHI TIẾT SẢN PHẨM
+export const fetchProductDetail = async (id) => {
+  try {
+    const response = await axiosInstance.get(`/products/${id}`); //Chỉnh lại ở đây theo API BE
+    return response.data;
+  } catch (err) {
+    console.error(
+      "Lỗi khi tải chi tiết sản phẩm",
+      err.response?.data || err.message
+    );
+    throw err;
+  }
+};

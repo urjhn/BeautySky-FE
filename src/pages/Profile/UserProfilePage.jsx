@@ -1,19 +1,22 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { FaUserCircle, FaEdit, FaSignOutAlt } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
+import { Navbar } from "../../components/Navbar/Navbar";
+import { Footer } from "../../components/Footer/Footer";
 
 const UserProfile = () => {
   const navigate = useNavigate();
 
-  // Dữ liệu người dùng giả lập
-  const [user, setUser] = useState({
-    name: "John Doe",
-    email: "johndoe@example.com",
-    avatar: "", // Nếu có URL ảnh, thay vào đây
-  });
+  // Lấy dữ liệu người dùng từ localStorage sau khi đăng nhập
+  const storedUser = JSON.parse(localStorage.getItem("user")) || {};
 
+  const [user, setUser] = useState(storedUser);
   const [isEditing, setIsEditing] = useState(false);
-  const [newName, setNewName] = useState(user.name);
+  const [newName, setNewName] = useState(user.name || "");
+
+  useEffect(() => {
+    setUser(storedUser);
+  }, []);
 
   // Xử lý chỉnh sửa tên
   const handleEdit = () => {
@@ -21,75 +24,83 @@ const UserProfile = () => {
   };
 
   const handleSave = () => {
-    setUser({ ...user, name: newName });
+    const updatedUser = { ...user, name: newName };
+    setUser(updatedUser);
+    localStorage.setItem("user", JSON.stringify(updatedUser));
     setIsEditing(false);
   };
 
   // Xử lý đăng xuất
   const handleLogout = () => {
-    // Giả lập đăng xuất
+    localStorage.removeItem("user");
+    localStorage.removeItem("token");
     navigate("/login");
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100">
-      <div className="bg-white shadow-lg rounded-lg p-6 w-96">
-        <div className="flex flex-col items-center">
+    <>
+      <Navbar />
+      <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-b from-blue-100 to-white py-10">
+        <div className="bg-white shadow-xl rounded-2xl p-8 w-96 text-center animate-fadeIn">
           {/* Ảnh đại diện */}
           {user.avatar ? (
             <img
               src={user.avatar}
               alt="User Avatar"
-              className="w-24 h-24 rounded-full shadow-md"
+              className="w-24 h-24 rounded-full shadow-md mx-auto"
             />
           ) : (
-            <FaUserCircle className="text-gray-500 text-6xl" />
+            <FaUserCircle className="text-gray-400 text-6xl mx-auto" />
           )}
 
           {/* Thông tin */}
-          <div className="mt-4 text-center">
+          <div className="mt-4">
             {isEditing ? (
               <input
                 type="text"
                 value={newName}
                 onChange={(e) => setNewName(e.target.value)}
-                className="border p-2 rounded-md text-center"
+                className="border p-2 rounded-md text-center w-full"
               />
             ) : (
-              <h2 className="text-xl font-semibold">{user.name}</h2>
+              <h2 className="text-2xl font-bold text-gray-900">
+                {user.name || "Người dùng"}
+              </h2>
             )}
-            <p className="text-gray-600">{user.email}</p>
+            <p className="text-gray-600 mt-1">
+              {user.email || "Email không xác định"}
+            </p>
+          </div>
 
-            {/* Nút chỉnh sửa */}
-            <div className="mt-4 flex gap-4">
-              {isEditing ? (
-                <button
-                  onClick={handleSave}
-                  className="bg-green-500 text-white px-4 py-2 rounded-md flex items-center gap-2"
-                >
-                  <FaEdit /> Save
-                </button>
-              ) : (
-                <button
-                  onClick={handleEdit}
-                  className="bg-blue-500 text-white px-4 py-2 rounded-md flex items-center gap-2"
-                >
-                  <FaEdit /> Edit
-                </button>
-              )}
-
-              {/* Nút đăng xuất */}
+          {/* Nút chức năng */}
+          <div className="mt-6 flex flex-col gap-4">
+            {isEditing ? (
               <button
-                onClick={handleLogout}
-                className="bg-red-500 text-white px-4 py-2 rounded-md flex items-center gap-2"
+                onClick={handleSave}
+                className="w-full bg-green-500 text-white py-2 rounded-lg flex items-center justify-center gap-2 shadow-md hover:bg-green-600 transition-all"
               >
-                <FaSignOutAlt /> Logout
+                <FaEdit /> Lưu
               </button>
-            </div>
+            ) : (
+              <button
+                onClick={handleEdit}
+                className="w-full bg-blue-500 text-white py-2 rounded-lg flex items-center justify-center gap-2 shadow-md hover:bg-blue-600 transition-all"
+              >
+                <FaEdit /> Chỉnh sửa
+              </button>
+            )}
+
+            <button
+              onClick={handleLogout}
+              className="w-full bg-red-500 text-white py-2 rounded-lg flex items-center justify-center gap-2 shadow-md hover:bg-red-600 transition-all"
+            >
+              <FaSignOutAlt /> Đăng xuất
+            </button>
           </div>
         </div>
       </div>
-    </div>
+      <Footer />
+    </>
   );
 };
 

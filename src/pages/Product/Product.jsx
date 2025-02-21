@@ -220,32 +220,108 @@ const ProductsPage = () => {
 
 export default ProductsPage;
 
-// const [products, setProducts] = useState([]);
+// // const [products, setProducts] = useState([]);
 
-// useEffect(() => {
-//   const fetchProducts = async () => {
-//     try {
-//       const data = await getProducts();
-//       setProducts(data);
-//     } catch (error) {
-//       console.error("Lỗi khi lấy sản phẩm:", error);
-//     }
-//   };
+// // useEffect(() => {
+// //   const fetchProducts = async () => {
+// //     try {
+// //       const data = await getProducts();
+// //       setProducts(data);
+// //     } catch (error) {
+// //       console.error("Lỗi khi lấy sản phẩm:", error);
+// //     }
+// //   };
 
-//   fetchProducts();
-// });
+// //   fetchProducts();
+// // });
 
-// const [products, setProducts] = useState([]);
+// // const [products, setProducts] = useState([]);
 
-// useEffect(() => {
-//   const fetchProducts = async () => {
-//     try {
-//       const data = await getProducts();
-//       setProducts(data);
-//     } catch (error) {
-//       console.error("Lỗi khi lấy sản phẩm:", error);
-//     }
-//   };
+// // useEffect(() => {
+// //   const fetchProducts = async () => {
+// //     try {
+// //       const data = await getProducts();
+// //       setProducts(data);
+// //     } catch (error) {
+// //       console.error("Lỗi khi lấy sản phẩm:", error);
+// //     }
+// //   };
 
-//   fetchProducts();
-// });
+// //   fetchProducts();
+// // });
+
+// import React, { useState, useEffect } from "react";
+// import { useNavigate } from "react-router-dom";
+// import Navbar from "../../components/Navbar/Navbar";
+// import Footer from "../../components/Footer/Footer";
+// import { useCart } from "../../context/CartContext";
+// import PaginationComponent from "../../components/Pagination/Pagination.jsx";
+// import ProductList from "./ProductList";
+// import { fetchProducts } from "../../services/apiRequest.js"; // Import API function
+
+// const ProductsPage = () => {
+//   const { addToCart } = useCart();
+//   const [products, setProducts] = useState([]);
+//   const [currentPage, setCurrentPage] = useState(1);
+//   const [selectedSkinType, setSelectedSkinType] = useState("All");
+//   const [selectedCategory, setSelectedCategory] = useState("All");
+//   const [sortOrder, setSortOrder] = useState("asc");
+//   const itemsPerPage = 8;
+//   const navigate = useNavigate();
+
+//   useEffect(() => {
+//     const loadProducts = async () => {
+//       try {
+//         const data = await fetchProducts();
+//         setProducts(data);
+//       } catch (error) {
+//         console.error("Lỗi khi lấy sản phẩm:", error);
+//       }
+//     };
+//     loadProducts();
+//   }, []);
+
+//   const filteredProducts = products.filter((product) => {
+//     const skinTypeFilter =
+//       selectedSkinType === "All" ||
+//       product.skinType === selectedSkinType ||
+//       product.skinType === "All";
+//     const categoryFilter =
+//       selectedCategory === "All" || product.category === selectedCategory;
+//     return skinTypeFilter && categoryFilter;
+//   });
+
+//   const sortedProducts = [...filteredProducts].sort((a, b) =>
+//     sortOrder === "asc" ? a.price - b.price : b.price - a.price
+//   );
+
+//   const indexOfLastItem = currentPage * itemsPerPage;
+//   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+//   const currentProducts = sortedProducts.slice(
+//     indexOfFirstItem,
+//     indexOfLastItem
+//   );
+
+//   return (
+//     <div className="flex flex-col min-h-screen">
+//       <Navbar />
+//       <main className="flex-1 bg-gradient-to-br from-blue-50 to-white">
+//         <div className="container mx-auto py-10 px-6">
+//           <h1 className="text-4xl font-bold text-[#6bbcfe] mb-6 text-center">
+//             Sản phẩm chăm sóc da
+//           </h1>
+//           <ProductList products={currentProducts} />
+//         </div>
+//       </main>
+//       <PaginationComponent
+//         itemsPerPage={itemsPerPage}
+//         totalItems={sortedProducts.length}
+//         currentPage={currentPage}
+//         onPageChange={setCurrentPage}
+//       />
+//       <Footer />
+//     </div>
+//   );
+// };
+
+// export default ProductsPage;
