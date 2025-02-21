@@ -8,6 +8,9 @@ import PaginationComponent from "../../components/Pagination/Pagination.jsx";
 import ProductList from "./ProductList";
 
 const ProductsPage = () => {
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
   const { addToCart } = useCart();
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedSkinType, setSelectedSkinType] = useState("All");

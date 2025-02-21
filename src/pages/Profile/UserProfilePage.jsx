@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { FaUserCircle, FaEdit, FaSignOutAlt } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
-import { Navbar } from "../../components/Navbar/Navbar";
-import { Footer } from "../../components/Footer/Footer";
+import Navbar from "../../components/Navbar/Navbar";
+import Footer from "../../components/Footer/Footer";
 
 const UserProfile = () => {
   const navigate = useNavigate();

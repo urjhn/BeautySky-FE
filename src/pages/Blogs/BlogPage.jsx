@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import Navbar from "../../components/Navbar/Navbar";
 import Footer from "../../components/Footer/Footer";
+import Pagination from "../../components/Pagination/Pagination";
 
 const Blogs = () => {
   const [selectedBlog, setSelectedBlog] = useState(null);
@@ -93,6 +94,7 @@ const Blogs = () => {
           </div>
         </div>
       )}
+      <Pagination />
       <Footer />
     </>
   );

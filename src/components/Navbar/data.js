@@ -6,6 +6,11 @@ export const NavbarMenu = [
   },
   {
     id: 2,
+    title: "Giới thiệu",
+    link: "/aboutus",
+  },
+  {
+    id: 3,
     title: "Sản phẩm",
     submenu: [
       {
@@ -32,19 +37,19 @@ export const NavbarMenu = [
     ],
   },
   {
-    id: 3,
+    id: 4,
     title: "Blogs",
     link: "/blog",
   },
   {
-    id: 4,
+    id: 5,
     title: "Liên lạc",
     link: "/contact",
   },
   {
-    id: 5,
-    title: "Dashboard",
-    link: "/dashboard",
+    id: 6,
+    title: "Test Skin Type",
+    link: "/quizz",
   },
 ];
 

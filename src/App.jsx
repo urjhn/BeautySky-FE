@@ -22,6 +22,7 @@ import Setting from "./pages/DashBoard/pages/Setting.jsx";
 import BlogManagement from "./pages/DashBoard/pages/BlogManagement.jsx";
 import Promotion from "./pages/DashBoard/pages/Promotion.jsx";
 import RoutineBuilderPage from "./features/skincare-routine/RoutineBuilderPage.jsx";
+import AboutUs from "./pages/AboutUs/AboutUs.jsx";
 
 import { CartProvider } from "./context/CartContext.jsx";
 import { ThemeProvider } from "./pages/DashBoard/context/ThemeContext.jsx";
@@ -42,6 +43,7 @@ const App = () => (
           <Router>
             <Routes>
               <Route path="/" element={<Home />} />
+              <Route path="/aboutus" element={<AboutUs />} />
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
               <Route path="/product" element={<Product />} />
