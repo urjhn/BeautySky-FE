@@ -115,48 +115,34 @@ const QuizPage = () => {
   return (
     <>
       <Navbar />
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-blue-100 p-6">
-        <div className="bg-white shadow-lg p-8 rounded-lg w-full max-w-lg text-center">
+      <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-6">
+        <h1 className="text-5xl font-bold text-[#6BBCFE] animate-pulse text-center mb-6">
+          🔍 Kiểm tra loại da của bạn
+        </h1>
+        <div className="bg-white shadow-xl p-10 rounded-2xl w-full max-w-2xl text-center">
           {result ? (
             <div>
-              <h2 className="text-2xl font-bold text-blue-600">
+              <h2 className="text-3xl font-bold text-blue-600 animate-bounce">
                 Kết quả: {result.name}
               </h2>
-              <p className="text-gray-700 my-4">{result.description}</p>
-
-              <h3 className="text-lg font-semibold text-blue-500">
-                Gợi ý sản phẩm:
-              </h3>
-              <div className="grid grid-cols-3 gap-4 my-4">
-                {result.products.map((product, index) => (
-                  <div key={index} className="text-center">
-                    <img
-                      src={product.image}
-                      alt={product.name}
-                      className="w-20 h-20 mx-auto rounded-md"
-                    />
-                    <p className="text-sm mt-2">{product.name}</p>
-                  </div>
-                ))}
-              </div>
-
+              <p className="text-lg text-gray-700 my-6">{result.description}</p>
               <button
-                className="mt-4 bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 transition"
+                className="mt-6 bg-gradient-to-r from-blue-400 to-blue-600 text-white py-3 px-8 rounded-xl font-semibold shadow-xl hover:scale-105 transition"
                 onClick={() => navigate(`/routine-builder?type=${result.name}`)}
               >
-                Xem lộ trình
+                Xem lộ trình chăm sóc
               </button>
             </div>
           ) : (
             <div>
-              <h2 className="text-xl font-semibold text-blue-600">
+              <h2 className="text-2xl font-semibold text-blue-600">
                 {questions[currentQuestion].question}
               </h2>
-              <div className="mt-4 space-y-2">
+              <div className="mt-6 space-y-4">
                 {questions[currentQuestion].options.map((option, index) => (
                   <button
                     key={index}
-                    className="block w-full bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 transition"
+                    className="block w-full bg-gradient-to-r from-blue-400 to-blue-600 text-white py-3 px-8 rounded-xl shadow-xl hover:scale-105 transition"
                     onClick={() => handleOptionClick(option)}
                   >
                     {option.text}

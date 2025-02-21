@@ -59,7 +59,7 @@ const TopProducts = () => {
             <div
               key={product.id}
               data-aos="zoom-in"
-              className="rounded-2xl bg-white dark:bg-gray-300 hover:bg-black/80 dark:hover:bg-[#6BBCFE] hover:text-white relative shadow-xl duration-300 group max-w-[300px]"
+              className="rounded-2xl bg-white dark:bg-gray-300 hover:bg-black/80 dark:hover:bg-[#6BBCFE] hover:text-white relative shadow-xl shadow-blue-400 duration-300 group max-w-[300px]"
             >
               {/* Click vào ảnh để chuyển đến trang chi tiết */}
               <div

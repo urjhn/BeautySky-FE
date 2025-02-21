@@ -35,8 +35,8 @@ const ImageList = [
 
 const Hero = ({ handleOrderPopup }) => {
   var settings = {
-    dots: false,
-    arrows: false,
+    dots: true,
+    arrows: true,
     infinite: true,
     speed: 800,
     slidesToScroll: 1,
@@ -48,57 +48,44 @@ const Hero = ({ handleOrderPopup }) => {
   };
 
   return (
-    <div className="relative overflow-hidden min-h-[400px] sm:min-h-[500px] flex justify-center items-center dark:bg-gray-100 dark:text-white duration-200">
-      <div className="container m-2 pb-8 sm:pb-0">
-        <Slider {...settings}>
+    <div className="relative overflow-hidden min-h-[500px] flex justify-center items-center dark:bg-gray-100 dark:text-white duration-200 w-full">
+      <div className="w-full">
+        <Slider {...settings} className="w-full">
           {ImageList.map((data) => (
-            <div key={data.id} className="p-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-8 bg-white dark:bg-gray-800 p-6 sm:p-12 rounded-xl shadow-[rgba(0,0,0,0.2)_-10px_10px_30px]">
-                {/* Image Section */}
-                <div className="order-1 sm:order-1 flex justify-center">
-                  <div
-                    data-aos="zoom-in"
-                    data-aos-once="true"
-                    className="relative z-auto"
+            <div key={data.id} className="relative w-full h-[600px]">
+              <img
+                src={data.img}
+                alt=""
+                className="w-full h-full object-cover brightness-50"
+              />
+              <div className="absolute inset-0 flex flex-col justify-center items-center text-center px-6 text-white">
+                <h1
+                  data-aos="zoom-out"
+                  data-aos-duration="500"
+                  data-aos-once="true"
+                  className="text-5xl sm:text-6xl lg:text-7xl font-bold"
+                >
+                  {data.title}
+                </h1>
+                <p
+                  data-aos="fade-up"
+                  data-aos-duration="500"
+                  data-aos-delay="100"
+                  className="text-lg max-w-2xl mb-6"
+                >
+                  {data.description}
+                </p>
+                <div
+                  data-aos="fade-up"
+                  data-aos-duration="500"
+                  data-aos-delay="300"
+                >
+                  <Link
+                    to="/product"
+                    className="bg-gradient-to-r from-[#6BBCFE] to-[#97caf4eb] hover:scale-105 duration-200 text-white py-3 px-6 rounded-full text-lg font-semibold mt-6"
                   >
-                    <img
-                      src={data.img}
-                      alt=""
-                      className="w-[300px] h-[300px] sm:h-[450px] sm:w-[450px] object-contain"
-                    />
-                  </div>
-                </div>
-
-                {/* Text Content Section */}
-                <div className="flex flex-col justify-center gap-6 text-center sm:text-left order-2 sm:order-2 relative text-black dark:text-white">
-                  <h1
-                    data-aos="zoom-out"
-                    data-aos-duration="500"
-                    data-aos-once="true"
-                    className="text-5xl sm:text-6xl lg:text-7xl font-bold"
-                  >
-                    {data.title}
-                  </h1>
-                  <p
-                    data-aos="fade-up"
-                    data-aos-duration="500"
-                    data-aos-delay="100"
-                    className="text-sm"
-                  >
-                    {data.description}
-                  </p>
-                  <div
-                    data-aos="fade-up"
-                    data-aos-duration="500"
-                    data-aos-delay="300"
-                  >
-                    <Link
-                      to="/product"
-                      className="bg-gradient-to-r from-[#6BBCFE] to-[#97caf4eb] hover:scale-105 duration-200 text-white py-2 px-4 rounded-full"
-                    >
-                      Đặt hàng ngay
-                    </Link>
-                  </div>
+                    Đặt hàng ngay
+                  </Link>
                 </div>
               </div>
             </div>

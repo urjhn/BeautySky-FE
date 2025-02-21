@@ -61,7 +61,7 @@ const Navbar = () => {
 
   return (
     <nav className="bg-white shadow-md">
-      <div className="container mx-auto flex justify-between items-center py-4 px-6">
+      <div className="container mx-auto flex justify-between items-center py-4 px-1">
         {/* Logo */}
         <div className="flex items-center">
           <Link to="/" className="flex items-center">
@@ -146,7 +146,7 @@ const Navbar = () => {
               placeholder="Tìm kiếm"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-40 md:w-48 border border-gray-300 rounded-full px-4 py-2 focus:outline-none focus:border-primary"
+              className="w-35 md:w-48 border border-gray-300 rounded-full px-4 py-1 focus:outline-none focus:border-primary"
             />
             <button onClick={handleSearch} className="absolute right-3 top-2">
               <IoMdSearch className="text-gray-500 hover:text-[#6BBCFE]" />

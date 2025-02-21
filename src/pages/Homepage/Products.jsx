@@ -70,7 +70,7 @@ const Products = () => {
               <div
                 data-aos="fade-up"
                 data-aos-delay={data.aosDelay}
-                className="bg-white p-4 rounded-xl shadow-md hover:shadow-xl transition-shadow duration-300 transform hover:scale-110 text-center cursor-pointer"
+                className="bg-white p-4 rounded-xl shadow-md hover:shadow-xl shadow-blue-400 transition-shadow duration-300 transform hover:scale-110 text-center cursor-pointer"
               >
                 <img
                   src={data.img}
