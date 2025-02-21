@@ -113,21 +113,43 @@ const AboutUs = () => {
 
         {/* 🚀 CTA Section */}
         <section className="py-16 text-center">
-          <h2 className="text-3xl font-bold">
-            Cùng Chúng Tôi Bảo Vệ Làn Da Của Bạn!
-          </h2>
-          <motion.div
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            className="inline-block mt-6"
-          >
-            <Link
-              to="/product"
-              className="text-center bg-gradient-to-r from-[#419fed] to-[#186aadeb] hover:scale-105 duration-200 text-white py-3 px-8 rounded-full shadow-lg"
+          <div className="flex flex-col md:flex-row items-center justify-center gap-6">
+            {/* Hiệu ứng cho phần chữ */}
+            <motion.div
+              initial={{ opacity: 0, x: -50 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.8 }}
+              className="text-left md:text-center"
             >
-              Xem Sản Phẩm
-            </Link>
-          </motion.div>
+              <h2 className="text-3xl font-bold">
+                Cùng Chúng Tôi Bảo Vệ Làn Da Của Bạn!
+              </h2>
+
+              <motion.div
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="inline-block mt-6"
+              >
+                <Link
+                  to="/product"
+                  className="text-center bg-gradient-to-r from-[#419fed] to-[#186aadeb] hover:scale-105 duration-200 text-white py-3 px-8 rounded-full shadow-lg"
+                >
+                  Xem Sản Phẩm
+                </Link>
+              </motion.div>
+            </motion.div>
+
+            {/* Hiệu ứng cho ảnh */}
+            <motion.img
+              src="https://cdn.tgdd.vn//News/1448398//larocheposay(2)-845x500.jpg"
+              alt="Bảo vệ làn da"
+              className="w-80 h-auto rounded-lg shadow-lg"
+              initial={{ opacity: 0, x: 50 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.8 }}
+              whileHover={{ scale: 1.05 }}
+            />
+          </div>
         </section>
       </div>
       <Footer />

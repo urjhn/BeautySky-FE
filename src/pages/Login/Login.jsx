@@ -42,15 +42,11 @@ function Login() {
       if (res) {
         localStorage.setItem("user", JSON.stringify(res.user));
         localStorage.setItem("token", res.token);
-        localStorage.setItem("role", res.user.role);
 
         console.log("Đăng nhập thành công!");
 
-        if (res.user.role === "Manager" || res.user.role === "Staff") {
-          navigate("/dashboard");
-        } else {
-          navigate("/");
-        }
+        // Chuyển hướng sau khi đăng nhập, không cần check role vì đã có ProtectedRoute
+        navigate("/");
       }
     } catch (err) {
       setError(
