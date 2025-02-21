@@ -31,9 +31,9 @@ const SkincareQuizPopup = ({ onClose }) => {
 
         {/* Hình ảnh minh họa */}
         <img
-          src="https://cdn-icons-png.flaticon.com/512/3475/3475979.png"
+          src="https://tiki.vn/blog/wp-content/uploads/2023/01/cac-buoc-skincare-1.png"
           alt="Skincare Quiz"
-          className="w-[250px] mx-auto mb-4"
+          className="w-[400px] mx-auto mb-4"
         />
 
         {/* Tiêu đề */}

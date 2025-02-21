@@ -8,6 +8,12 @@ const Products = () => {
   const [editingProduct, setEditingProduct] = useState(null); // State to track the product being edited
   const [showEditModal, setShowEditModal] = useState(false); // State to show/hide edit modal
   const productsPerPage = 5;
+  const [newProduct, setNewProduct] = useState({
+    name: "",
+    price: "",
+    status: "Còn hàng",
+  });
+  const [showAddModal, setShowAddModal] = useState(false);
 
   useEffect(() => {
     const sampleProducts = Array.from({ length: 20 }, (_, i) => ({
@@ -51,11 +57,26 @@ const Products = () => {
     setShowEditModal(false);
   };
 
+  const handleAddProduct = () => {
+    const newId = products.length + 1;
+    const newProd = {
+      id: newId,
+      ...newProduct,
+      image: `/images/product${(newId % 5) + 1}.jpg`,
+    };
+    setProducts([...products, newProd]);
+    setShowAddModal(false);
+    setNewProduct({ name: "", price: "", status: "Còn hàng" });
+  };
+
   return (
     <div className="p-6 bg-gray-100 min-h-screen">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold text-gray-800">Danh sách sản phẩm</h1>
-        <button className="bg-blue-600 text-white px-4 py-2 rounded flex items-center">
+        <button
+          className="bg-blue-600 text-white px-4 py-2 rounded flex items-center"
+          onClick={() => setShowAddModal(true)}
+        >
           <FaPlus className="mr-2" /> Thêm sản phẩm
         </button>
       </div>
@@ -205,6 +226,43 @@ const Products = () => {
                 Save
               </button>
             </div>
+          </div>
+        </div>
+      )}
+      {showAddModal && (
+        <div className="fixed inset-0 bg-gray-500 bg-opacity-50 flex justify-center items-center">
+          <div className="bg-white p-6 rounded-lg w-1/3">
+            <h2 className="text-2xl font-bold mb-4">Thêm sản phẩm</h2>
+            <input
+              type="text"
+              placeholder="Tên sản phẩm"
+              value={newProduct.name}
+              onChange={(e) =>
+                setNewProduct({ ...newProduct, name: e.target.value })
+              }
+              className="p-2 border rounded w-full mb-2"
+            />
+            <input
+              type="text"
+              placeholder="Giá"
+              value={newProduct.price}
+              onChange={(e) =>
+                setNewProduct({ ...newProduct, price: e.target.value })
+              }
+              className="p-2 border rounded w-full mb-2"
+            />
+            <button
+              onClick={handleAddProduct}
+              className="bg-blue-600 text-white px-4 py-2 rounded mr-2"
+            >
+              Thêm
+            </button>
+            <button
+              onClick={() => setShowAddModal(false)}
+              className="bg-gray-300 px-4 py-2 rounded"
+            >
+              Hủy
+            </button>
           </div>
         </div>
       )}

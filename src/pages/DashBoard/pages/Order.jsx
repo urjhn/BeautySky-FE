@@ -1,5 +1,10 @@
 import React, { useState } from "react";
-import { FaCheckCircle, FaTimesCircle, FaClock } from "react-icons/fa";
+import {
+  FaCheckCircle,
+  FaTimesCircle,
+  FaClock,
+  FaSearch,
+} from "react-icons/fa";
 
 const allOrders = [
   {
@@ -37,129 +42,51 @@ const allOrders = [
     date: "2025-02-14",
     status: "Pending",
   },
-  {
-    id: "ORD006",
-    customer: "Michael Green",
-    amount: "$110.00",
-    date: "2025-02-15",
-    status: "Completed",
-  },
-  {
-    id: "ORD007",
-    customer: "Sophia White",
-    amount: "$80.00",
-    date: "2025-02-16",
-    status: "Cancelled",
-  },
-  {
-    id: "ORD008",
-    customer: "Daniel Black",
-    amount: "$200.00",
-    date: "2025-02-17",
-    status: "Pending",
-  },
-  {
-    id: "ORD009",
-    customer: "Olivia Adams",
-    amount: "$50.00",
-    date: "2025-02-18",
-    status: "Completed",
-  },
-  {
-    id: "ORD010",
-    customer: "Chris Miller",
-    amount: "$130.00",
-    date: "2025-02-19",
-    status: "Pending",
-  },
-  {
-    id: "ORD011",
-    customer: "Ava Brown",
-    amount: "$95.00",
-    date: "2025-02-20",
-    status: "Completed",
-  },
-  {
-    id: "ORD012",
-    customer: "Liam Davis",
-    amount: "$170.00",
-    date: "2025-02-21",
-    status: "Cancelled",
-  },
-  {
-    id: "ORD013",
-    customer: "Noah Carter",
-    amount: "$45.00",
-    date: "2025-02-22",
-    status: "Completed",
-  },
-  {
-    id: "ORD014",
-    customer: "Ethan Moore",
-    amount: "$120.00",
-    date: "2025-02-23",
-    status: "Pending",
-  },
-  {
-    id: "ORD015",
-    customer: "Isabella Wright",
-    amount: "$90.00",
-    date: "2025-02-24",
-    status: "Cancelled",
-  },
-  {
-    id: "ORD016",
-    customer: "Mason Clark",
-    amount: "$75.00",
-    date: "2025-02-25",
-    status: "Completed",
-  },
-  {
-    id: "ORD017",
-    customer: "Sophia Scott",
-    amount: "$85.00",
-    date: "2025-02-26",
-    status: "Pending",
-  },
-  {
-    id: "ORD018",
-    customer: "James White",
-    amount: "$150.00",
-    date: "2025-02-27",
-    status: "Completed",
-  },
-  {
-    id: "ORD019",
-    customer: "Charlotte Hall",
-    amount: "$55.00",
-    date: "2025-02-28",
-    status: "Cancelled",
-  },
-  {
-    id: "ORD020",
-    customer: "Benjamin Lewis",
-    amount: "$180.00",
-    date: "2025-03-01",
-    status: "Completed",
-  },
 ];
 
 const Order = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const ordersPerPage = 5;
+  const [searchTerm, setSearchTerm] = useState("");
+
+  // Lọc danh sách đơn hàng theo từ khóa tìm kiếm
+  const filteredOrders = allOrders.filter(
+    (order) =>
+      order.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      order.customer.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      order.amount.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      order.date.includes(searchTerm) ||
+      order.status.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   // Tính toán danh sách đơn hàng hiển thị trên trang hiện tại
   const indexOfLastOrder = currentPage * ordersPerPage;
   const indexOfFirstOrder = indexOfLastOrder - ordersPerPage;
-  const currentOrders = allOrders.slice(indexOfFirstOrder, indexOfLastOrder);
+  const currentOrders = filteredOrders.slice(
+    indexOfFirstOrder,
+    indexOfLastOrder
+  );
 
   // Tổng số trang
-  const totalPages = Math.ceil(allOrders.length / ordersPerPage);
+  const totalPages = Math.ceil(filteredOrders.length / ordersPerPage);
 
   return (
     <div className="p-6 bg-gray-100 min-h-screen">
       <h1 className="text-3xl font-bold mb-6">Orders</h1>
       <div className="bg-white p-4 rounded-lg shadow-md">
+        {/* Search bar */}
+        <div className="flex justify-between items-center mb-4">
+          <div className="relative">
+            <FaSearch className="absolute left-3 top-2.5 text-gray-500" />
+            <input
+              type="text"
+              placeholder="Search orders..."
+              className="pl-10 pr-4 py-2 border rounded-md w-80"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
+        </div>
         <table className="w-full border-collapse">
           <thead>
             <tr className="bg-gray-200">

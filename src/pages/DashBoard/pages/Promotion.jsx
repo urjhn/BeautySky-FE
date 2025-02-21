@@ -1,50 +1,54 @@
 import React, { useState } from "react";
 import { FaPlus, FaEdit, FaTrash } from "react-icons/fa";
 
-const promotionsData = [
-  { id: 1, name: "Summer Sale", discount: "20%", expiry: "07/30/2025" },
-  { id: 2, name: "Black Friday", discount: "50%", expiry: "11/29/2025" },
-  { id: 3, name: "Christmas Sale", discount: "30%", expiry: "12/25/2025" },
-  { id: 4, name: "New Year Offer", discount: "25%", expiry: "01/01/2026" },
-  { id: 5, name: "Spring Discount", discount: "15%", expiry: "04/15/2026" },
-  { id: 6, name: "Easter Special", discount: "18%", expiry: "04/10/2026" },
-  { id: 7, name: "Halloween Deal", discount: "35%", expiry: "10/31/2025" },
-  { id: 8, name: "Valentine's Sale", discount: "22%", expiry: "02/14/2026" },
+const initialPromotions = [
+  { id: 1, name: "Summer Sale", discount: "20%", expiry: "2025-07-30" },
+  { id: 2, name: "Black Friday", discount: "50%", expiry: "2025-11-29" },
+  { id: 3, name: "Christmas Sale", discount: "30%", expiry: "2025-12-25" },
+  { id: 4, name: "New Year Offer", discount: "25%", expiry: "2026-01-01" },
 ];
 
 const PAGE_SIZE = 4;
 
 const PromotionManagement = () => {
+  const [promotions, setPromotions] = useState(initialPromotions);
   const [currentPage, setCurrentPage] = useState(1);
-  const [newPromotion, setNewPromotion] = useState({
+  const [searchTerm, setSearchTerm] = useState("");
+  const [form, setForm] = useState({
+    id: null,
     name: "",
     discount: "",
     expiry: "",
   });
   const [showModal, setShowModal] = useState(false);
 
-  const totalPages = Math.ceil(promotionsData.length / PAGE_SIZE);
-  const paginatedPromotions = promotionsData.slice(
+  const filteredPromotions = promotions.filter((promo) =>
+    promo.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const totalPages = Math.ceil(filteredPromotions.length / PAGE_SIZE);
+  const paginatedPromotions = filteredPromotions.slice(
     (currentPage - 1) * PAGE_SIZE,
     currentPage * PAGE_SIZE
   );
 
-  const handleAddPromotion = () => {
-    promotionsData.push({
-      id: promotionsData.length + 1,
-      name: newPromotion.name,
-      discount: newPromotion.discount,
-      expiry: newPromotion.expiry,
-    });
+  const handleAddOrEditPromotion = () => {
+    if (form.id) {
+      setPromotions(promotions.map((p) => (p.id === form.id ? form : p)));
+    } else {
+      setPromotions([...promotions, { ...form, id: promotions.length + 1 }]);
+    }
     setShowModal(false);
+    setForm({ id: null, name: "", discount: "", expiry: "" });
   };
 
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setNewPromotion((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+  const handleDeletePromotion = (id) => {
+    setPromotions(promotions.filter((p) => p.id !== id));
+  };
+
+  const handleEditClick = (promo) => {
+    setForm(promo);
+    setShowModal(true);
   };
 
   return (
@@ -53,10 +57,19 @@ const PromotionManagement = () => {
         Quản lí khuyến mãi
       </h2>
 
+      {/* Search Input */}
+      <input
+        type="text"
+        placeholder="Tìm kiếm khuyến mãi..."
+        value={searchTerm}
+        onChange={(e) => setSearchTerm(e.target.value)}
+        className="w-400 p-2 border border-gray-300 rounded-md mb-4"
+      />
+
       {/* Add Promotion Button */}
       <button
         onClick={() => setShowModal(true)}
-        className="bg-blue-500 text-white px-4 py-2 rounded-md flex items-center mb-4 hover:bg-blue-600"
+        className="bg-blue-500 text-white px-4 py-2 rounded-md mb-4 hover:bg-blue-600 flex items-center"
       >
         <FaPlus className="mr-2" /> Thêm khuyến mãi
       </button>
@@ -78,10 +91,16 @@ const PromotionManagement = () => {
               <td className="py-3 px-4">{promo.discount}</td>
               <td className="py-3 px-4">{promo.expiry}</td>
               <td className="py-3 px-4 flex justify-center space-x-2">
-                <button className="text-yellow-500 hover:text-yellow-700">
+                <button
+                  onClick={() => handleEditClick(promo)}
+                  className="text-yellow-500 hover:text-yellow-700"
+                >
                   <FaEdit />
                 </button>
-                <button className="text-red-500 hover:text-red-700">
+                <button
+                  onClick={() => handleDeletePromotion(promo.id)}
+                  className="text-red-500 hover:text-red-700"
+                >
                   <FaTrash />
                 </button>
               </td>
@@ -93,13 +112,9 @@ const PromotionManagement = () => {
       {/* Pagination Controls */}
       <div className="flex justify-center mt-4 space-x-2">
         <button
-          onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+          onClick={() => setCurrentPage(Math.max(currentPage - 1, 1))}
           disabled={currentPage === 1}
-          className={`px-3 py-1 rounded-md ${
-            currentPage === 1
-              ? "bg-gray-300"
-              : "bg-blue-500 text-white hover:bg-blue-600"
-          }`}
+          className="px-3 py-1 rounded-md bg-gray-300"
         >
           Trước
         </button>
@@ -115,57 +130,44 @@ const PromotionManagement = () => {
           </button>
         ))}
         <button
-          onClick={() =>
-            setCurrentPage((prev) => Math.min(prev + 1, totalPages))
-          }
+          onClick={() => setCurrentPage(Math.min(currentPage + 1, totalPages))}
           disabled={currentPage === totalPages}
-          className={`px-3 py-1 rounded-md ${
-            currentPage === totalPages
-              ? "bg-gray-300"
-              : "bg-blue-500 text-white hover:bg-blue-600"
-          }`}
+          className="px-3 py-1 rounded-md bg-gray-300"
         >
           Tiếp
         </button>
       </div>
 
-      {/* Modal for Adding Promotion */}
+      {/* Modal for Adding/Editing Promotion */}
       {showModal && (
         <div className="fixed inset-0 bg-gray-500 bg-opacity-50 flex justify-center items-center z-50">
           <div className="bg-white p-6 rounded-lg shadow-lg w-1/3">
-            <h3 className="text-xl font-semibold mb-4">Thêm khuyến mãi</h3>
-            <div>
-              <label className="block mb-2">Tên khuyến mãi</label>
-              <input
-                type="text"
-                name="name"
-                value={newPromotion.name}
-                onChange={handleInputChange}
-                className="w-full p-2 border border-gray-300 rounded-md mb-4"
-                placeholder="Nhập tên khuyến mãi"
-              />
-            </div>
-            <div>
-              <label className="block mb-2">Giảm giá</label>
-              <input
-                type="text"
-                name="discount"
-                value={newPromotion.discount}
-                onChange={handleInputChange}
-                className="w-full p-2 border border-gray-300 rounded-md mb-4"
-                placeholder="Nhập mức giảm giá"
-              />
-            </div>
-            <div>
-              <label className="block mb-2">Ngày hết hạn</label>
-              <input
-                type="date"
-                name="expiry"
-                value={newPromotion.expiry}
-                onChange={handleInputChange}
-                className="w-full p-2 border border-gray-300 rounded-md mb-4"
-              />
-            </div>
+            <h3 className="text-xl font-semibold mb-4">
+              {form.id ? "Chỉnh sửa khuyến mãi" : "Thêm khuyến mãi"}
+            </h3>
+            <input
+              type="text"
+              name="name"
+              value={form.name}
+              onChange={(e) => setForm({ ...form, name: e.target.value })}
+              placeholder="Tên khuyến mãi"
+              className="w-full p-2 border border-gray-300 rounded-md mb-4"
+            />
+            <input
+              type="text"
+              name="discount"
+              value={form.discount}
+              onChange={(e) => setForm({ ...form, discount: e.target.value })}
+              placeholder="Giảm giá"
+              className="w-full p-2 border border-gray-300 rounded-md mb-4"
+            />
+            <input
+              type="date"
+              name="expiry"
+              value={form.expiry}
+              onChange={(e) => setForm({ ...form, expiry: e.target.value })}
+              className="w-full p-2 border border-gray-300 rounded-md mb-4"
+            />
             <div className="flex justify-between">
               <button
                 onClick={() => setShowModal(false)}
@@ -174,10 +176,10 @@ const PromotionManagement = () => {
                 Hủy
               </button>
               <button
-                onClick={handleAddPromotion}
+                onClick={handleAddOrEditPromotion}
                 className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600"
               >
-                Thêm
+                Lưu
               </button>
             </div>
           </div>

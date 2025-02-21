@@ -8,6 +8,7 @@ import "aos/dist/aos.css";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import { Link } from "react-router-dom";
+import { FaArrowLeft, FaArrowRight } from "react-icons/fa";
 
 const ImageList = [
   {
@@ -33,6 +34,30 @@ const ImageList = [
   },
 ];
 
+// Nút mũi tên trái
+const PrevArrow = ({ onClick }) => {
+  return (
+    <button
+      onClick={onClick}
+      className="absolute top-1/2 left-4 transform -translate-y-1/2 z-10 bg-white bg-opacity-30 text-white p-3 rounded-full shadow-md hover:bg-opacity-50 transition"
+    >
+      <FaArrowLeft size={24} />
+    </button>
+  );
+};
+
+// Nút mũi tên phải
+const NextArrow = ({ onClick }) => {
+  return (
+    <button
+      onClick={onClick}
+      className="absolute top-1/2 right-4 transform -translate-y-1/2 z-10 bg-white bg-opacity-30 text-white p-3 rounded-full shadow-md hover:bg-opacity-50 transition"
+    >
+      <FaArrowRight size={24} />
+    </button>
+  );
+};
+
 const Hero = ({ handleOrderPopup }) => {
   var settings = {
     dots: true,
@@ -45,6 +70,8 @@ const Hero = ({ handleOrderPopup }) => {
     cssEase: "ease-in-out",
     pauseOnHover: false,
     pauseOnFocus: true,
+    nextArrow: <NextArrow />, // Nút mũi tên phải
+    prevArrow: <PrevArrow />, // Nút mũi tên trái
   };
 
   return (

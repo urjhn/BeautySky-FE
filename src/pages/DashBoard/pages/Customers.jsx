@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { FaUser, FaSearch } from "react-icons/fa";
 
 const Customers = () => {
@@ -51,6 +51,10 @@ const Customers = () => {
       active: true,
     },
   ];
+
+  useEffect(() => {
+    setCurrentPage(1); // Reset về trang đầu khi tìm kiếm
+  }, [searchTerm]);
 
   const filteredCustomers = userList.filter(
     (customer) =>

@@ -21,7 +21,7 @@ const AboutUs = () => {
   return (
     <>
       <Navbar />
-      <div className="bg-gray-50 min-h-screen text-gray-900">
+      <div className="bg-gray-100 min-h-screen text-gray-900">
         {/* 🌟 Hero Section */}
         <section
           className="relative w-full h-screen flex items-center justify-center bg-cover bg-center"
@@ -30,21 +30,28 @@ const AboutUs = () => {
               "url('https://imageskincare.vn/wp-content/uploads/2022/04/cac-san-pham-image-skincare.jpeg')",
           }}
         >
-          <div className="absolute inset-0 bg-black bg-opacity-50"></div>
+          {/* Overlay với hiệu ứng gradient */}
+          <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/50 to-transparent"></div>
+
           <motion.div
             initial={{ opacity: 0, y: 50, scale: 0.9 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             transition={{ duration: 1 }}
             className="relative z-10 text-center text-white p-6"
           >
-            <h1 className="text-5xl font-bold">Chăm sóc làn da của bạn</h1>
-            <p className="mt-4 text-lg">
+            <h1 className="text-5xl font-bold drop-shadow-lg">
+              Chăm sóc làn da của bạn
+            </h1>
+            <p className="mt-4 text-lg text-gray-200 max-w-lg mx-auto">
               Khám phá vẻ đẹp tự nhiên với các sản phẩm mỹ phẩm cao cấp của
               chúng tôi.
             </p>
+
+            {/* Nút CTA với hiệu ứng động */}
             <Link
               to="/"
-              className="mt-6 inline-block bg-blue-500 text-white px-6 py-3 rounded-full text-lg hover:bg-blue-600 transition transform hover:scale-105 shadow-lg"
+              className="mt-6 inline-block bg-[#6BBCFE] text-white px-6 py-3 rounded-full text-lg font-semibold
+      hover:bg-blue-600 transition transform hover:scale-110 shadow-lg hover:shadow-blue-400/50"
             >
               Khám phá ngay
             </Link>
@@ -53,34 +60,48 @@ const AboutUs = () => {
 
         {/* ✨ About Section */}
         <section className="container mx-auto py-16 px-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-10 items-center">
+          <div
+            className="grid grid-cols-1 md:grid-cols-2 gap-10 items-center"
+            data-aos="fade-up"
+          >
+            {/* Ảnh với hiệu ứng viền mềm và bóng đổ */}
             <motion.img
               src="https://tiki.vn/blog/wp-content/uploads/2023/02/review-la-roche-posay-1.jpg"
               alt="Mỹ phẩm thiên nhiên"
-              className="rounded-lg shadow-lg hover:shadow-2xl transition duration-300"
+              className="rounded-lg shadow-lg shadow-blue-400 hover:shadow-2xl transition duration-300 border-4"
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 1 }}
             />
+
+            {/* Nội dung giới thiệu */}
             <div>
-              <h2 className="text-4xl font-bold">Về Chúng Tôi</h2>
-              <p className="mt-4 text-lg text-gray-600">
+              <h2 className="text-4xl font-bold bg-gradient-to-r from-blue-500 to-teal-400 text-transparent bg-clip-text">
+                Về Chúng Tôi
+              </h2>
+              <p className="mt-4 text-lg text-gray-600 leading-relaxed">
                 Chúng tôi là thương hiệu mỹ phẩm hàng đầu, mang đến những sản
                 phẩm chất lượng cao được chiết xuất từ thiên nhiên.
               </p>
+
+              {/* Danh sách đặc điểm với hiệu ứng */}
               <ul className="mt-6 space-y-3">
-                <li className="flex items-center gap-2 text-lg">
-                  <FaCheckCircle className="text-green-500" /> Thành phần 100%
-                  thiên nhiên
-                </li>
-                <li className="flex items-center gap-2 text-lg">
-                  <FaCheckCircle className="text-green-500" /> Không chứa hóa
-                  chất độc hại
-                </li>
-                <li className="flex items-center gap-2 text-lg">
-                  <FaCheckCircle className="text-green-500" /> Được các chuyên
-                  gia da liễu khuyên dùng
-                </li>
+                {[
+                  "Thành phần 100% thiên nhiên",
+                  "Không chứa hóa chất độc hại",
+                  "Được các chuyên gia da liễu khuyên dùng",
+                ].map((item, index) => (
+                  <motion.li
+                    key={index}
+                    className="flex items-center gap-2 text-lg"
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.5, delay: index * 0.2 }}
+                  >
+                    <FaCheckCircle className="text-green-500" />
+                    {item}
+                  </motion.li>
+                ))}
               </ul>
             </div>
           </div>
@@ -113,18 +134,24 @@ const AboutUs = () => {
 
         {/* 🚀 CTA Section */}
         <section className="py-16 text-center">
-          <div className="flex flex-col md:flex-row items-center justify-center gap-6">
-            {/* Hiệu ứng cho phần chữ */}
+          <div className="flex flex-col md:flex-row items-center justify-center gap-8 px-6">
+            {/* Phần chữ */}
             <motion.div
               initial={{ opacity: 0, x: -50 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.8 }}
-              className="text-left md:text-center"
+              className="text-left md:text-center max-w-lg"
             >
-              <h2 className="text-3xl font-bold">
-                Cùng Chúng Tôi Bảo Vệ Làn Da Của Bạn!
+              <h2 className="text-4xl md:text-5xl font-bold text-gray-800 leading-snug">
+                🌿 Cùng Chúng Tôi <span className="text-[#419fed]">Bảo Vệ</span>{" "}
+                Làn Da Của Bạn!
               </h2>
+              <p className="mt-4 text-lg text-gray-600">
+                Sử dụng các sản phẩm chăm sóc da từ thiên nhiên giúp da bạn luôn
+                khỏe mạnh và rạng rỡ.
+              </p>
 
+              {/* Nút CTA */}
               <motion.div
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
@@ -132,23 +159,29 @@ const AboutUs = () => {
               >
                 <Link
                   to="/product"
-                  className="text-center bg-gradient-to-r from-[#419fed] to-[#186aadeb] hover:scale-105 duration-200 text-white py-3 px-8 rounded-full shadow-lg"
+                  className="bg-gradient-to-r from-[#419fed] to-[#186aadeb] text-white py-3 px-8 rounded-full shadow-lg transition-all duration-300 hover:shadow-xl hover:brightness-110"
                 >
                   Xem Sản Phẩm
                 </Link>
               </motion.div>
             </motion.div>
 
-            {/* Hiệu ứng cho ảnh */}
-            <motion.img
-              src="https://cdn.tgdd.vn//News/1448398//larocheposay(2)-845x500.jpg"
-              alt="Bảo vệ làn da"
-              className="w-80 h-auto rounded-lg shadow-lg"
+            {/* Phần hình ảnh */}
+            <motion.div
               initial={{ opacity: 0, x: 50 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.8 }}
               whileHover={{ scale: 1.05 }}
-            />
+              className="relative"
+            >
+              <img
+                src="https://cdn.tgdd.vn//News/1448398//larocheposay(2)-845x500.jpg"
+                alt="Bảo vệ làn da"
+                className="w-[450px] md:w-[550px] rounded-lg shadow-lg transition-all duration-300"
+              />
+              {/* Hiệu ứng ánh sáng lướt qua ảnh */}
+              <div className="absolute inset-0 bg-white opacity-10 rounded-lg transition-opacity duration-500 hover:opacity-20"></div>
+            </motion.div>
           </div>
         </section>
       </div>

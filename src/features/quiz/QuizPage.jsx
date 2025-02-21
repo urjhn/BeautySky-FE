@@ -7,28 +7,39 @@ const questions = [
   {
     question: "Sau khi rửa mặt 30 phút, da bạn cảm thấy thế nào?",
     options: [
-      { text: "Bóng dầu, đặc biệt ở vùng chữ T", type: "oily" },
-      { text: "Khô, căng và có cảm giác khó chịu", type: "dry" },
-      { text: "Bình thường, không quá khô hoặc nhờn", type: "normal" },
-      { text: "Dễ bị đỏ và kích ứng", type: "sensitive" },
+      { text: "Bóng dầu ở toàn bộ mặt", type: "oily" },
+      { text: "Chỉ dầu vùng chữ T, khô ở má", type: "combination" },
+      { text: "Bình thường, không khô không dầu", type: "normal" },
+      { text: "Khô, căng, có thể bong tróc", type: "dry" },
+      { text: "Dễ đỏ, kích ứng hoặc ngứa", type: "sensitive" },
     ],
   },
   {
-    question: "Lỗ chân lông của bạn trông như thế nào?",
+    question: "Bạn có thường xuyên bị mụn không?",
     options: [
-      { text: "To và dễ thấy trên toàn bộ khuôn mặt", type: "oily" },
-      { text: "Nhỏ hoặc không thấy rõ", type: "dry" },
-      { text: "Nhỏ ở má nhưng lớn hơn ở vùng chữ T", type: "normal" },
-      { text: "Bình thường nhưng dễ bị mẩn đỏ", type: "sensitive" },
+      { text: "Rất dễ bị mụn đầu đen, đầu trắng", type: "oily" },
+      { text: "Chỉ mụn ở vùng chữ T", type: "combination" },
+      { text: "Thỉnh thoảng bị mụn", type: "normal" },
+      { text: "Hiếm khi bị mụn", type: "dry" },
+      { text: "Hay nổi mẩn đỏ, kích ứng", type: "sensitive" },
     ],
   },
   {
-    question: "Bạn có thường xuyên bị nổi mụn hoặc kích ứng không?",
+    question: "Da bạn phản ứng thế nào với mỹ phẩm mới?",
     options: [
-      { text: "Rất dễ bị mụn", type: "oily" },
-      { text: "Thỉnh thoảng bị khô và bong tróc", type: "dry" },
-      { text: "Rất ít khi bị mụn", type: "normal" },
-      { text: "Dễ bị đỏ và nhạy cảm với mỹ phẩm", type: "sensitive" },
+      { text: "Dễ bị mụn hoặc bít tắc lỗ chân lông", type: "oily" },
+      { text: "Không phản ứng nhiều", type: "normal" },
+      { text: "Có thể khô, căng hơn", type: "dry" },
+      { text: "Dễ đỏ hoặc ngứa khi đổi sản phẩm", type: "sensitive" },
+    ],
+  },
+  {
+    question: "Lỗ chân lông của bạn trông thế nào?",
+    options: [
+      { text: "To, dễ thấy trên toàn bộ mặt", type: "oily" },
+      { text: "Nhỏ ở má, to hơn ở vùng chữ T", type: "combination" },
+      { text: "Nhỏ, khó thấy", type: "dry" },
+      { text: "Không quá lớn cũng không quá nhỏ", type: "normal" },
     ],
   },
 ];
@@ -37,65 +48,52 @@ const skinTypeDescriptions = {
   oily: {
     name: "Da Dầu",
     description:
-      "Da bạn có xu hướng sản xuất nhiều dầu, dễ bị mụn nhưng ít nếp nhăn hơn. Hãy sử dụng sản phẩm kiềm dầu và cấp ẩm nhẹ.",
-    products: [
-      { name: "Sữa rửa mặt kiềm dầu", image: "/images/oily-cleanser.jpg" },
-      { name: "Toner chứa BHA", image: "/images/oily-toner.jpg" },
-      { name: "Kem dưỡng gel nhẹ", image: "/images/oily-moisturizer.jpg" },
-    ],
+      "Da bạn tiết nhiều dầu, dễ bị mụn. Hãy chọn sản phẩm kiềm dầu và cấp ẩm nhẹ.",
   },
-  dry: {
-    name: "Da Khô",
+  combination: {
+    name: "Da Hỗn Hợp",
     description:
-      "Da bạn thường thiếu nước, dễ bong tróc và có nếp nhăn. Hãy sử dụng kem dưỡng ẩm sâu và tránh các sản phẩm có cồn.",
-    products: [
-      { name: "Sữa rửa mặt dịu nhẹ", image: "/images/dry-cleanser.jpg" },
-      { name: "Serum cấp ẩm", image: "/images/dry-serum.jpg" },
-      { name: "Kem dưỡng ẩm sâu", image: "/images/dry-moisturizer.jpg" },
-    ],
+      "Da bạn dầu vùng chữ T, khô vùng má. Cần cân bằng dầu và độ ẩm.",
   },
   normal: {
     name: "Da Thường",
     description:
-      "Da bạn cân bằng, không quá dầu cũng không quá khô. Bạn có thể sử dụng hầu hết các sản phẩm chăm sóc da.",
-    products: [
-      { name: "Sữa rửa mặt dịu nhẹ", image: "/images/normal-cleanser.jpg" },
-      { name: "Toner cân bằng", image: "/images/normal-toner.jpg" },
-      { name: "Kem dưỡng ẩm", image: "/images/normal-moisturizer.jpg" },
-    ],
+      "Da bạn cân bằng, ít gặp vấn đề. Bạn có thể dùng nhiều loại sản phẩm.",
+  },
+  dry: {
+    name: "Da Khô",
+    description:
+      "Da bạn thiếu nước, dễ bong tróc. Hãy chọn sản phẩm dưỡng ẩm sâu.",
   },
   sensitive: {
     name: "Da Nhạy Cảm",
     description:
-      "Da bạn dễ bị kích ứng, mẩn đỏ hoặc phản ứng với mỹ phẩm. Hãy sử dụng các sản phẩm dịu nhẹ, không chứa hương liệu.",
-    products: [
-      {
-        name: "Sữa rửa mặt không xà phòng",
-        image: "/images/sensitive-cleanser.jpg",
-      },
-      { name: "Serum làm dịu", image: "/images/sensitive-serum.jpg" },
-      {
-        name: "Kem dưỡng không chứa hương liệu",
-        image: "/images/sensitive-moisturizer.jpg",
-      },
-    ],
+      "Da bạn dễ kích ứng. Hãy chọn sản phẩm dịu nhẹ, không chứa hương liệu.",
   },
 };
 
 const QuizPage = () => {
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [answers, setAnswers] = useState([]);
+  const [selectedOption, setSelectedOption] = useState(null);
   const [result, setResult] = useState(null);
   const navigate = useNavigate();
 
   const handleOptionClick = (option) => {
-    const updatedAnswers = [...answers, option.type];
-    setAnswers(updatedAnswers);
+    setSelectedOption(option);
+  };
 
-    if (currentQuestion < questions.length - 1) {
-      setCurrentQuestion(currentQuestion + 1);
-    } else {
-      determineSkinType(updatedAnswers);
+  const handleNext = () => {
+    if (selectedOption) {
+      const updatedAnswers = [...answers, selectedOption.type];
+      setAnswers(updatedAnswers);
+      setSelectedOption(null);
+
+      if (currentQuestion < questions.length - 1) {
+        setCurrentQuestion(currentQuestion + 1);
+      } else {
+        determineSkinType(updatedAnswers);
+      }
     }
   };
 
@@ -140,15 +138,43 @@ const QuizPage = () => {
               </h2>
               <div className="mt-6 space-y-4">
                 {questions[currentQuestion].options.map((option, index) => (
-                  <button
+                  <label
                     key={index}
-                    className="block w-full bg-gradient-to-r from-blue-400 to-blue-600 text-white py-3 px-8 rounded-xl shadow-xl hover:scale-105 transition"
-                    onClick={() => handleOptionClick(option)}
+                    className={`flex items-center justify-start space-x-4 cursor-pointer rounded-xl p-4 shadow-md transition ${
+                      selectedOption?.text === option.text
+                        ? "bg-[#6BBCFE] text-white scale-105"
+                        : "bg-gray-100 hover:bg-blue-200"
+                    }`}
                   >
-                    {option.text}
-                  </button>
+                    <input
+                      type="radio"
+                      name="quiz"
+                      value={option.text}
+                      className="hidden"
+                      onChange={() => handleOptionClick(option)}
+                    />
+                    <div className="w-6 h-6 flex items-center justify-center border-2 border-blue-500 rounded-full">
+                      {selectedOption?.text === option.text && (
+                        <div className="w-4 h-4 bg-blue-500 rounded-full"></div>
+                      )}
+                    </div>
+                    <span className="text-lg">{option.text}</span>
+                  </label>
                 ))}
               </div>
+              <button
+                className={`mt-6 bg-gradient-to-r from-blue-400 to-blue-600 text-white py-3 px-8 rounded-xl font-semibold shadow-xl transition ${
+                  selectedOption
+                    ? "hover:scale-105"
+                    : "opacity-50 cursor-not-allowed"
+                }`}
+                onClick={handleNext}
+                disabled={!selectedOption}
+              >
+                {currentQuestion < questions.length - 1
+                  ? "Tiếp theo"
+                  : "Xem kết quả"}
+              </button>
             </div>
           )}
         </div>
