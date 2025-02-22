@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { ShoppingCart, Filter, Star, Sun, Moon, Droplet } from "lucide-react";
 import Navbar from "../../components/Navbar/Navbar";
 import Footer from "../../components/Footer/Footer";
 import { useCart } from "../../context/CartContext";
-import products from "./DataFakeProduct"; // Make sure this path is correct
+import products from "./DataFakeProduct";
 import PaginationComponent from "../../components/Pagination/Pagination.jsx";
 import ProductList from "./ProductList";
 
@@ -11,11 +12,12 @@ const ProductsPage = () => {
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
+
   const { addToCart } = useCart();
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedSkinType, setSelectedSkinType] = useState("All");
   const [selectedCategory, setSelectedCategory] = useState("All");
-  const [sortOrder, setSortOrder] = useState("asc"); // Removed unused sortOrder state
+  const [sortOrder, setSortOrder] = useState("asc");
   const itemsPerPage = 8;
   const navigate = useNavigate();
 
@@ -38,173 +40,97 @@ const ProductsPage = () => {
   const currentProducts = sortedProducts.slice(
     indexOfFirstItem,
     indexOfLastItem
-  ); // Use sortedProducts here
-  //Remove the Function YourProductComponent  and the rest of the functions in this file
-
-  const handleSkinTypeChange = (skinType) => {
-    setSelectedSkinType(skinType);
-    setCurrentPage(1); // Reset to first page on filter change
-  };
-
-  const handleCategoryChange = (category) => {
-    setSelectedCategory(category);
-    setCurrentPage(1); // Reset to first page on filter change
-  };
+  );
 
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="flex flex-col min-h-screen bg-gradient-to-r from-blue-50 to-blue-100">
       <Navbar />
-      <main className="flex-1 bg-gradient-to-br from-blue-50 to-white">
-        <div className="container mx-auto py-10 px-6">
-          <div className="flex gap-6 max-w-[1440px] mx-auto">
-            {/* Sidebar (Compact Filter) */}
-            <div className="w-1/4 p-5 bg-white shadow-xl rounded-xl h-fit sticky top-20">
-              <h2 className="text-lg font-semibold mb-3 text-gray-700">
-                Lọc sản phẩm
+      <main className="flex-1 container mx-auto py-10 px-6">
+        <h1 className="text-5xl font-extrabold text-[#6BBCFE] text-center mb-8 drop-shadow-md">
+          ✨ Khám phá Sản Phẩm Skincare ✨
+        </h1>
+        <div className="flex gap-8 max-w-[1440px] mx-auto">
+          {/* Sidebar */}
+          <div className="w-1/4 p-6 bg-white shadow-lg rounded-2xl border border-gray-200 h-fit sticky top-20">
+            <h2 className="text-xl font-semibold mb-4 flex items-center gap-2 text-gray-800">
+              <Filter size={20} className="text-black" /> Bộ lọc
+            </h2>
+
+            {/* Loại da filter */}
+            <div className="mb-4">
+              <label className="block text-gray-600 font-medium mb-2 flex items-center gap-2">
+                <Droplet size={18} className="text-blue-400" /> Loại da
+              </label>
+              <div className="grid grid-cols-2 gap-2">
+                {[
+                  "All",
+                  "Oily Skin",
+                  "Dry Skin",
+                  "Normal Skin",
+                  "Combination Skin",
+                ].map((type) => (
+                  <button
+                    key={type}
+                    className={`px-3 py-1.5 text-sm rounded-full font-medium transition-all duration-200 border border-gray-300 hover:bg-purple-100 hover:text-purple-600 shadow-md ${
+                      selectedSkinType === type
+                        ? "bg-gray-500 text-white"
+                        : "bg-white"
+                    }`}
+                    onClick={() => setSelectedSkinType(type)}
+                  >
+                    {type === "All" ? "Tất cả" : type}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Loại sản phẩm filter */}
+            <div className="mb-4">
+              <label className="block text-gray-600 font-medium mb-2 flex items-center gap-2">
+                <Sun size={18} className="text-yellow-400" /> Loại sản phẩm
+              </label>
+              <div className="grid grid-cols-2 gap-2">
+                {[
+                  "All",
+                  "Tẩy trang",
+                  "Sữa rửa mặt",
+                  "Toner",
+                  "Serum",
+                  "Kem trị mụn",
+                  "Kem chống nắng",
+                ].map((category) => (
+                  <button
+                    key={category}
+                    className={`px-3 py-1.5 text-sm rounded-full font-medium transition-all duration-200 border border-gray-300 hover:bg-pink-100 hover:text-pink-600 shadow-md ${
+                      selectedCategory === category
+                        ? "bg-gray-500 text-white"
+                        : "bg-white"
+                    }`}
+                    onClick={() => setSelectedCategory(category)}
+                  >
+                    {category}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Product List */}
+          <div className="w-3/4">
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-3xl font-bold text-gray-600">
+                🌸 Sản phẩm nổi bật 🌸
               </h2>
-
-              {/* Loại da filter */}
-              <div className="mb-3">
-                <label className="block text-gray-600 text-sm mb-1">
-                  Loại da
-                </label>
-                <div className="flex flex-wrap gap-2">
-                  <button
-                    className={`px-2 py-1 text-xs rounded-full bg-gray-200 hover:bg-blue-100 text-gray-700 hover:text-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors duration-200 ${
-                      selectedSkinType === "All" ? "bg-blue-500 text-white" : ""
-                    }`}
-                    onClick={() => handleSkinTypeChange("All")}
-                  >
-                    Tất cả
-                  </button>
-                  <button
-                    className={`px-2 py-1 text-xs rounded-full bg-gray-200 hover:bg-blue-100 text-gray-700 hover:text-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors duration-200 ${
-                      selectedSkinType === "Oily Skin"
-                        ? "bg-blue-500 text-white"
-                        : ""
-                    }`}
-                    onClick={() => handleSkinTypeChange("Oily Skin")}
-                  >
-                    Da dầu
-                  </button>
-                  <button
-                    className={`px-2 py-1 text-xs rounded-full bg-gray-200 hover:bg-blue-100 text-gray-700 hover:text-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors duration-200 ${
-                      selectedSkinType === "Dry Skin"
-                        ? "bg-blue-500 text-white"
-                        : ""
-                    }`}
-                    onClick={() => handleSkinTypeChange("Dry Skin")}
-                  >
-                    Da khô
-                  </button>
-                  <button
-                    className={`px-2 py-1 text-xs rounded-full bg-gray-200 hover:bg-blue-100 text-gray-700 hover:text-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors duration-200 ${
-                      selectedSkinType === "Normal Skin"
-                        ? "bg-blue-500 text-white"
-                        : ""
-                    }`}
-                    onClick={() => handleSkinTypeChange("Normal Skin")}
-                  >
-                    Da thường
-                  </button>
-                  <button
-                    className={`px-2 py-1 text-xs rounded-full bg-gray-200 hover:bg-blue-100 text-gray-700 hover:text-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors duration-200 ${
-                      selectedSkinType === "Combination Skin"
-                        ? "bg-blue-500 text-white"
-                        : ""
-                    }`}
-                    onClick={() => handleSkinTypeChange("Combination Skin")}
-                  >
-                    Da hỗn hợp
-                  </button>
-                </div>
-              </div>
-
-              {/* Loại sản phẩm filter */}
-              <div className="mb-3">
-                <label className="block text-gray-600 text-sm mb-1">
-                  Loại sản phẩm
-                </label>
-                <div className="flex flex-wrap gap-2">
-                  <button
-                    className={`px-2 py-1 text-xs rounded-full bg-gray-200 hover:bg-blue-100 text-gray-700 hover:text-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors duration-200 ${
-                      selectedCategory === "All" ? "bg-blue-500 text-white" : ""
-                    }`}
-                    onClick={() => handleCategoryChange("All")}
-                  >
-                    Tất cả
-                  </button>
-                  <button
-                    className={`px-2 py-1 text-xs rounded-full bg-gray-200 hover:bg-blue-100 text-gray-700 hover:text-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors duration-200 ${
-                      selectedCategory === "Tẩy trang"
-                        ? "bg-blue-500 text-white"
-                        : ""
-                    }`}
-                    onClick={() => handleCategoryChange("Tẩy trang")}
-                  >
-                    Tẩy trang
-                  </button>
-                  <button
-                    className={`px-2 py-1 text-xs rounded-full bg-gray-200 hover:bg-blue-100 text-gray-700 hover:text-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors duration-200 ${
-                      selectedCategory === "Sữa rửa mặt"
-                        ? "bg-blue-500 text-white"
-                        : ""
-                    }`}
-                    onClick={() => handleCategoryChange("Sữa rửa mặt")}
-                  >
-                    Sữa rửa mặt
-                  </button>
-                  <button
-                    className={`px-2 py-1 text-xs rounded-full bg-gray-200 hover:bg-blue-100 text-gray-700 hover:text-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors duration-200 ${
-                      selectedCategory === "Toner"
-                        ? "bg-blue-500 text-white"
-                        : ""
-                    }`}
-                    onClick={() => handleCategoryChange("Toner")}
-                  >
-                    Toner
-                  </button>
-                  <button
-                    className={`px-2 py-1 text-xs rounded-full bg-gray-200 hover:bg-blue-100 text-gray-700 hover:text-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors duration-200 ${
-                      selectedCategory === "Serum"
-                        ? "bg-blue-500 text-white"
-                        : ""
-                    }`}
-                    onClick={() => handleCategoryChange("Serum")}
-                  >
-                    Serum
-                  </button>
-                  <button
-                    className={`px-2 py-1 text-xs rounded-full bg-gray-200 hover:bg-blue-100 text-gray-700 hover:text-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors duration-200 ${
-                      selectedCategory === "Kem trị mụn"
-                        ? "bg-blue-500 text-white"
-                        : ""
-                    }`}
-                    onClick={() => handleCategoryChange("Kem trị mụn")}
-                  >
-                    Kem trị mụn
-                  </button>
-                  <button
-                    className={`px-2 py-1 text-xs rounded-full bg-gray-200 hover:bg-blue-100 text-gray-700 hover:text-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors duration-200 ${
-                      selectedCategory === "Kem chống nắng"
-                        ? "bg-blue-500 text-white"
-                        : ""
-                    }`}
-                    onClick={() => handleCategoryChange("Kem chống nắng")}
-                  >
-                    Kem chống nắng
-                  </button>
-                </div>
-              </div>
+              <button
+                className="px-4 py-2 text-white bg-gray-500 hover:bg-gray-600 rounded-lg flex items-center gap-2 shadow-md"
+                onClick={() =>
+                  setSortOrder(sortOrder === "asc" ? "desc" : "asc")
+                }
+              >
+                <Star size={20} /> Sắp xếp
+              </button>
             </div>
-
-            {/* Product List */}
-            <div className="w-3/4 p-5">
-              <h1 className="text-4xl font-bold text-[#6bbcfe] mb-6 text-center">
-                Sản phẩm chăm sóc da
-              </h1>
-              <ProductList products={currentProducts} />
-            </div>
+            <ProductList products={currentProducts} />
           </div>
         </div>
       </main>
@@ -212,11 +138,9 @@ const ProductsPage = () => {
         itemsPerPage={itemsPerPage}
         totalItems={sortedProducts.length}
         currentPage={currentPage}
-        onPageChange={setCurrentPage} // Pass setCurrentPage directly
+        onPageChange={setCurrentPage}
       />
-      <div className="mt-auto">
-        <Footer />
-      </div>
+      <Footer />
     </div>
   );
 };
