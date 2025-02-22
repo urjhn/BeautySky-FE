@@ -1,8 +1,13 @@
-import React from 'react';
-import Pagination from '@mui/material/Pagination';
-import Stack from '@mui/material/Stack';
+import React from "react";
+import Pagination from "@mui/material/Pagination";
+import Stack from "@mui/material/Stack";
 
-const PaginationComponent = ({ totalItems, itemsPerPage, currentPage, onPageChange }) => {
+const PaginationComponent = ({
+  totalItems,
+  itemsPerPage,
+  currentPage,
+  onPageChange,
+}) => {
   const pageCount = Math.ceil(totalItems / itemsPerPage);
 
   const handleChange = (event, value) => {
@@ -10,7 +15,13 @@ const PaginationComponent = ({ totalItems, itemsPerPage, currentPage, onPageChan
   };
 
   return (
-    <Stack spacing={2} direction="row" justifyContent="center" alignItems="center">
+    <Stack
+      sx={{ mb: 5 }}
+      spacing={2}
+      direction="row"
+      justifyContent="center"
+      alignItems="center"
+    >
       <Pagination
         count={pageCount}
         page={currentPage}

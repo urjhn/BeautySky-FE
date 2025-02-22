@@ -14,15 +14,14 @@ const ProductDetail = () => {
   const [compareProduct, setCompareProduct] = useState(null);
 
   useEffect(() => {
-    // Tìm sản phẩm từ mảng products đã import
-    const foundProduct = products.find((p) => p.id === parseInt(id)); // Chú ý: Chuyển id sang số
+    const foundProduct = products.find((p) => p.id === parseInt(id));
     setProduct(foundProduct);
   }, [id]);
 
   const handleCompareChange = (e) => {
     const selectedProduct = products.find(
       (p) => p.id === parseInt(e.target.value)
-    ); // Chú ý: Chuyển id sang số
+    );
     setCompareProduct(selectedProduct);
   };
 
@@ -47,82 +46,55 @@ const ProductDetail = () => {
   return (
     <>
       <Navbar />
-      <div className="min-h-screen flex flex-col items-center bg-gradient-to-b from-blue-100 to-white py-10">
-        <div className="bg-white rounded-2xl shadow-2xl p-8 flex flex-col md:flex-row w-full max-w-5xl animate-fadeIn">
+      <div className="min-h-screen flex flex-col items-center bg-gradient-to-b from-blue-50 to-blue-100 py-12 px-6">
+        <div className="bg-white rounded-3xl shadow-xl p-10 flex flex-col md:flex-row w-full max-w-6xl animate-fadeIn gap-8">
           {/* Hình ảnh sản phẩm */}
           <img
             src={product.image}
             alt={product.name}
-            className="w-full md:w-1/2 h-auto rounded-xl shadow-md"
+            className="w-full md:w-1/2 h-auto rounded-2xl shadow-lg object-cover"
           />
 
           {/* Chi tiết sản phẩm */}
-          <div className="md:ml-10 flex flex-col justify-between mt-6 md:mt-0 w-full">
+          <div className="md:ml-10 flex flex-col justify-between mt-6 md:mt-0 w-full space-y-4">
             <h1 className="text-4xl font-bold text-gray-900">{product.name}</h1>
-            <div className="flex items-center mt-2">
-              {renderStars(product.rating || 0)} {/* Thêm giá trị mặc định */}
+            <div className="flex items-center">
+              {renderStars(product.rating || 0)}
             </div>
-            <p className="text-lg text-gray-600 mt-2">{product.description}</p>
-            <p className="text-md text-gray-500 mt-2">
+            <p className="text-lg text-gray-600">{product.description}</p>
+            <p className="text-md text-gray-500">
               Phù hợp với:{" "}
               <span className="font-semibold">{product.skinType}</span>
             </p>
-            <p className="text-2xl font-semibold text-blue-600 mt-4">
+            <p className="text-3xl font-bold text-gray-500">
               ${product.price.toFixed(2)}
             </p>
 
-            {/* Thành phần */}
-            <div className="mt-6">
-              <h3 className="text-xl font-semibold text-gray-800">
-                Thành phần
-              </h3>
-              <ul className="list-disc pl-5 text-gray-600">
-                {product.ingredients?.map(
-                  (
-                    ingredient,
-                    index // Optional chaining
-                  ) => (
-                    <li key={index}>{ingredient}</li>
-                  )
-                )}
-              </ul>
-            </div>
-
-            {/* Hướng dẫn sử dụng */}
-            <div className="mt-6">
-              <h3 className="text-xl font-semibold text-gray-800">
-                Cách sử dụng
-              </h3>
-              <p className="text-gray-600">{product.usage}</p>
-            </div>
-
-            {/* Nút bấm */}
-            <div className="mt-8 flex space-x-4">
+            {/* Nút CTA */}
+            <div className="mt-6 flex space-x-4">
               <button
-                className="w-full bg-blue-500 text-white py-3 rounded-xl font-semibold hover:bg-blue-700 transition-all flex items-center justify-center gap-2"
+                className="w-full bg-[#6BBCFE] text-white py-4 rounded-2xl font-semibold hover:bg-blue-500 transition-all flex items-center justify-center gap-2 shadow-md"
                 onClick={() => addToCart(product)}
               >
-                <FaShoppingCart />
-                Thêm vào giỏ hàng
+                <FaShoppingCart /> Thêm vào giỏ hàng
               </button>
               <button
-                className="w-full bg-gray-300 text-gray-900 py-3 rounded-xl font-semibold hover:bg-gray-400 transition-all flex items-center justify-center gap-2"
+                className="w-full bg-gray-300 text-gray-900 py-4 rounded-2xl font-semibold hover:bg-gray-400 transition-all flex items-center justify-center gap-2 shadow-md"
                 onClick={() => navigate(-1)}
               >
-                <FaArrowLeft />
-                Quay lại
+                <FaArrowLeft /> Quay lại
               </button>
             </div>
           </div>
         </div>
 
         {/* So sánh sản phẩm */}
-        <div className="mt-10 w-full max-w-5xl">
-          <h2 className="text-2xl font-bold text-gray-800 mb-4">
+        <div className="mt-12 w-full max-w-6xl">
+          <h2 className="text-3xl font-bold text-gray-800 mb-4">
             So sánh với:
           </h2>
           <select
-            className="border border-gray-300 rounded-lg p-2"
+            className="border border-gray-300 rounded-lg p-3 w-full md:w-1/3 shadow-sm"
             onChange={handleCompareChange}
             defaultValue=""
           >
@@ -139,23 +111,23 @@ const ProductDetail = () => {
           </select>
 
           {compareProduct && (
-            <div className="bg-white rounded-2xl shadow-md p-6 mt-6 flex flex-col md:flex-row w-full max-w-5xl">
+            <div className="bg-white rounded-3xl shadow-md p-8 mt-6 flex flex-col md:flex-row gap-8 w-full max-w-6xl animate-fadeIn">
               <img
                 src={compareProduct.image}
                 alt={compareProduct.name}
-                className="w-full md:w-1/2 h-auto rounded-xl shadow-md"
+                className="w-full md:w-1/2 h-auto rounded-xl shadow-lg object-cover"
               />
-              <div className="md:ml-10 flex flex-col justify-between mt-6 md:mt-0 w-full">
+              <div className="md:ml-10 flex flex-col justify-between w-full space-y-4">
                 <h1 className="text-3xl font-bold text-gray-900">
                   {compareProduct.name}
                 </h1>
-                <div className="flex items-center mt-2">
+                <div className="flex items-center">
                   {renderStars(compareProduct.rating || 0)}
                 </div>
-                <p className="text-lg text-gray-600 mt-2">
+                <p className="text-lg text-gray-600">
                   {compareProduct.description}
                 </p>
-                <p className="text-2xl font-semibold text-blue-600 mt-4">
+                <p className="text-3xl font-bold text-purple-600">
                   ${compareProduct.price.toFixed(2)}
                 </p>
               </div>

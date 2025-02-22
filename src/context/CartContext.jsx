@@ -37,9 +37,8 @@ export const CartProvider = ({ children }) => {
   };
 
   // Calculate the total price of all items in the cart
-  const totalPrice = cartItems
-    .reduce((acc, item) => acc + item.price * item.quantity, 0)
-    .toFixed(2);
+  const totalPrice =
+    cartItems.reduce((acc, item) => acc + item.price * item.quantity, 0) || 0;
 
   return (
     <CartContext.Provider

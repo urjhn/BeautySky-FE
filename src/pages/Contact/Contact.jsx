@@ -84,9 +84,11 @@ function Contact() {
         <div className="w-full max-w-2xl mt-8 overflow-hidden rounded-2xl shadow-2xl border-4 border-blue-500">
           <iframe
             className="w-full h-72 rounded-2xl"
-            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3151.835434509426!2d144.95373531590465!3d-37.81627974202171!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x6ad65d5df0f7e6d5%3A0x5045675218ce7e33!2sMelbourne%20CBD%2C%20Victoria%2C%20Australia!5e0!3m2!1sen!2s!4v1615960204691!5m2!1sen!2s"
-            allowFullScreen=""
+            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d11083.334579850713!2d106.79672781264084!3d10.845668801469992!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x317527374c43baad%3A0xb8b244d75d12213e!2sFPT%20Software%20Tp.H%E1%BB%93%20Ch%C3%AD%20Minh!5e0!3m2!1sen!2s!4v1740212518211!5m2!1sen!2s"
+            style={{ border: 0 }}
+            allowFullScreen
             loading="lazy"
+            referrerPolicy="no-referrer-when-downgrade"
           ></iframe>
         </div>
       </div>

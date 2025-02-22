@@ -9,3 +9,18 @@
 body {
   font-family: "Quicksand", sans-serif;
 }
+
+/* Định nghĩa chung cho toàn bộ ứng dụng */
+body {
+  @apply bg-gray-100 text-gray-800;
+}
+
+/* Căn chỉnh container chính */
+.container {
+  @apply max-w-7xl mx-auto px-4;
+}
+
+/* Chỉnh responsive cho tất cả hình ảnh */
+img {
+  @apply max-w-full h-auto;
+}
