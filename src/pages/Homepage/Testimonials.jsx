@@ -5,25 +5,25 @@ import { FaQuoteLeft, FaArrowLeft, FaArrowRight } from "react-icons/fa";
 const TestimonialData = [
   {
     id: 1,
-    name: "Maria",
+    name: "Toàn",
     text: "Tôi đã mua Serum Dưỡng Da Sky Beauty và rất hài lòng với kết quả! Làn da của tôi sáng hơn và các vết thâm đã mờ đi.",
     img: "https://picsum.photos/101/101",
   },
   {
     id: 2,
-    name: "Giovanni",
+    name: "Hải",
     text: "Kem Dưỡng Ban Đêm Sky Beauty thật tuyệt vời! Tôi thức dậy với làn da mềm mại và đủ ẩm. Tôi khuyên mọi người nên dùng!",
     img: "https://picsum.photos/102/102",
   },
   {
     id: 3,
-    name: "Sofia",
+    name: "Danh",
     text: "Mặt Nạ Làm Sạch Sky Beauty thực sự là cứu tinh cho làn da dầu của tôi. Tôi sử dụng mỗi tuần một lần và lỗ chân lông đã thu nhỏ đáng kể.",
     img: "https://picsum.photos/104/104",
   },
   {
     id: 4,
-    name: "Luca",
+    name: "Nhi",
     text: "Toner Làm Sạch Sky Beauty giúp da tôi luôn tươi mát và săn chắc. Đây là sản phẩm không thể thiếu trong quy trình chăm sóc da của tôi.",
     img: "https://picsum.photos/103/103",
   },

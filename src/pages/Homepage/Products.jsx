@@ -64,27 +64,29 @@ const Products = () => {
         </div>
 
         {/* Body section */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 place-items-center gap-6">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
           {ProductsData.map((data) => (
-            <Link to={`/product/${data.id}`} key={data.id}>
+            <Link to={`/product/${data.id}`} key={data.id} className="w-full">
               <div
                 data-aos="fade-up"
                 data-aos-delay={data.aosDelay}
-                className="bg-white p-4 rounded-xl shadow-md hover:shadow-xl shadow-blue-400 transition-shadow duration-300 transform hover:scale-110 text-center cursor-pointer"
+                className="bg-white p-4 rounded-xl shadow-md hover:shadow-xl shadow-blue-400 transition-shadow duration-300 transform hover:scale-105 text-center cursor-pointer h-full flex flex-col"
               >
-                <img
-                  src={data.img}
-                  alt={data.title}
-                  className="h-[250px] w-[180px] object-cover rounded-lg"
-                />
-                <div className="mt-3">
-                  <h3 className="font-semibold text-lg text-gray-900">
+                <div className="flex justify-center">
+                  <img
+                    src={data.img}
+                    alt={data.title}
+                    className="h-[250px] w-[180px] object-contain rounded-lg"
+                  />
+                </div>
+                <div className="mt-3 flex flex-col flex-grow">
+                  <h3 className="font-semibold text-lg text-gray-900 line-clamp-2">
                     {data.title}
                   </h3>
                   {data.color && (
-                    <p className="text-sm text-gray-500">{data.color}</p>
+                    <p className="text-sm text-gray-500 mt-1">{data.color}</p>
                   )}
-                  <div className="flex items-center justify-center gap-1 mt-1">
+                  <div className="flex items-center justify-center gap-1 mt-auto pt-2">
                     <FaStar className="text-yellow-400" />
                     <span className="text-sm font-medium">{data.rating}</span>
                   </div>
