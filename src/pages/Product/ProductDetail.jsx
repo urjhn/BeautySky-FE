@@ -4,6 +4,7 @@ import { useCart } from "../../context/CartContext";
 import Navbar from "../../components/Navbar/Navbar";
 import Footer from "../../components/Footer/Footer";
 import products from "./DataFakeProduct"; // Import products
+import { formatCurrency } from "../../utils/formatCurrency";
 import { FaArrowLeft, FaShoppingCart, FaStar, FaRegStar } from "react-icons/fa";
 
 const ProductDetail = () => {
@@ -67,7 +68,7 @@ const ProductDetail = () => {
               <span className="font-semibold">{product.skinType}</span>
             </p>
             <p className="text-3xl font-bold text-gray-500">
-              ${product.price.toFixed(2)}
+              {formatCurrency(product.price.toFixed(2))}
             </p>
 
             {/* Nút CTA */}

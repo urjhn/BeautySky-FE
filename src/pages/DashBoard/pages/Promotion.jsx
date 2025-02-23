@@ -22,9 +22,14 @@ const PromotionManagement = () => {
   });
   const [showModal, setShowModal] = useState(false);
 
-  const filteredPromotions = promotions.filter((promo) =>
-    promo.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredPromotions = promotions.filter((promo) => {
+    const searchLower = searchTerm.toLowerCase();
+    return (
+      promo.name.toLowerCase().includes(searchLower) ||
+      promo.discount.toLowerCase().includes(searchLower) ||
+      promo.expiry.includes(searchLower) // Ngày không cần .toLowerCase() vì toàn số
+    );
+  });
 
   const totalPages = Math.ceil(filteredPromotions.length / PAGE_SIZE);
   const paginatedPromotions = filteredPromotions.slice(

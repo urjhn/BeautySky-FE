@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { FaEdit, FaTrash, FaPlus } from "react-icons/fa";
+import { formatCurrency } from "../../../utils/formatCurrency";
 
 const Products = () => {
   const [products, setProducts] = useState([]);
@@ -19,7 +20,7 @@ const Products = () => {
     const sampleProducts = Array.from({ length: 20 }, (_, i) => ({
       id: i + 1,
       name: `Product ${i + 1}`,
-      price: `$${(Math.random() * 50 + 10).toFixed(2)}`,
+      price: Math.floor(Math.random() * 500000 + 100000), // Giá từ 100,000 đến 600,000 VND
       image: `/images/product${(i % 5) + 1}.jpg`,
       status: i % 2 === 0 ? "Còn hàng" : "Hết hàng",
     }));
@@ -115,7 +116,7 @@ const Products = () => {
                   />
                 </td>
                 <td className="p-3">{product.name}</td>
-                <td className="p-3">{product.price}</td>
+                <td className="p-3">{formatCurrency(product.price)}</td>
                 <td className="p-3">
                   <span
                     className={`px-2 py-1 rounded text-white ${
@@ -243,14 +244,18 @@ const Products = () => {
               className="p-2 border rounded w-full mb-2"
             />
             <input
-              type="text"
-              placeholder="Giá"
+              type="number"
+              placeholder="Giá (VND)"
               value={newProduct.price}
               onChange={(e) =>
-                setNewProduct({ ...newProduct, price: e.target.value })
+                setNewProduct({
+                  ...newProduct,
+                  price: e.target.value ? parseInt(e.target.value, 10) : "",
+                })
               }
               className="p-2 border rounded w-full mb-2"
             />
+
             <button
               onClick={handleAddProduct}
               className="bg-blue-600 text-white px-4 py-2 rounded mr-2"

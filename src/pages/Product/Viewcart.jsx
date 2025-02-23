@@ -58,7 +58,7 @@ const ViewCart = () => {
                   {item.name}
                 </h3>
                 <p className="text-blue-500 font-bold text-lg">
-                  ${item.price.toFixed(2)}
+                  {formatCurrency(item.price.toFixed(2))}
                 </p>
 
                 <div className="flex items-center mx-4">

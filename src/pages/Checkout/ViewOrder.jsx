@@ -9,6 +9,7 @@ import { useNavigate } from "react-router-dom";
 import Navbar from "../../components/Navbar/Navbar";
 import Footer from "../../components/Footer/Footer";
 import { useCart } from "../../context/CartContext";
+import { formatCurrency } from "../../utils/formatCurrency";
 
 const ViewOrder = () => {
   const navigate = useNavigate();
@@ -79,12 +80,14 @@ const ViewOrder = () => {
                       Số lượng: {item.quantity}
                     </p>
                   </div>
-                  <span>{(item.price * item.quantity).toFixed(2)} VND</span>
+                  <span>
+                    {formatCurrency((item.price * item.quantity).toFixed(2))}
+                  </span>
                 </div>
               ))}
               <div className="flex justify-between font-bold text-gray-900 mt-2 border-t pt-2">
                 <span>Tổng cộng:</span>
-                <span>{formattedTotalPrice.toFixed(2)} VND</span>
+                <span>{formatCurrency(formattedTotalPrice.toFixed(2))}</span>
               </div>
             </div>
           </div>
@@ -103,7 +106,7 @@ const ViewOrder = () => {
             <p className="text-gray-600">
               Số tiền đã thanh toán:{" "}
               <span className="font-semibold text-green-600">
-                {orderData.paymentInfo.amountPaid.toFixed(2)} VND
+                {formatCurrency(orderData.paymentInfo.amountPaid.toFixed(2))}
               </span>
             </p>
             <p className="text-gray-600">
