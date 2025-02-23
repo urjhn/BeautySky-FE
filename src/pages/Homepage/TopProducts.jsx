@@ -55,48 +55,74 @@ const TopProducts = () => {
         </div>
 
         {/* Body section */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-20 md:gap-5 place-items-center py-8">
+        {/* 
+  Điều chỉnh khoảng cách giữa các sản phẩm:
+  - gap-8: khoảng cách trên mobile
+  - md:gap-12: khoảng cách trên tablet và desktop
+  - px-4: padding hai bên
+  - py-8: padding trên dưới
+*/}
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8 md:gap-12 container mx-auto px-4 py-8">
           {ProductsData.map((product) => (
             <div
               key={product.id}
               data-aos="zoom-in"
-              className="rounded-2xl bg-white dark:bg-gray-300 hover:bg-black/80 dark:hover:bg-[#6BBCFE] hover:text-white relative shadow-xl shadow-blue-400 duration-300 group max-w-[300px]"
+              // Điều chỉnh padding và shadow của card sản phẩm
+              className="rounded-2xl bg-white dark:bg-gray-300 hover:bg-black/80 dark:hover:bg-[#6BBCFE] hover:text-white relative shadow-xl shadow-blue-400 duration-300 group w-full h-full p-4"
             >
-              {/* Click vào ảnh để chuyển đến trang chi tiết */}
+              {/* 
+        Image container 
+        - h-[150px]: chiều cao container
+        - w-[200px] h-[200px]: kích thước ảnh
+        - -translate-y-1/4: độ dịch chuyển ảnh lên trên
+      */}
               <div
-                className="h-[120px] cursor-pointer"
+                className="h-[150px] w-full relative cursor-pointer mb-4"
                 onClick={() => navigate(`/product/${product.id}`)}
               >
                 <img
                   src={product.img}
                   alt={product.title}
-                  className="max-w-[200px] block mx-auto transform -translate-y-20 group-hover:scale-105 duration-300 drop-shadow-md"
+                  className="w-[200px] h-[200px] absolute left-1/2 top-0 transform -translate-x-1/2 -translate-y-1/4 group-hover:scale-105 duration-300 drop-shadow-md object-contain"
                 />
               </div>
 
-              {/* details section */}
-              <div className="p-4 text-center">
+              {/* 
+        Details section
+        - p-6: padding nội dung
+        - h-[250px]: chiều cao phần nội dung
+        - gap-3: khoảng cách giữa các phần tử
+      */}
+              <div className="p-6 text-center flex flex-col h-[250px] gap-3">
+                {/* Rating stars */}
                 <div className="w-full flex items-center justify-center gap-1">
                   <FaStar className="text-yellow-500" />
                   <FaStar className="text-yellow-500" />
                   <FaStar className="text-yellow-500" />
                   <FaStar className="text-yellow-500" />
                 </div>
+
+                {/* Title */}
                 <h1 className="text-xl font-bold">{product.title}</h1>
-                <p className="text-gray-500 group-hover:text-white duration-300 text-sm line-clamp-2">
+
+                {/* Description */}
+                <p className="text-gray-500 group-hover:text-white duration-300 text-sm line-clamp-2 flex-grow">
                   {product.description}
                 </p>
                 <p className="font-bold mt-2">
                   {formatCurrency(product.price.toFixed(2))}
                 </p>
 
-                {/* Order button */}
-                <button
-                  className="bg-primary hover:scale-105 duration-300 text-black py-1 px-4 rounded-full mt-4 group-hover:bg-yellow-300 group-hover:text-primary"
-                  onClick={() => addToCart(product)}
-                >
-                  Đặt hàng ngay
-                </button>
+                {/* Price and Button */}
+                <div className="mt-auto space-y-3">
+                  <p className="font-bold">${product.price.toFixed(2)}</p>
+                  <button
+                    className="bg-primary hover:scale-105 duration-300 text-black py-2 px-6 rounded-full group-hover:bg-yellow-300 group-hover:text-primary w-full"
+                    onClick={() => addToCart(product)}
+                  >
+                    Đặt hàng ngay
+                  </button>
+                </div>
               </div>
             </div>
           ))}
