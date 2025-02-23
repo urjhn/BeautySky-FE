@@ -5,7 +5,6 @@ import Img1 from "../../assets/topproduct/topproduct1.png";
 import Img2 from "../../assets/topproduct/topproduct2.png";
 import Img3 from "../../assets/topproduct/topproduct3.png";
 import { FaStar } from "react-icons/fa";
-import { formatCurrency } from "../../utils/formatCurrency";
 
 const ProductsData = [
   {
@@ -13,21 +12,21 @@ const ProductsData = [
     img: Img1,
     title: "NƯỚC TẨY TRANG MICELLAR",
     description: "TẨY TRANG SÂU DÀNH CHO DA NHẠY CẢM.",
-    price: 150000,
+    price: 15.99,
   },
   {
     id: 2,
     img: Img2,
     title: "GOMMAGE",
     description: "TẨY DA CHẾT NHẸ NHÀNG CHO DA NHẠY CẢM.",
-    price: 250000,
+    price: 19.99,
   },
   {
     id: 3,
     img: Img3,
     title: "NƯỚC KHOÁNG THIÊN NHIÊN",
     description: "NƯỚC CÂN BẰNG VÀ XỊT KHOÁNG.",
-    price: 200000,
+    price: 12.99,
   },
 ];
 
@@ -109,12 +108,10 @@ const TopProducts = () => {
                 <p className="text-gray-500 group-hover:text-white duration-300 text-sm line-clamp-2 flex-grow">
                   {product.description}
                 </p>
-                <p className="font-bold mt-2">
-                  {formatCurrency(product.price.toFixed(2))}
-                </p>
 
                 {/* Price and Button */}
                 <div className="mt-auto space-y-3">
+                  <p className="font-bold">${product.price.toFixed(2)}</p>
                   <button
                     className="bg-primary hover:scale-105 duration-300 text-black py-2 px-6 rounded-full group-hover:bg-yellow-300 group-hover:text-primary w-full"
                     onClick={() => addToCart(product)}
