@@ -8,6 +8,7 @@ import {
   FaTags,
   FaFileAlt,
   FaBlog,
+  FaCalendarAlt,
 } from "react-icons/fa";
 import { NavLink } from "react-router-dom";
 
@@ -43,6 +44,11 @@ const Sidebar = () => {
             icon={<FaFileAlt />}
             title="Báo cáo"
             to="/dashboard/reports"
+          />
+          <NavItem
+            icon={<FaCalendarAlt />}
+            title="Sự kiện"
+            to="/dashboard/events"
           />
           <NavItem icon={<FaCog />} title="Cài đặt" to="/dashboard/settings" />
         </ul>
