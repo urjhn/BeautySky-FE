@@ -7,6 +7,7 @@ import { GoogleOAuthProvider } from "@react-oauth/google";
 import { AuthProvider } from "./context/AuthContext";
 import "./index.css";
 import App from "./App.jsx";
+import { DataProvider } from "./context/DataContext.jsx";
 
 const root = createRoot(document.getElementById("root"));
 
@@ -19,7 +20,9 @@ root.render(
         <CartProvider>
           <ThemeProvider>
             <EventProvider>
-              <App />
+              <DataProvider>
+                <App />
+              </DataProvider>
             </EventProvider>
           </ThemeProvider>
         </CartProvider>

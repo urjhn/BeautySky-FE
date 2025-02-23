@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const axiosInstance = axios.create({
-  baseURL: "https://localhost:7112/api", // Thay đổi cổng theo backend
+  baseURL:  import.meta.env.VITE_API_KEY, 
   headers: { "Content-Type": "application/json" },
 });
 
@@ -38,7 +38,7 @@ axiosInstance.interceptors.response.use(
 
         // Gửi request lên BE để lấy token mới
         const res = await axios.post(
-          "https://localhost:7112/api/Accounts/RefreshToken",
+          `${import.meta.env.VITE_API_KEY}/api/Accounts/RefreshToken`,
           { token: refreshToken }
         );
 
@@ -64,5 +64,6 @@ axiosInstance.interceptors.response.use(
     return Promise.reject(error);
   }
 );
+
 
 export default axiosInstance;
