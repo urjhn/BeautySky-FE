@@ -55,7 +55,7 @@ const App = () => (
     <Route path="/profile" element={<UserProfile />} />
     <Route path="/routine-builder" element={<RoutineBuilderPage />} />
     {/* Dashboard Routes (Chỉ Manager và Staff mới truy cập) */}
-    <Route element={<PrivateRoute allowedRoles={["Manager", "Staff"]} />}>
+    {/* <Route element={<PrivateRoute allowedRoles={["Manager", "Staff"]} />}> */}
       <Route path="/dashboard" element={<DashboardLayout />}>
         <Route index element={<Dashboard />} />
         <Route path="blogs" element={<BlogManagement />} />
@@ -67,7 +67,7 @@ const App = () => (
         <Route path="events" element={<Events />} />
         <Route path="settings" element={<Setting />} />
       </Route>
-    </Route>
+    {/* </Route> */}
   </Routes>
 );
 
