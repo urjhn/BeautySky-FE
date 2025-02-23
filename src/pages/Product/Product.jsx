@@ -71,7 +71,7 @@ const ProductsPage = () => {
 
             {/* Loại da filter */}
             <div className="mb-4">
-              <label className="block text-gray-600 font-medium mb-2 flex items-center gap-2">
+              <label className="text-gray-600 font-medium mb-2 flex items-center gap-2">
                 <Droplet size={18} className="text-blue-400" /> Loại da
               </label>
               <div className="grid grid-cols-2 gap-2">
@@ -95,7 +95,7 @@ const ProductsPage = () => {
 
             {/* Loại sản phẩm filter */}
             <div className="mb-4">
-              <label className="block text-gray-600 font-medium mb-2 flex items-center gap-2">
+              <label className="text-gray-600 font-medium mb-2 flex items-center gap-2">
                 <Sun size={18} className="text-yellow-400" /> Loại sản phẩm
               </label>
               <div className="grid grid-cols-2 gap-2">
