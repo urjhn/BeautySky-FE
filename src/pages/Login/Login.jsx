@@ -17,6 +17,47 @@ function Login() {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  // const handleLogin = async (e) => {
+  //   e.preventDefault();
+  //   const { email, password } = formData;
+
+  //   if (!email || !password) {
+  //     setError("Vui lòng điền đầy đủ thông tin");
+  //     return;
+  //   }
+
+  //   if (!recaptchaToken) {
+  //     setError("Vui lòng xác minh reCAPTCHA");
+  //     return;
+  //   }
+
+  //   setLoading(true);
+  //   setError("");
+
+  //   const newUser = { email, password, recaptchaToken };
+
+  //   try {
+  //     const res = await loginUser(newUser, navigate);
+
+  //     if (res) {
+  //       localStorage.setItem("user", JSON.stringify(res.user));
+  //       localStorage.setItem("token", res.token);
+
+  //       console.log("Đăng nhập thành công!");
+
+  //       // Chuyển hướng sau khi đăng nhập, không cần check role vì đã có ProtectedRoute
+  //       navigate("/");
+  //     }
+  //   } catch (err) {
+  //     setError(
+  //       err.response?.data?.message ||
+  //         "Đăng nhập không thành công, vui lòng thử lại"
+  //     );
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
+
   const handleLogin = async (e) => {
     e.preventDefault();
     const { email, password } = formData;
@@ -42,11 +83,12 @@ function Login() {
       if (res) {
         localStorage.setItem("user", JSON.stringify(res.user));
         localStorage.setItem("token", res.token);
+        localStorage.setItem("role", res.user.role);
 
         console.log("Đăng nhập thành công!");
 
-        // Chuyển hướng sau khi đăng nhập, không cần check role vì đã có ProtectedRoute
-        navigate("/");
+        // Gọi hàm login từ context để cập nhật user và điều hướng
+        login(res.user);
       }
     } catch (err) {
       setError(

@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import { ShoppingCart, Filter, Star, Sun, Moon, Droplet } from "lucide-react";
+import { Filter, Star, Sun, Moon, Droplet } from "lucide-react";
 import Navbar from "../../components/Navbar/Navbar";
 import Footer from "../../components/Footer/Footer";
 import { useCart } from "../../context/CartContext";
@@ -13,13 +12,11 @@ const ProductsPage = () => {
     window.scrollTo(0, 0);
   }, []);
 
-  const { addToCart } = useCart();
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedSkinType, setSelectedSkinType] = useState("All");
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [sortOrder, setSortOrder] = useState("asc");
   const itemsPerPage = 8;
-  const navigate = useNavigate();
 
   const filteredProducts = products.filter((product) => {
     const skinTypeFilter =
@@ -58,7 +55,7 @@ const ProductsPage = () => {
 
             {/* Loại da filter */}
             <div className="mb-4">
-              <label className="block text-gray-600 font-medium mb-2 flex items-center gap-2">
+              <label className="text-gray-600 font-medium mb-2 flex items-center gap-2">
                 <Droplet size={18} className="text-blue-400" /> Loại da
               </label>
               <div className="grid grid-cols-2 gap-2">
@@ -86,7 +83,7 @@ const ProductsPage = () => {
 
             {/* Loại sản phẩm filter */}
             <div className="mb-4">
-              <label className="block text-gray-600 font-medium mb-2 flex items-center gap-2">
+              <label className="text-gray-600 font-medium mb-2 flex items-center gap-2">
                 <Sun size={18} className="text-yellow-400" /> Loại sản phẩm
               </label>
               <div className="grid grid-cols-2 gap-2">

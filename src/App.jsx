@@ -1,5 +1,5 @@
 import React from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { Routes, Route } from "react-router-dom"; // Chỉ cần Routes, không cần Router
 import Home from "./pages/Homepage/Homepage.jsx";
 import Login from "./pages/Login/Login.jsx";
 import Register from "./pages/Register/Register.jsx";
@@ -27,33 +27,35 @@ import Promotion from "./pages/DashBoard/pages/Promotion.jsx";
 import RoutineBuilderPage from "./features/skincare-routine/RoutineBuilderPage.jsx";
 import AboutUs from "./pages/AboutUs/AboutUs.jsx";
 import Events from "./pages/DashBoard/pages/EventsControll.jsx";
+import PrivateRoute from "./context/PrivatedRoute.jsx";
 
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 
 // Main Application
 const App = () => (
-  <Router>
-    <Routes>
-      <Route path="/" element={<Home />} />
-      <Route path="/aboutus" element={<AboutUs />} />
-      <Route path="/login" element={<Login />} />
-      <Route path="/register" element={<Register />} />
-      <Route path="/product" element={<Product />} />
-      <Route path="/product/:id" element={<ProductDetail />} />
-      <Route path="/checkoutinfo" element={<CheckoutInfomation />} />
-      <Route path="/checkoutprocess" element={<CheckoutProcess />} />
-      <Route path="/paymentsuccess" element={<PaymentSuccess />} />
-      <Route path="/vieworder" element={<ViewOrder />} />
-      <Route path="/viewcart" element={<Viewcart />} />
-      <Route path="/contact" element={<Contact />} />
-      <Route path="/quizz" element={<Quizz />} />
-      <Route path="/blog" element={<Blog />} />
-      <Route path="*" element={<Error />} />
-      <Route path="/profile" element={<UserProfile />} />
-      <Route path="/routine-builder" element={<RoutineBuilderPage />} />
-
-      {/* Dashboard Routes */}
+  <Routes>
+    {" "}
+    {/* Không có Router ở đây */}
+    <Route path="/" element={<Home />} />
+    <Route path="/aboutus" element={<AboutUs />} />
+    <Route path="/login" element={<Login />} />
+    <Route path="/register" element={<Register />} />
+    <Route path="/product" element={<Product />} />
+    <Route path="/product/:id" element={<ProductDetail />} />
+    <Route path="/checkoutinfo" element={<CheckoutInfomation />} />
+    <Route path="/checkoutprocess" element={<CheckoutProcess />} />
+    <Route path="/paymentsuccess" element={<PaymentSuccess />} />
+    <Route path="/vieworder" element={<ViewOrder />} />
+    <Route path="/viewcart" element={<Viewcart />} />
+    <Route path="/contact" element={<Contact />} />
+    <Route path="/quizz" element={<Quizz />} />
+    <Route path="/blog" element={<Blog />} />
+    <Route path="*" element={<Error />} />
+    <Route path="/profile" element={<UserProfile />} />
+    <Route path="/routine-builder" element={<RoutineBuilderPage />} />
+    {/* Dashboard Routes (Chỉ Manager và Staff mới truy cập) */}
+    <Route element={<PrivateRoute allowedRoles={["Manager", "Staff"]} />}>
       <Route path="/dashboard" element={<DashboardLayout />}>
         <Route index element={<Dashboard />} />
         <Route path="blogs" element={<BlogManagement />} />
@@ -65,8 +67,8 @@ const App = () => (
         <Route path="events" element={<Events />} />
         <Route path="settings" element={<Setting />} />
       </Route>
-    </Routes>
-  </Router>
+    </Route>
+  </Routes>
 );
 
 export default App;
