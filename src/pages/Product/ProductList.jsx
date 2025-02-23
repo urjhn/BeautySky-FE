@@ -2,6 +2,7 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import { useCart } from "../../context/CartContext";
 import { formatCurrency } from "../../utils/formatCurrency";
+
 const ProductList = ({ products }) => {
   const navigate = useNavigate();
   const { addToCart } = useCart();
@@ -23,11 +24,11 @@ const ProductList = ({ products }) => {
   return (
     <div className="bg-gradient-to-r from-blue-50 to-blue-100 py-10">
       <div className="mx-auto max-w-7xl px-6 lg:px-8">
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           {products.map((product) => (
             <div
               key={product.id}
-              className="bg-white p-4 rounded-xl shadow-lg transition-all duration-300 transform hover:scale-105 hover:shadow-2xl"
+              className="bg-white p-4 rounded-xl shadow-lg transition-all duration-300 transform hover:scale-105 hover:shadow-2xl flex flex-col"
             >
               <div className="relative overflow-hidden rounded-lg">
                 <img
@@ -36,17 +37,18 @@ const ProductList = ({ products }) => {
                   className="w-full h-56 object-cover rounded-lg"
                 />
               </div>
-              <div className="mt-4 flex flex-col items-center">
+              <div className="mt-4 flex flex-col items-center flex-grow">
                 <h3 className="text-lg font-semibold text-gray-700 text-center truncate w-full">
                   {product.name}
                 </h3>
-                <p className="text-sm text-gray-500">
+                <p className="text-sm text-gray-500 overflow-hidden text-ellipsis whitespace-nowrap">
                   Loại da: {product.skinType}
                 </p>
-                <p className="text-sm text-gray-500">
+                {/* Fix lại dòng này để hiển thị ... khi tên category quá dài */}
+                <p className="text-sm text-gray-500 overflow-hidden text-ellipsis whitespace-nowrap w-full text-center">
                   Loại sản phẩm: {product.category}
                 </p>
-                <p className="text-lg font-bold text-gray-900 mt-2">
+                <p className="text-lg font-bold text-gray-900 mt-2 h-10 flex items-center">
                   {formatCurrency(product.price.toFixed(2))}
                 </p>
               </div>
@@ -54,7 +56,7 @@ const ProductList = ({ products }) => {
                 <button
                   className="w-full bg-[#89CFF0] text-white py-2 rounded-lg 
                                     hover:bg-[#6BBCFE] transition-all duration-300 
-                                    shadow-md transform hover:scale-105"
+                                    shadow-md transform hover:scale-105 h-12 flex items-center justify-center"
                   onClick={() => handleAddToCart(product)}
                 >
                   Thêm vào giỏ hàng
@@ -63,7 +65,7 @@ const ProductList = ({ products }) => {
                   onClick={() => handleViewDetails(product.id)}
                   className="w-full bg-[#FF9999] text-white py-2 rounded-lg 
                                     hover:bg-[#FF6666] transition-all duration-300 
-                                    shadow-lg transform hover:scale-105"
+                                    shadow-lg transform hover:scale-105 h-12 flex items-center justify-center"
                 >
                   Xem chi tiết
                 </button>
