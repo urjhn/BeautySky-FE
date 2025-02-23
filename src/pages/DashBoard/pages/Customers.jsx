@@ -56,11 +56,12 @@ const Customers = () => {
     setCurrentPage(1); // Reset về trang đầu khi tìm kiếm
   }, [searchTerm]);
 
-  const filteredCustomers = userList.filter(
-    (customer) =>
-      customer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      customer.email.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredCustomers = userList.filter((customer) => {
+    const searchWords = searchTerm.toLowerCase().split(" ");
+    const customerName = customer.name.toLowerCase();
+
+    return searchWords.every((word) => customerName.includes(word));
+  });
 
   const totalPages = Math.ceil(filteredCustomers.length / customersPerPage);
   const indexOfLastCustomer = currentPage * customersPerPage;

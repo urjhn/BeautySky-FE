@@ -225,6 +225,7 @@ import { useNavigate } from "react-router-dom";
 import Navbar from "../../components/Navbar/Navbar";
 import Footer from "../../components/Footer/Footer";
 import { useCart } from "../../context/CartContext";
+import { formatCurrency } from "../../utils/formatCurrency";
 // import { useAuth } from "../../context/AuthContext";
 
 const CheckoutInformation = () => {
@@ -352,7 +353,7 @@ const CheckoutInformation = () => {
                       className="w-12 h-12 rounded"
                     />
                     <span>{item.name}</span>
-                    <span>${item.price.toFixed(2)}</span>
+                    <span>{formatCurrency(item.price.toFixed(2))}</span>
                   </div>
                 ))
               ) : (
@@ -362,7 +363,7 @@ const CheckoutInformation = () => {
               )}
               <div className="flex justify-between font-bold text-gray-900 mt-2 border-t pt-2">
                 <span>Tổng cộng:</span>
-                <span>${totalPrice}</span>
+                <span>{formatCurrency(totalPrice)}</span>
               </div>
             </div>
           </section>

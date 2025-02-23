@@ -196,6 +196,7 @@ import { motion } from "framer-motion";
 import Navbar from "../../components/Navbar/Navbar";
 import Footer from "../../components/Footer/Footer";
 import { useCart } from "../../context/CartContext";
+import { formatCurrency } from "../../utils/formatCurrency";
 import { CreditCardIcon, BanknotesIcon } from "@heroicons/react/24/solid";
 
 const initialPromotions = [
@@ -260,12 +261,12 @@ const CheckoutPage = () => {
                     {item.name} x {item.quantity}
                   </span>
                   <span className="text-gray-800">
-                    {item.price * item.quantity} VND
+                    {formatCurrency(item.price * item.quantity)}
                   </span>
                 </motion.div>
               ))}
               <div className="border-t mt-4 pt-4 text-lg font-semibold text-gray-900">
-                Tổng cộng: {discountedPrice} VND
+                Tổng cộng: {formatCurrency(discountedPrice)}
               </div>
             </div>
           </section>

@@ -1,7 +1,7 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { useCart } from "../../context/CartContext";
-
+import { formatCurrency } from "../../utils/formatCurrency";
 const ProductList = ({ products }) => {
   const navigate = useNavigate();
   const { addToCart } = useCart();
@@ -47,7 +47,7 @@ const ProductList = ({ products }) => {
                   Loại sản phẩm: {product.category}
                 </p>
                 <p className="text-lg font-bold text-gray-900 mt-2">
-                  ${product.price.toFixed(2)}
+                  {formatCurrency(product.price.toFixed(2))}
                 </p>
               </div>
               <div className="mt-4 space-y-2">

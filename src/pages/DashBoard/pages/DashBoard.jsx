@@ -8,7 +8,7 @@ import {
   FaUsers,
   FaShoppingCart,
   FaBox,
-  FaDollarSign,
+  FaMoneyBillWave,
   FaChartLine,
   FaPercentage,
 } from "react-icons/fa";
@@ -38,10 +38,13 @@ const Dashboard = () => {
             subtitle="In stock: 50"
           />
           <StatCard
-            icon={<FaDollarSign />}
-            title="Revenue"
-            value="$12,345"
-            subtitle="+8.4% this quarter"
+            icon={<FaMoneyBillWave />}
+            title="Doanh thu"
+            value={new Intl.NumberFormat("vi-VN", {
+              style: "currency",
+              currency: "VND",
+            }).format(5550000)}
+            subtitle="+8.4% quý này"
           />
         </div>
 

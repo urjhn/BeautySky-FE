@@ -5,6 +5,7 @@ import Img1 from "../../assets/topproduct/topproduct1.png";
 import Img2 from "../../assets/topproduct/topproduct2.png";
 import Img3 from "../../assets/topproduct/topproduct3.png";
 import { FaStar } from "react-icons/fa";
+import { formatCurrency } from "../../utils/formatCurrency";
 
 const ProductsData = [
   {
@@ -12,21 +13,21 @@ const ProductsData = [
     img: Img1,
     title: "NƯỚC TẨY TRANG MICELLAR",
     description: "TẨY TRANG SÂU DÀNH CHO DA NHẠY CẢM.",
-    price: 15.99,
+    price: 150000,
   },
   {
     id: 2,
     img: Img2,
     title: "GOMMAGE",
     description: "TẨY DA CHẾT NHẸ NHÀNG CHO DA NHẠY CẢM.",
-    price: 19.99,
+    price: 250000,
   },
   {
     id: 3,
     img: Img3,
     title: "NƯỚC KHOÁNG THIÊN NHIÊN",
     description: "NƯỚC CÂN BẰNG VÀ XỊT KHOÁNG.",
-    price: 12.99,
+    price: 200000,
   },
 ];
 
@@ -107,6 +108,9 @@ const TopProducts = () => {
                 {/* Description */}
                 <p className="text-gray-500 group-hover:text-white duration-300 text-sm line-clamp-2 flex-grow">
                   {product.description}
+                </p>
+                <p className="font-bold mt-2">
+                  {formatCurrency(product.price.toFixed(2))}
                 </p>
 
                 {/* Price and Button */}

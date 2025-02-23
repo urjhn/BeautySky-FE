@@ -5,40 +5,41 @@ import {
   FaClock,
   FaSearch,
 } from "react-icons/fa";
+import { formatCurrency } from "../../../utils/formatCurrency";
 
 const allOrders = [
   {
     id: "ORD001",
     customer: "John Doe",
-    amount: "$120.00",
+    amount: "260000",
     date: "2025-02-10",
     status: "Completed",
   },
   {
     id: "ORD002",
     customer: "Jane Smith",
-    amount: "$75.50",
+    amount: "550000",
     date: "2025-02-11",
     status: "Pending",
   },
   {
     id: "ORD003",
     customer: "Alice Johnson",
-    amount: "$95.00",
+    amount: "230000",
     date: "2025-02-12",
     status: "Cancelled",
   },
   {
     id: "ORD004",
     customer: "David Brown",
-    amount: "$140.00",
+    amount: "950000",
     date: "2025-02-13",
     status: "Completed",
   },
   {
     id: "ORD005",
     customer: "Emma Wilson",
-    amount: "$60.00",
+    amount: "350000",
     date: "2025-02-14",
     status: "Pending",
   },
@@ -102,7 +103,7 @@ const Order = () => {
               <tr key={order.id} className="border-t">
                 <td className="p-3">{order.id}</td>
                 <td className="p-3">{order.customer}</td>
-                <td className="p-3">{order.amount}</td>
+                <td className="p-3">{formatCurrency(order.amount)}</td>
                 <td className="p-3">{order.date}</td>
                 <td className="p-3 flex items-center">
                   {order.status === "Completed" ? (
