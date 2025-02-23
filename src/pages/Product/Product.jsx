@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { Filter, Star, Sun, Moon, Droplet } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { ShoppingCart, Filter, Star, Sun, Droplet } from "lucide-react";
 import Navbar from "../../components/Navbar/Navbar";
 import Footer from "../../components/Footer/Footer";
 import { useCart } from "../../context/CartContext";
@@ -12,32 +13,46 @@ const ProductsPage = () => {
     window.scrollTo(0, 0);
   }, []);
 
+  const { addToCart } = useCart();
   const [currentPage, setCurrentPage] = useState(1);
-  const [selectedSkinType, setSelectedSkinType] = useState("All");
-  const [selectedCategory, setSelectedCategory] = useState("All");
+  const [selectedSkinType, setSelectedSkinType] = useState("Tất cả");
+  const [selectedCategory, setSelectedCategory] = useState("Tất cả");
   const [sortOrder, setSortOrder] = useState("asc");
-  const itemsPerPage = 8;
+  const itemsPerPage = 12; // Hiển thị 12 sản phẩm mỗi trang
+  const navigate = useNavigate();
 
+  // Cập nhật currentPage về 1 khi bộ lọc thay đổi
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [selectedSkinType, selectedCategory]);
+
+  // Bộ lọc sản phẩm
   const filteredProducts = products.filter((product) => {
     const skinTypeFilter =
-      selectedSkinType === "All" ||
-      product.skinType === selectedSkinType ||
-      product.skinType === "All";
+      selectedSkinType === "Tất cả" || product.skinType === selectedSkinType;
     const categoryFilter =
-      selectedCategory === "All" || product.category === selectedCategory;
+      selectedCategory === "Tất cả" || product.category === selectedCategory;
     return skinTypeFilter && categoryFilter;
   });
 
+  // Sắp xếp sản phẩm theo giá
   const sortedProducts = [...filteredProducts].sort((a, b) =>
     sortOrder === "asc" ? a.price - b.price : b.price - a.price
   );
 
+  // Phân trang sản phẩm
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const currentProducts = sortedProducts.slice(
     indexOfFirstItem,
     indexOfLastItem
   );
+
+  // Hàm xử lý thay đổi trang
+  const handlePageChange = (newPage) => {
+    setCurrentPage(newPage);
+    window.scrollTo(0, 0); // Cuộn lên đầu trang khi chuyển trang
+  };
 
   return (
     <div className="flex flex-col min-h-screen bg-gradient-to-r from-blue-50 to-blue-100">
@@ -55,40 +70,36 @@ const ProductsPage = () => {
 
             {/* Loại da filter */}
             <div className="mb-4">
-              <label className="text-gray-600 font-medium mb-2 flex items-center gap-2">
+              <label className="block text-gray-600 font-medium mb-2 flex items-center gap-2">
                 <Droplet size={18} className="text-blue-400" /> Loại da
               </label>
               <div className="grid grid-cols-2 gap-2">
-                {[
-                  "All",
-                  "Oily Skin",
-                  "Dry Skin",
-                  "Normal Skin",
-                  "Combination Skin",
-                ].map((type) => (
-                  <button
-                    key={type}
-                    className={`px-3 py-1.5 text-sm rounded-full font-medium transition-all duration-200 border border-gray-300 hover:bg-purple-100 hover:text-purple-600 shadow-md ${
-                      selectedSkinType === type
-                        ? "bg-gray-500 text-white"
-                        : "bg-white"
-                    }`}
-                    onClick={() => setSelectedSkinType(type)}
-                  >
-                    {type === "All" ? "Tất cả" : type}
-                  </button>
-                ))}
+                {["Tất cả", "Da dầu", "Da khô", "Da thường", "Da hỗn hợp"].map(
+                  (type) => (
+                    <button
+                      key={type}
+                      className={`px-3 py-1.5 text-sm rounded-full font-medium transition-all duration-200 border border-gray-300 hover:bg-purple-100 hover:text-purple-600 shadow-md ${
+                        selectedSkinType === type
+                          ? "bg-gray-500 text-white"
+                          : "bg-white"
+                      }`}
+                      onClick={() => setSelectedSkinType(type)}
+                    >
+                      {type}
+                    </button>
+                  )
+                )}
               </div>
             </div>
 
             {/* Loại sản phẩm filter */}
             <div className="mb-4">
-              <label className="text-gray-600 font-medium mb-2 flex items-center gap-2">
+              <label className="block text-gray-600 font-medium mb-2 flex items-center gap-2">
                 <Sun size={18} className="text-yellow-400" /> Loại sản phẩm
               </label>
               <div className="grid grid-cols-2 gap-2">
                 {[
-                  "All",
+                  "Tất cả",
                   "Tẩy trang",
                   "Sữa rửa mặt",
                   "Toner",
@@ -127,16 +138,31 @@ const ProductsPage = () => {
                 <Star size={20} /> Sắp xếp
               </button>
             </div>
-            <ProductList products={currentProducts} />
+            {/* Kiểm tra nếu không có sản phẩm
+            Thêm một điều kiện kiểm tra sortedProducts.length === 0 trước khi hiển thị ProductList và PaginationComponent.
+
+            Nếu sortedProducts rỗng (không có sản phẩm nào), hiển thị một div với thông báo "Không có sản phẩm nào được tìm thấy."
+
+            Nếu sortedProducts không rỗng, hiển thị ProductList và PaginationComponent như bình thường. */}
+            {sortedProducts.length === 0 ? (
+              <div className="text-center text-gray-500">
+                Không có sản phẩm nào được tìm thấy.
+              </div>
+            ) : (
+              // Nếu có sản phẩm, hiển thị danh sách và phân trang
+              <>
+                <ProductList products={currentProducts} />
+                <PaginationComponent
+                  itemsPerPage={itemsPerPage}
+                  totalItems={sortedProducts.length}
+                  currentPage={currentPage}
+                  onPageChange={handlePageChange} // Sử dụng hàm xử lý thay đổi trang
+                />
+              </>
+            )}
           </div>
         </div>
       </main>
-      <PaginationComponent
-        itemsPerPage={itemsPerPage}
-        totalItems={sortedProducts.length}
-        currentPage={currentPage}
-        onPageChange={setCurrentPage}
-      />
       <Footer />
     </div>
   );
