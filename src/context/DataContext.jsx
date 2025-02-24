@@ -41,7 +41,7 @@ const DataProvider = ({ children }) => {
 
   return (
     <DataContext.Provider
-      value={{ products, skinTypes, categories, setProducts }}
+      value={{ products, skinTypes, categories, setProducts, fetchProduct }}
     >
       {children}
     </DataContext.Provider>

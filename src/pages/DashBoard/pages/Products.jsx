@@ -90,6 +90,33 @@ const Products = () => {
       console.error("Error updating product:", error);
       message.error("Failed to update product");
     }
+  const handleDelete = async (productId) => {
+    try {
+      const response = await productApi.deleteProduct(productId);
+      if (response.status >= 200 && response.status < 300) {
+        setProducts((prev) => prev.filter((p) => p.productId !== productId));
+        message.success(`Product delete successfully`);
+      } else {
+        message.error(`Failed to delete product`);
+      }
+    } catch (error) {
+      console.error(`Error delete product:`, error);
+      message.error(`Failed to delete product`);
+    }
+  };
+  //chua lam
+  const handleSaveEdit = async (values) => {
+    try {
+      await axiosInstance.put(`/Products/${values.productId}`, values);
+      setProducts((prev) =>
+        prev.map((p) => (p.productId === values.productId ? values : p))
+      );
+      setShowEditModal(false);
+      message.success("Product updated successfully");
+    } catch (error) {
+      console.error("Error updating product:", error);
+      message.error("Failed to update product");
+    }
   };
 
   const handleAddProduct = async (values) => {
