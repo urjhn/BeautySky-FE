@@ -3,7 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { IoMdSearch } from "react-icons/io";
 import { FaShoppingCart } from "react-icons/fa";
 import { useCart } from "../../context/CartContext";
-import { NavbarMenu } from "../Navbar/data";
+import { NavbarMenu } from "../Navbar/Data";
 import { motion } from "framer-motion";
 import Logo from "../../assets/logo.png";
 import Namebrand from "../../assets/namebrand.png";
@@ -60,7 +60,7 @@ const Navbar = () => {
   };
 
   return (
-    <nav className="bg-white shadow-md">
+    <nav className="bg-white shadow-md pr-1 pl-1">
       <div className="container mx-auto flex justify-between items-center py-4 px-1">
         {/* Logo */}
         <div className="flex items-center">
@@ -73,68 +73,26 @@ const Navbar = () => {
         {/* Menu */}
         <ul className="hidden md:flex items-center gap-4 text-gray-700 font-semibold">
           {NavbarMenu.map((item) => (
-            <li key={item.id} className="relative">
+            <li key={item.id} className="relative flex items-center gap-2">
+              {item.icon && <span className="text-lg">{item.icon}</span>}
               {item.submenu ? (
-                <>
-                  <button
-                    onMouseEnter={() => setShowProductDropdown(true)}
-                    onClick={() => setShowProductDropdown((prev) => !prev)}
-                    className="hover:text-[#6BBCFE] transition duration-300"
-                  >
-                    {item.title}
-                  </button>
-
-                  {showProductDropdown && (
-                    <motion.div
-                      ref={dropdownRef}
-                      initial={{ opacity: 0, y: -10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -10 }}
-                      transition={{ duration: 0.3 }}
-                      className="absolute left-0 mt-2 w-56 bg-white shadow-lg rounded-lg py-2 z-50"
-                    >
-                      {item.submenu.map((sub, index) => (
-                        <div key={index} className="p-2 border-b">
-                          <p className="text-sm font-bold text-gray-700">
-                            {sub.title}
-                          </p>
-                          {sub.items.map((link, i) => (
-                            <Link
-                              key={i}
-                              to={link.link}
-                              className="block px-4 py-2 text-gray-600 hover:bg-gray-100"
-                              onClick={() => setShowProductDropdown(false)}
-                            >
-                              {link.name}
-                            </Link>
-                          ))}
-                        </div>
-                      ))}
-                    </motion.div>
-                  )}
-                </>
+                <button
+                  onMouseEnter={() => setShowProductDropdown(true)}
+                  onClick={() => setShowProductDropdown((prev) => !prev)}
+                  className="hover:text-[#6BBCFE] transition duration-300 flex items-center gap-2"
+                >
+                  {item.title}
+                </button>
               ) : (
                 <Link
                   to={item.link}
-                  className="hover:text-[#6BBCFE] transition duration-300"
+                  className="hover:text-[#6BBCFE] transition duration-300 flex items-center gap-2"
                 >
                   {item.title}
                 </Link>
               )}
             </li>
           ))}
-
-          {/* Hiển thị Dashboard nếu user là Manager hoặc Staff */}
-          {/* {(role === "Manager" || role === "Staff") && (
-            <li>
-              <Link
-                to="/dashboard"
-                className="hover:text-[#6BBCFE] transition duration-300"
-              >
-                Quản lý
-              </Link>
-            </li>
-          )} */}
         </ul>
 
         {/* Search, Cart, User */}
@@ -146,7 +104,7 @@ const Navbar = () => {
               placeholder="Tìm kiếm"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-35 md:w-48 border border-gray-300 rounded-full px-4 py-1 focus:outline-none focus:border-primary"
+              className="w-35 md:w-32 border border-gray-300 rounded-full px-4 py-1 focus:outline-none focus:border-primary"
             />
             <button onClick={handleSearch} className="absolute right-3 top-2">
               <IoMdSearch className="text-gray-500 hover:text-[#6BBCFE]" />
