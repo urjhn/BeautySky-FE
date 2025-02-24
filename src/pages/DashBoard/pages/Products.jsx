@@ -63,6 +63,7 @@ const Products = () => {
   );
 
   const handleDelete = async (productId) => {
+    console.log(productId);
     try {
       const response = await productApi.deleteProduct(productId);
       if (response.status >= 200 && response.status < 300) {
