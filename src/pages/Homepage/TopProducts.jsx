@@ -115,7 +115,6 @@ const TopProducts = () => {
 
                 {/* Price and Button */}
                 <div className="mt-auto space-y-3">
-                  <p className="font-bold">${product.price.toFixed(2)}</p>
                   <button
                     className="bg-primary hover:scale-105 duration-300 text-black py-2 px-6 rounded-full group-hover:bg-yellow-300 group-hover:text-primary w-full"
                     onClick={() => addToCart(product)}
