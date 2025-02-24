@@ -75,7 +75,7 @@ const ProductsPage = () => {
                 <Droplet size={18} className="text-blue-400" /> Loại da
               </label>
               <div className="grid grid-cols-2 gap-2">
-                {["Tất cả", "Da dầu", "Da khô", "Da thường", "Da hỗn hợp"].map(
+                {["Tất cả", "Da Dầu", "Da Khô", "Da Thường", "Da Hỗn Hợp", "Da Nhạy Cảm"].map(
                   (type) => (
                     <button
                       key={type}
@@ -105,8 +105,8 @@ const ProductsPage = () => {
                   "Sữa rửa mặt",
                   "Toner",
                   "Serum",
-                  "Kem trị mụn",
-                  "Kem chống nắng",
+                  "Kem Dưỡng",
+                  "Kem Chống Nắng",
                 ].map((category) => (
                   <button
                     key={category}

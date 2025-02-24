@@ -4,7 +4,7 @@ import axiosInstance from "../config/axios/axiosInstance"; // Import axiosInstan
 export const loginUser = async (user, navigate) => {
   try {
     const res = await axiosInstance.post("/Accounts/Login", user); // Gọi API từ BE
-
+    console.log('login', res);
     if (res.data) {
       // ✅ Lưu token và thông tin user vào localStorage
       // localStorage.setItem("user", JSON.stringify(res.data.user));
