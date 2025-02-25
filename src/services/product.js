@@ -1,6 +1,6 @@
 import axiosInstance from "../config/axios/axiosInstance";
 
-const endPoint = "/api/Products";
+const endPoint = "/Products";
 const productApi = {
   getAll: async () => {
     const response = await axiosInstance.get(endPoint);
