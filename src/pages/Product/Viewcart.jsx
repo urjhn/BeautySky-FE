@@ -94,7 +94,7 @@ const ViewCart = () => {
           {/* Tổng tiền */}
           <div className="flex justify-between mt-6 text-xl font-bold">
             <span>Tổng tiền:</span>
-            <span className="text-red-500">${formatCurrency(totalPrice)}</span>
+            <span className="text-red-500">{formatCurrency(totalPrice)}</span>
           </div>
 
           {/* Nút "Quay lại cửa hàng" & "Thanh toán" */}

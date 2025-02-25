@@ -7,8 +7,8 @@ import { registerUser } from "../../services/apiRequest";
 
 function Register() {
   const [formData, setFormData] = useState({
-    fullname: "",
-    username: "",
+    fullName: "",
+    userName: "",
     email: "",
     phone: "",
     address: "",
@@ -26,8 +26,8 @@ function Register() {
   const handleRegister = async (e) => {
     e.preventDefault();
     const {
-      fullname,
-      username,
+      fullName,
+      userName,
       email,
       phone,
       address,
@@ -44,8 +44,8 @@ function Register() {
     setError("");
 
     const newUser = {
-      fullname,
-      username,
+      fullName,
+      userName,
       email,
       phone,
       address,
@@ -91,18 +91,18 @@ function Register() {
             <form onSubmit={handleRegister} className="space-y-4">
               <input
                 type="text"
-                name="fullname"
+                name="fullName"
                 placeholder="Họ và tên"
-                value={formData.fullname}
+                value={formData.fullName}
                 onChange={handleChange}
                 className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500"
                 required
               />
               <input
                 type="text"
-                name="username"
+                name="userName"
                 placeholder="Tên người dùng"
-                value={formData.username}
+                value={formData.userName}
                 onChange={handleChange}
                 className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500"
                 required

@@ -1,7 +1,6 @@
 import axiosInstance from '../config/axios/axiosInstance';
 
 const endPoint = "/SkinTypes";
-const endPoint = '/SkinTypes';
 const skinTypeApi = {
     getAll: async() => {
         const response = await axiosInstance.get(endPoint);
