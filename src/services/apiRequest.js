@@ -7,7 +7,8 @@ export const loginUser = async (user, navigate) => {
 
     if (res.data) {
       // ✅ Lưu token và thông tin user vào localStorage
-      localStorage.setItem("user", JSON.stringify(res.data.user));
+      // localStorage.setItem("user", JSON.stringify(res.data.user));
+      localStorage.setItem("role", res.user.role);
       localStorage.setItem("token", res.data.token);
 
       navigate("/"); // Chuyển hướng sau khi đăng nhập thành công

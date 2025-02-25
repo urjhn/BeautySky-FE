@@ -50,9 +50,11 @@ const Blogs = () => {
             className="px-3 py-2 border rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500"
           >
             <option value="All">Tất cả loại da</option>
-            <option value="Da dầu">Da dầu</option>
-            <option value="Da khô">Da khô</option>
-            <option value="Da nhạy cảm">Da nhạy cảm</option>
+            <option value="Da Dầu">Da Dầu</option>
+            <option value="Da Khô">Da Khô</option>
+            <option value="Da Thường">Da Thường</option>
+            <option value="Da Nhạy Cảm">Da Nhạy Cảm</option>
+            <option value="Da Hỗn Hợp">Da Hỗn Hợp</option>
           </select>
           <select
             value={selectedCategory}
@@ -60,8 +62,12 @@ const Blogs = () => {
             className="px-3 py-2 border rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500"
           >
             <option value="All">Tất cả sản phẩm</option>
+            <option value="Tẩy trang">Tẩy trang</option>
+            <option value="Sữa rửa mặt">Sữa rửa mặt</option>
+            <option value="Toner">Toner</option>
             <option value="Serum">Serum</option>
-            <option value="Kem dưỡng">Kem dưỡng</option>
+            <option value="Kem Dưỡng">Kem Dưỡng</option>
+            <option value="Kem Chống Nắng">Kem Chống Nắng</option>
           </select>
         </div>
 
@@ -111,7 +117,7 @@ const Blogs = () => {
             <img
               src={selectedBlog.image}
               alt={selectedBlog.title}
-              className="w-full h-56 object-cover mb-4 rounded-md"
+              className="w-full h-300px object-cover mb-4 rounded-md"
             />
             <p className="text-gray-700 leading-relaxed">
               {selectedBlog.content}
