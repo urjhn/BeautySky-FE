@@ -1,6 +1,6 @@
 import axiosInstance from "../config/axios/axiosInstance";
 
-const endPoint = "/Categories";
+const endPoint = '/Categories';
 const categoryApi = {
   getAll: async () => {
     const response = await axiosInstance.get(endPoint);
