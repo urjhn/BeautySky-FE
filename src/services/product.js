@@ -7,19 +7,20 @@ const productApi = {
     return response;
   },
   createProduct: async (payload) => {
-    const response = await axiosInstance.post(
-      `${endPoint}/Add Product`,
-      payload
-    );
+    const response = await axiosInstance.post(endPoint, payload);
     if (response.status >= 200 && response.status < 300) {
       return response;
     }
     return response;
   },
   deleteProduct: async (id) => {
-    return await axiosInstance.delete(
-      `${endPoint}/Delete Product By ID/?id=${id}`
-    );
+    try {
+      const response = await axiosInstance.delete(`${endPoint}/${id}`);
+      return response;
+    } catch (error) {
+      console.error(`Error deleting product with id ${id}:`, error);
+      throw error;
+    }
   },
 };
 
