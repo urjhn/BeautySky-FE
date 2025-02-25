@@ -66,7 +66,7 @@ const Footer = () => {
                     href="mailto:company.skybeauty@fpt.net.vn"
                     className="text-blue-500 hover:underline"
                   >
-                    company.Fbeauty@fpt.net.vn
+                    company.skybeauty@fpt.net.vn
                   </a>
                 </li>
               </ul>

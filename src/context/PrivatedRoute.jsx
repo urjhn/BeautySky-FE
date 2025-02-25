@@ -1,18 +1,22 @@
 import { Navigate, Outlet } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
+// import { useAuth } from "../context/AuthContext";
 import { useMemo } from "react";
 
-// Component bảo vệ Route
 const PrivateRoute = ({ allowedRoles = [] }) => {
-  const { user } = useAuth();
+  // const { user } = useAuth();
+  const token = localStorage.getItem("token"); // Lấy token từ localStorage
+  const roleId = localStorage.getItem("roleId"); // Lấy roleId từ localStorage
+
+  // Kiểm tra xem người dùng có hợp lệ không
+  const isAuthenticated = token && roleId;
 
   // Kiểm tra quyền của user
   const hasAccess = useMemo(() => {
-    return user?.role && allowedRoles.includes(user.role);
-  }, [user, allowedRoles]);
+    return isAuthenticated && allowedRoles.includes(roleId);
+  }, [isAuthenticated, roleId, allowedRoles]);
 
-  // Nếu chưa đăng nhập, chuyển hướng đến trang login
-  if (!user) return <Navigate to="/login" replace />;
+  // Nếu chưa đăng nhập hoặc không có token, chuyển hướng đến trang login
+  if (!isAuthenticated) return <Navigate to="/login" replace />;
 
   // Nếu không có quyền, chuyển hướng về trang chính
   if (!hasAccess) return <Navigate to="/" replace />;

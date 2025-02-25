@@ -40,13 +40,11 @@ function Login() {
       const res = await loginUser(newUser, navigate);
 
       if (res) {
-        // localStorage.setItem("user", JSON.stringify(res.user));
-        localStorage.setItem("role", res.user.role);
-        localStorage.setItem("token", res.token);
-        console.log("Đăng nhập thành công!");
+        localStorage.setItem("user", JSON.stringify(res.user));
 
         // Gọi hàm login từ context để cập nhật user và điều hướng
-        login(res.user);
+        loginUser(res.user);
+        console.log("Đăng nhập thành công!");
       }
     } catch (err) {
       setError(

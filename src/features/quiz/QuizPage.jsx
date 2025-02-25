@@ -25,39 +25,21 @@ const questions = [
     ],
   },
   {
+    question: "Da bạn phản ứng thế nào với mỹ phẩm mới?",
+    options: [
+      { text: "Dễ bị mụn hoặc bít tắc lỗ chân lông", type: "oily" },
+      { text: "Không phản ứng nhiều", type: "normal" },
+      { text: "Có thể khô, căng hơn", type: "dry" },
+      { text: "Dễ đỏ hoặc ngứa khi đổi sản phẩm", type: "sensitive" },
+    ],
+  },
+  {
     question: "Lỗ chân lông của bạn trông thế nào?",
     options: [
       { text: "To, dễ thấy trên toàn bộ mặt", type: "oily" },
       { text: "Nhỏ ở má, to hơn ở vùng chữ T", type: "combination" },
-      { text: "Không quá lớn cũng không quá nhỏ", type: "normal" },
       { text: "Nhỏ, khó thấy", type: "dry" },
-      { text: "Da mỏng, dễ thấy mao mạch", type: "sensitive" },
-    ],
-  },
-  {
-    question: "Bạn có cảm giác da bị căng hoặc khó chịu sau khi rửa mặt không?",
-    options: [
-      { text: "Không, da tôi vẫn bình thường", type: "normal" },
-      {
-        text: "Có, vùng chữ T cảm giác bình thường nhưng má hơi căng",
-        type: "combination",
-      },
-      { text: "Có, da căng rõ rệt và có thể bong tróc", type: "dry" },
-      { text: "Không, nhưng sau đó nhanh chóng đổ dầu", type: "oily" },
-      { text: "Da hơi đỏ và rát sau khi rửa mặt", type: "sensitive" },
-    ],
-  },
-  {
-    question: "Khi sử dụng mỹ phẩm mới, da bạn phản ứng thế nào?",
-    options: [
-      { text: "Không có phản ứng đặc biệt", type: "normal" },
-      { text: "Dễ nổi mụn hoặc bít tắc lỗ chân lông", type: "oily" },
-      { text: "Có thể có một số vùng khô hơn bình thường", type: "dry" },
-      { text: "Dễ đỏ hoặc kích ứng khi đổi sản phẩm", type: "sensitive" },
-      {
-        text: "Chỉ đôi khi có chút nhờn hoặc khô ở vài vùng",
-        type: "combination",
-      },
+      { text: "Không quá lớn cũng không quá nhỏ", type: "normal" },
     ],
   },
 ];
@@ -103,8 +85,7 @@ const QuizPage = () => {
 
   const handleNext = () => {
     if (selectedOption) {
-      const updatedAnswers = [...answers];
-      updatedAnswers[currentQuestion] = selectedOption.type;
+      const updatedAnswers = [...answers, selectedOption.type];
       setAnswers(updatedAnswers);
       setSelectedOption(null);
 
@@ -113,17 +94,6 @@ const QuizPage = () => {
       } else {
         determineSkinType(updatedAnswers);
       }
-    }
-  };
-
-  const handleBack = () => {
-    if (currentQuestion > 0) {
-      setCurrentQuestion(currentQuestion - 1);
-      setSelectedOption(
-        questions[currentQuestion - 1].options.find(
-          (option) => option.type === answers[currentQuestion - 1]
-        ) || null
-      );
     }
   };
 
@@ -164,11 +134,8 @@ const QuizPage = () => {
           ) : (
             <div>
               <h2 className="text-2xl font-semibold text-blue-600">
-                Câu hỏi {currentQuestion + 1}/{questions.length}
-              </h2>
-              <p className="text-xl mt-4">
                 {questions[currentQuestion].question}
-              </p>
+              </h2>
               <div className="mt-6 space-y-4">
                 {questions[currentQuestion].options.map((option, index) => (
                   <label
@@ -184,7 +151,6 @@ const QuizPage = () => {
                       name="quiz"
                       value={option.text}
                       className="hidden"
-                      checked={selectedOption?.text === option.text}
                       onChange={() => handleOptionClick(option)}
                     />
                     <div className="w-6 h-6 flex items-center justify-center border-2 border-blue-500 rounded-full">
@@ -196,32 +162,19 @@ const QuizPage = () => {
                   </label>
                 ))}
               </div>
-              <div className="mt-6 flex justify-between">
-                <button
-                  className={`bg-gray-400 text-white py-3 px-6 rounded-xl font-semibold shadow-xl transition ${
-                    currentQuestion > 0
-                      ? "hover:scale-105"
-                      : "opacity-50 cursor-not-allowed"
-                  }`}
-                  onClick={handleBack}
-                  disabled={currentQuestion === 0}
-                >
-                  Quay lại
-                </button>
-                <button
-                  className={`bg-gradient-to-r from-blue-400 to-blue-600 text-white py-3 px-8 rounded-xl font-semibold shadow-xl transition ${
-                    selectedOption
-                      ? "hover:scale-105"
-                      : "opacity-50 cursor-not-allowed"
-                  }`}
-                  onClick={handleNext}
-                  disabled={!selectedOption}
-                >
-                  {currentQuestion < questions.length - 1
-                    ? "Tiếp theo"
-                    : "Xem kết quả"}
-                </button>
-              </div>
+              <button
+                className={`mt-6 bg-gradient-to-r from-blue-400 to-blue-600 text-white py-3 px-8 rounded-xl font-semibold shadow-xl transition ${
+                  selectedOption
+                    ? "hover:scale-105"
+                    : "opacity-50 cursor-not-allowed"
+                }`}
+                onClick={handleNext}
+                disabled={!selectedOption}
+              >
+                {currentQuestion < questions.length - 1
+                  ? "Tiếp theo"
+                  : "Xem kết quả"}
+              </button>
             </div>
           )}
         </div>
