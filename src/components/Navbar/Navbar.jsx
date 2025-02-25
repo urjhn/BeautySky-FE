@@ -136,9 +136,6 @@ const Navbar = () => {
                   alt="Avatar"
                   className="w-10 h-10 rounded-full border"
                 />
-                <span className="hidden md:block text-gray-700">
-                  Chào {user.username} !
-                </span>
               </Link>
               <button
                 onClick={handleLogout}

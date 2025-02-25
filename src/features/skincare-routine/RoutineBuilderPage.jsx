@@ -5,35 +5,62 @@ import Footer from "../../components/Footer/Footer";
 const routineSteps = [
   {
     step: "Tẩy trang",
-    product: { name: "Dầu tẩy trang DHC", image: "/images/dhc.jpg" },
+    product: {
+      name: "Dầu tẩy trang DHC",
+      image: "/images/dhc.jpg",
+      details:
+        "Dầu tẩy trang giúp làm sạch lớp trang điểm và bụi bẩn sâu trong lỗ chân lông.",
+    },
   },
   {
     step: "Sữa rửa mặt",
-    product: { name: "Sữa rửa mặt CeraVe", image: "/images/cerave.jpg" },
+    product: {
+      name: "Sữa rửa mặt CeraVe",
+      image: "/images/cerave.jpg",
+      details:
+        "Sữa rửa mặt CeraVe giúp làm sạch da nhẹ nhàng mà không làm mất độ ẩm tự nhiên.",
+    },
   },
   {
     step: "Toner",
-    product: { name: "Toner Klairs", image: "/images/klairs.jpg" },
+    product: {
+      name: "Toner Klairs",
+      image: "/images/klairs.jpg",
+      details:
+        "Toner Klairs giúp cân bằng độ pH và làm dịu da sau khi rửa mặt.",
+    },
   },
   {
     step: "Serum",
-    product: { name: "Serum Vitamin C", image: "/images/vitaminC.jpg" },
+    product: {
+      name: "Serum Vitamin C",
+      image: "/images/vitaminC.jpg",
+      details: "Serum Vitamin C giúp sáng da và giảm thâm nám hiệu quả.",
+    },
   },
   {
     step: "Kem trị mụn",
     product: {
       name: "Kem trị mụn La Roche-Posay",
       image: "/images/laroche.jpg",
+      details:
+        "Kem trị mụn giúp giảm viêm, kháng khuẩn và làm dịu làn da bị mụn.",
     },
   },
   {
     step: "Kem chống nắng",
-    product: { name: "Kem chống nắng Anessa", image: "/images/anessa.jpg" },
+    product: {
+      name: "Kem chống nắng Anessa",
+      image: "/images/anessa.jpg",
+      details:
+        "Kem chống nắng giúp bảo vệ da khỏi tia UV và ngăn ngừa lão hóa sớm.",
+    },
   },
 ];
 
 const RoutineBuilderPage = () => {
   const [routineName, setRoutineName] = useState("");
+  const [selectedStep, setSelectedStep] = useState(null);
 
   const handleSaveRoutine = () => {
     if (!routineName) {
@@ -62,23 +89,44 @@ const RoutineBuilderPage = () => {
           onChange={(e) => setRoutineName(e.target.value)}
         />
 
-        <div className="w-3/4 mt-6">
+        <div className="w-2/4 mt-6">
           {routineSteps.map((item, index) => (
-            <div
-              key={index}
-              className="flex items-center border rounded-lg p-4 shadow-lg bg-white transition transform hover:scale-105 hover:bg-gray-100 mb-4"
-            >
-              <span className="text-blue-600 font-bold text-lg mr-4">
-                {item.step}:
-              </span>
-              <img
-                src={item.product.image}
-                alt={item.product.name}
-                className="h-20 w-20 object-cover rounded-md"
-              />
-              <h3 className="text-lg font-semibold text-gray-700 ml-4">
-                {item.product.name}
-              </h3>
+            <div key={index} className="mb-4">
+              <div
+                className={`flex items-center justify-between border rounded-lg p-4 shadow-lg bg-white cursor-pointer transition duration-300 ${
+                  selectedStep === index ? "bg-blue-100" : ""
+                }`}
+                onClick={() =>
+                  setSelectedStep(selectedStep === index ? null : index)
+                }
+              >
+                <div className="flex items-center">
+                  <span className="text-xl font-bold text-blue-600 mr-4">
+                    {index + 1}.
+                  </span>
+                  <span className="text-blue-600 font-bold text-lg mr-4">
+                    {item.step}:
+                  </span>
+                  <img
+                    src={item.product.image}
+                    alt={item.product.name}
+                    className="h-20 w-20 object-cover rounded-md"
+                  />
+                  <h3 className="text-lg font-semibold text-gray-700 ml-4">
+                    {item.product.name}
+                  </h3>
+                </div>
+                <span className="text-gray-600 text-2xl">
+                  {selectedStep === index ? "🔼" : "🔽"}
+                </span>
+              </div>
+              {selectedStep === index && (
+                <div className="p-4 bg-gray-100 rounded-lg mt-2 shadow-inner transition-all duration-300 ease-in-out">
+                  <p className="text-gray-700 font-medium">
+                    {item.product.details}
+                  </p>
+                </div>
+              )}
             </div>
           ))}
         </div>
