@@ -31,34 +31,6 @@ export const registerUser = async (user, navigate) => {
   }
 };
 
-// 🔹 ĐĂNG XUẤT (Gọi API từ BE + Xóa localStorage)
-export const logoutUser = async (navigate) => {
-  try {
-    const token = localStorage.getItem("token");
-
-    if (token) {
-      try {
-        // 🛠️ Nếu BE có API Logout, gọi API này
-        await axiosInstance.post(
-          "/Accounts/Logout",
-          {},
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
-      } catch (err) {
-        console.warn("Logout API failed, but continuing logout process.");
-      }
-    }
-
-    // ❌ Xóa dữ liệu đăng nhập khỏi localStorage
-    localStorage.removeItem("user");
-    localStorage.removeItem("token");
-
-    // Chuyển hướng đến trang đăng nhập
-    navigate("/login");
-  } catch (err) {
-    console.error("Logout failed", err.response?.data || err.message);
-  }
-};
 // 🔹 GỌI API LẤY DANH SÁCH SẢN PHẨM
 export const fetchProducts = async () => {
   try {

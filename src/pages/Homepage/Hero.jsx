@@ -1,5 +1,5 @@
-import React from "react";
-import { useEvent } from "../../context/EvenContext";
+import React, { useEffect, useState } from "react";
+import { useNewsContext } from "../../context/EvenContext";
 import Slider from "react-slick";
 import { FaArrowLeft, FaArrowRight } from "react-icons/fa";
 import { Link } from "react-router-dom";
@@ -23,9 +23,18 @@ const NextArrow = ({ onClick }) => (
 );
 
 const Hero = () => {
-  const { events } = useEvent();
+  const { news, fetchNews } = useNewsContext();
+  const [loading, setLoading] = useState(true);
 
-  var settings = {
+  useEffect(() => {
+    const loadEvents = async () => {
+      await fetchNews();
+      setLoading(false);
+    };
+    loadEvents();
+  }, []);
+
+  const settings = {
     dots: true,
     arrows: true,
     infinite: true,
@@ -43,29 +52,33 @@ const Hero = () => {
   return (
     <div className="relative overflow-hidden min-h-[500px] flex justify-center items-center w-full">
       <div className="w-full">
-        <Slider {...settings} className="w-full">
-          {events.map((data) => (
-            <div key={data.id} className="relative w-full h-[600px]">
-              <img
-                src={data.img}
-                alt=""
-                className="w-full h-full object-cover brightness-50"
-              />
-              <div className="absolute inset-0 flex flex-col justify-center items-center text-center px-6 text-white">
-                <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold">
-                  {data.title}
-                </h1>
-                <p className="text-lg max-w-2xl mb-6">{data.description}</p>
-                <Link
-                  to="/product"
-                  className="bg-gradient-to-r from-[#6BBCFE] to-[#97caf4eb] hover:scale-105 duration-200 text-white py-3 px-6 rounded-full text-lg font-semibold mt-6"
-                >
-                  Đặt hàng ngay
-                </Link>
+        {loading ? (
+          <p className="text-center text-white">Đang tải sự kiện...</p>
+        ) : (
+          <Slider {...settings} className="w-full">
+            {news.map((event) => (
+              <div key={event.id} className="relative w-full h-[600px]">
+                <img
+                  src={event.imageUrl}
+                  alt={event.title}
+                  className="w-full h-full object-cover brightness-50"
+                />
+                <div className="absolute inset-0 flex flex-col justify-center items-center text-center px-6 text-white">
+                  <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold">
+                    {event.title}
+                  </h1>
+                  <p className="text-lg max-w-2xl mb-6">{event.content}</p>
+                  <Link
+                    to="/product"
+                    className="bg-gradient-to-r from-[#6BBCFE] to-[#97caf4eb] hover:scale-105 duration-200 text-white py-3 px-6 rounded-full text-lg font-semibold mt-6"
+                  >
+                    Đặt hàng ngay
+                  </Link>
+                </div>
               </div>
-            </div>
-          ))}
-        </Slider>
+            ))}
+          </Slider>
+        )}
       </div>
     </div>
   );
