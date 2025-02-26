@@ -15,11 +15,10 @@ const productApi = {
     return response;
   },
   editProduct: async (id, payload) => {
-    const response = await axiosInstance.put(`${endPoint}/${id}`, payload);
-    if (response.status >= 200 && response.status < 300) {
-      return response;
-    }
-    return response;
+    return await axiosInstance.put(
+      `${endPoint}/UpdateProductById/${id}`,
+      payload
+    );
   },
   deleteProduct: async (id) => {
     return await axiosInstance.delete(`${endPoint}/${id}`);

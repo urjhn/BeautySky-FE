@@ -27,7 +27,8 @@ import Promotion from "./pages/DashBoard/pages/Promotion.jsx";
 import RoutineBuilderPage from "./features/skincare-routine/RoutineBuilderPage.jsx";
 import AboutUs from "./pages/AboutUs/AboutUs.jsx";
 import Events from "./pages/DashBoard/pages/EventsControll.jsx";
-import PrivateRoute from "./context/PrivatedRoute.jsx";
+// import ProtectedRoute from "./context/ProtectedRoute.jsx";
+import Unauthorized from "./pages/Unauthorized/unauthorized.jsx";
 
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
@@ -54,20 +55,21 @@ const App = () => (
     <Route path="*" element={<Error />} />
     <Route path="/profile" element={<UserProfile />} />
     <Route path="/routine-builder" element={<RoutineBuilderPage />} />
+    <Route path="/unauthorized" element={<Unauthorized />} />
     {/* Dashboard Routes (Chỉ Manager và Staff mới truy cập) */}
-    <Route element={<PrivateRoute allowedRoles={["2", "3"]} />}>
-      <Route path="/dashboard" element={<DashboardLayout />}>
-        <Route index element={<Dashboard />} />
-        <Route path="blogs" element={<BlogManagement />} />
-        <Route path="promotions" element={<Promotion />} />
-        <Route path="customers" element={<Customers />} />
-        <Route path="orders" element={<Order />} />
-        <Route path="products" element={<Products />} />
-        <Route path="reports" element={<Report />} />
-        <Route path="events" element={<Events />} />
-        <Route path="settings" element={<Setting />} />
-      </Route>
+    {/* <Route element={<ProtectedRoute allowedRoles={["2", "3"]} />}> */}
+    <Route path="/dashboard" element={<DashboardLayout />}>
+      <Route index element={<Dashboard />} />
+      <Route path="blogs" element={<BlogManagement />} />
+      <Route path="promotions" element={<Promotion />} />
+      <Route path="customers" element={<Customers />} />
+      <Route path="orders" element={<Order />} />
+      <Route path="products" element={<Products />} />
+      <Route path="reports" element={<Report />} />
+      <Route path="events" element={<Events />} />
+      <Route path="settings" element={<Setting />} />
     </Route>
+    {/* </Route> */}
   </Routes>
 );
 

@@ -25,6 +25,7 @@ const Products = () => {
   const [filter, setFilter] = React.useState("All");
   const [editingProduct, setEditingProduct] = React.useState(null);
   const [showEditModal, setShowEditModal] = React.useState(false);
+  const [loading, setLoading] = React.useState(false); // Thêm trạng thái loading
   const productsPerPage = 5;
   const [newProduct, setNewProduct] = React.useState({
     productName: "",
@@ -82,16 +83,18 @@ const Products = () => {
   //chua lam
   const handleSaveEdit = async (values) => {
     try {
-      const response = await productApi.editProduct(values.productId, values);
-      if (response.status >= 200 && response.status < 300) {
-        setProducts((prev) =>
-          prev.map((p) => (p.productId === values.productId ? values : p))
-        );
-        setShowEditModal(false);
-        message.success("Cập nhật sản phẩm thành công!");
-      } else {
-        throw new Error("Cập nhật sản phẩm bị lỗi");
-      }
+      const updatedProduct = await productApi.editProduct(
+        values.productId,
+        values
+      );
+
+      // Cập nhật state với sản phẩm đã chỉnh sửa
+      setProducts((prev) =>
+        prev.map((p) => (p.productId === values.productId ? updatedProduct : p))
+      );
+
+      setShowEditModal(false);
+      message.success("Cập nhật sản phẩm thành công!");
     } catch (error) {
       console.error("Error updating product:", error);
       message.error("Cập nhật sản phẩm bị lỗi");
@@ -161,8 +164,8 @@ const Products = () => {
           <Button
             type="primary"
             onClick={() => {
-              setEditingProduct(record);
-              setShowEditModal(true);
+              setEditingProduct(record); // Lưu sản phẩm cần chỉnh sửa vào state
+              setShowEditModal(true); // Hiển thị modal chỉnh sửa
             }}
           >
             <FaEdit />
@@ -236,7 +239,12 @@ const Products = () => {
             key={editingProduct.productId} // Đảm bảo form re-render khi chỉnh sản phẩm mới
             item={editingProduct}
             onSubmit={async (values) => {
-              await handleSaveEdit(values); // Gọi API để cập nhật sản phẩm
+              try {
+                await handleSaveEdit(values); // Gọi API để cập nhật sản phẩm
+                setShowEditModal(false); // Đóng modal sau khi lưu thành công
+              } catch (error) {
+                console.error("Lỗi cập nhật sản phẩm:", error);
+              }
             }}
             onCancel={() => setShowEditModal(false)}
             skinTypes={skinTypes}

@@ -16,19 +16,17 @@ root.render(
     <Router>
       {" "}
       {/* Chỉ có 1 Router ở đây */}
-      <div className="content">
-        <AuthProvider>
-          <CartProvider>
-            <ThemeProvider>
-              <EventProvider>
-                <DataProvider>
-                  <App />
-                </DataProvider>
-              </EventProvider>
-            </ThemeProvider>
-          </CartProvider>
-        </AuthProvider>
-      </div>
+      <AuthProvider>
+        <CartProvider>
+          <ThemeProvider>
+            <EventProvider>
+              <DataProvider>
+                <App />
+              </DataProvider>
+            </EventProvider>
+          </ThemeProvider>
+        </CartProvider>
+      </AuthProvider>
     </Router>
   </GoogleOAuthProvider>
 );

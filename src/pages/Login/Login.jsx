@@ -43,7 +43,7 @@ function Login() {
         localStorage.setItem("user", JSON.stringify(res.user));
 
         // Gọi hàm login từ context để cập nhật user và điều hướng
-        loginUser(res.user);
+        login(res.user);
         console.log("Đăng nhập thành công!");
       }
     } catch (err) {
@@ -55,6 +55,45 @@ function Login() {
       setLoading(false);
     }
   };
+
+  //test phân quyền
+  // const { login } = useContext(AuthContext);
+
+  // const handleLogin = async (e) => {
+  //   e.preventDefault();
+  //   const { email, password } = formData;
+
+  //   if (!email || !password) {
+  //     setError("Vui lòng điền đầy đủ thông tin");
+  //     return;
+  //   }
+
+  //   if (!recaptchaToken) {
+  //     setError("Vui lòng xác minh reCAPTCHA");
+  //     return;
+  //   }
+
+  //   setLoading(true);
+  //   setError("");
+
+  //   const newUser = { email, password, recaptchaToken };
+
+  //   try {
+  //     const res = await loginUser(newUser, navigate);
+
+  //     if (res) {
+  //       login(res.token, res.roleId); // ✅ Lưu vào context
+  //       console.log("Đăng nhập thành công!");
+  //     }
+  //   } catch (err) {
+  //     setError(
+  //       err.response?.data?.message ||
+  //         "Đăng nhập không thành công, vui lòng thử lại"
+  //     );
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
 
   const handleGoogleSignIn = () => {
     // Chuyển hướng người dùng đến endpoint đăng nhập Google của bạn

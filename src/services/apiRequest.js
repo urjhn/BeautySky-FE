@@ -1,37 +1,15 @@
 import axiosInstance from "../config/axios/axiosInstance"; // Import axiosInstance
 
-// 🔹 ĐĂNG NHẬP (Gọi API từ BE và lưu user vào localStorage)
-// export const loginUser = async (user, navigate) => {
-//   try {
-//     const res = await axiosInstance.post("/Accounts/Login", user); // Gọi API từ BE
-
-//     if (res.data) {
-//       // ✅ Lưu token và thông tin user vào localStorage
-//       localStorage.setItem("user", JSON.stringify(res.data.user));
-//       // localStorage.setItem("role", res.user.role);
-//       localStorage.setItem("token", res.data.token);
-
-//       navigate("/"); // Chuyển hướng sau khi đăng nhập thành công
-//     }
-
-//     return res.data;
-//   } catch (err) {
-//     console.error("Login failed", err.response?.data || err.message);
-//     throw err;
-//   }
-// };
+// 🔹 ĐĂNG NHẬP
 export const loginUser = async (user, navigate) => {
   try {
     const res = await axiosInstance.post("/Accounts/Login", user); // Gọi API từ BE
 
     if (res.data) {
-      // ✅ Lưu token vào localStorage
       localStorage.setItem("token", res.data.token);
-
-      // ✅ Lưu roleId vào localStorage để phân quyền
       localStorage.setItem("roleId", res.data.roleId);
 
-      navigate("/"); // Chuyển hướng sau khi đăng nhập thành công
+      navigate("/");
     }
 
     return res.data;
