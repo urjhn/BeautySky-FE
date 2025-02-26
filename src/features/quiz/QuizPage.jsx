@@ -110,6 +110,31 @@ const QuizPage = () => {
     setResult(skinTypeDescriptions[mostCommonType]);
   };
 
+  // Hàm để tạo bảng ô đếm số câu hỏi đã trả lời
+  const renderProgressTracker = () => {
+    return (
+      <div className="flex justify-center items-center my-4 space-x-2">
+        {questions.map((_, index) => (
+          <div
+            key={index}
+            className={`w-8 h-8 flex items-center justify-center rounded-full text-sm font-medium border-2 
+              ${
+                index < answers.length
+                  ? "bg-blue-500 text-white border-blue-600"
+                  : index === currentQuestion
+                  ? "bg-blue-100 border-blue-400"
+                  : "bg-gray-100 border-gray-300"
+              }
+              ${index === currentQuestion ? "ring-2 ring-blue-300" : ""}
+            `}
+          >
+            {index + 1}
+          </div>
+        ))}
+      </div>
+    );
+  };
+
   return (
     <>
       <Navbar />
@@ -133,6 +158,13 @@ const QuizPage = () => {
             </div>
           ) : (
             <div>
+              {/* Thêm bảng ô đếm số câu hỏi đã trả lời */}
+              {renderProgressTracker()}
+              
+              <div className="mt-4 mb-6 text-sm text-gray-500">
+                Đã trả lời: {answers.length}/{questions.length} câu hỏi
+              </div>
+              
               <h2 className="text-2xl font-semibold text-blue-600">
                 {questions[currentQuestion].question}
               </h2>
