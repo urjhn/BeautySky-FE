@@ -6,7 +6,7 @@ import { FaFacebook, FaInstagram, FaLinkedin } from "react-icons/fa";
 const Footer = () => {
   return (
     <div data-aos="fade-up" className="bg-white text-gray-700">
-      <section className="max-w-[1500px] mx-auto px-6 py-10">
+      <section className="max-w-[1500px] mx-auto px-8 py-10">
         <div className="grid md:grid-cols-2 gap-0">
           {/* Logo & Mô tả */}
           <div className="flex flex-col items-center text-center">
@@ -47,7 +47,7 @@ const Footer = () => {
           </div>
 
           {/* Liên kết */}
-          <div className="grid grid-cols-2 gap-10">
+          <div className="grid grid-cols-2 gap-6">
             {/* Thông tin công ty */}
             <div>
               <h1 className="text-xl font-semibold mb-3">
