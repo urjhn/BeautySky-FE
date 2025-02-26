@@ -7,7 +7,7 @@ const Footer = () => {
   return (
     <div data-aos="fade-up" className="bg-white text-gray-700">
       <section className="max-w-[1500px] mx-auto px-6 py-10">
-        <div className="grid md:grid-cols-2 gap-8">
+        <div className="grid md:grid-cols-2 gap-0">
           {/* Logo & Mô tả */}
           <div className="flex flex-col items-center text-center">
             <a href="#/" className="flex flex-col items-center space-y-2">
@@ -20,7 +20,7 @@ const Footer = () => {
             </a>
             <p className="mt-4 leading-6 max-w-[400px]">
               Nhà phân phối độc quyền của <b>Sky Beauty</b> tại Việt Nam là Công
-              ty TNHH Thương mại FPT.
+              ty TNHH Thương mại FBeauty.
             </p>
 
             {/* Mạng xã hội */}
@@ -47,11 +47,11 @@ const Footer = () => {
           </div>
 
           {/* Liên kết */}
-          <div className="grid grid-cols-2 gap-6">
+          <div className="grid grid-cols-2 gap-10">
             {/* Thông tin công ty */}
             <div>
               <h1 className="text-xl font-semibold mb-3">
-                🏢 Công ty TNHH Thương mại FPT
+                🏢 Công ty TNHH Thương mại FBeauty
               </h1>
               <ul className="space-y-2">
                 <li>
@@ -63,10 +63,10 @@ const Footer = () => {
                 <li>
                   ✉️ Email:{" "}
                   <a
-                    href="mailto:company.skybeauty@fpt.net.vn"
+                    href="mailto:company.skybeauty@fbeauty.net.vn"
                     className="text-blue-500 hover:underline"
                   >
-                    company.skybeauty@fpt.net.vn
+                    company.skybeauty@fbeauty.net.vn
                   </a>
                 </li>
               </ul>
