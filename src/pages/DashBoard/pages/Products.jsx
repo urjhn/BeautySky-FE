@@ -16,6 +16,7 @@ import {
   Col,
 } from "antd";
 import productApi from "../../../services/product";
+import Swal from "sweetalert2";
 const { TextArea } = Input;
 
 const Products = () => {
@@ -67,17 +68,30 @@ const Products = () => {
   );
 
   const handleDelete = async (productId) => {
-    try {
-      const response = await productApi.deleteProduct(productId);
-      if (response.status >= 200 && response.status < 300) {
-        setProducts((prev) => prev.filter((p) => p.productId !== productId));
-        message.success(`Product delete successfully`);
-      } else {
-        message.error(`Failed to delete product`);
+    const result = await Swal.fire({
+      title: "Bạn có chắc chắn muốn xóa?",
+      text: "Hành động này không thể hoàn tác!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "OK",
+      cancelButtonText: "Hủy",
+    });
+
+    if (result.isConfirmed) {
+      try {
+        const response = await productApi.deleteProduct(productId);
+        if (response.status >= 200 && response.status < 300) {
+          setProducts((prev) => prev.filter((p) => p.productId !== productId));
+          Swal.fire("Xóa thành công!", "Sản phẩm đã được xóa.", "success");
+        } else {
+          Swal.fire("Lỗi!", "Không thể xóa sản phẩm.", "error");
+        }
+      } catch (error) {
+        console.error("Lỗi xóa sản phẩm:", error);
+        Swal.fire("Lỗi!", "Đã xảy ra lỗi khi xóa sản phẩm.", "error");
       }
-    } catch (error) {
-      console.error(`Error delete product:`, error);
-      message.error(`Failed to delete product`);
     }
   };
   //chua lam
@@ -126,15 +140,19 @@ const Products = () => {
   const columns = [
     {
       title: "Hình ảnh",
-      dataIndex: "image",
-      key: "image",
-      render: (image, record) => (
-        <img
-          src={image}
-          alt={record.productName}
-          style={{ width: "50px", height: "50px", objectFit: "cover" }}
-        />
-      ),
+      dataIndex: "images",
+      key: "images",
+      render: (images) => {
+        const imageUrl =
+          images?.length > 0 ? images[0].imageUrl : "/placeholder.jpg";
+        return (
+          <img
+            src={imageUrl}
+            alt="Product"
+            style={{ width: "50px", height: "50px", objectFit: "cover" }}
+          />
+        );
+      },
     },
     { title: "Tên", dataIndex: "productName", key: "productName" },
     {

@@ -4,10 +4,8 @@ import { IoMdSearch } from "react-icons/io";
 import { FaShoppingCart } from "react-icons/fa";
 import { useCart } from "../../context/CartContext";
 import { NavbarMenu } from "../Navbar/Data";
-import { motion } from "framer-motion";
 import Logo from "../../assets/logo.png";
 import Namebrand from "../../assets/namebrand.png";
-import { logoutUser } from "../../services/apiRequest"; // Import hàm logout
 
 const Navbar = () => {
   const navigate = useNavigate();
@@ -54,9 +52,10 @@ const Navbar = () => {
   };
 
   const handleLogout = () => {
-    logoutUser(navigate);
+    localStorage.removeItem("user"); // Xóa user khỏi localStorage
+    localStorage.removeItem("roleId"); // Xóa role
     setUser(null);
-    localStorage.removeItem("role"); // Xóa role khi đăng xuất
+    navigate("/login"); // Chuyển hướng về trang đăng nhập
   };
 
   return (
