@@ -1,75 +1,43 @@
-import { createContext, useContext, useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { createContext, useState, useEffect } from "react";
 
-// Tạo Context
-const AuthContext = createContext();
+export const AuthContext = createContext();
 
-// Provider cho Context
 export const AuthProvider = ({ children }) => {
-  const navigate = useNavigate();
+  const [roleId, setRoleId] = useState(null);
+  const [token, setToken] = useState(null);
 
-  // Lấy thông tin user từ localStorage
-  const [user, setUser] = useState(() => {
-    try {
-      const storedUser = localStorage.getItem("user");
-      return storedUser ? JSON.parse(storedUser) : null;
-    } catch (error) {
-      console.error("Lỗi khi đọc user từ localStorage:", error);
-      localStorage.removeItem("user");
-      return null;
-    }
-  });
-
-  // Lấy vai trò từ localStorage
-  const [role, setRole] = useState(() => {
-    try {
-      return localStorage.getItem("role") || null;
-    } catch (error) {
-      console.error("Lỗi khi đọc role từ localStorage:", error);
-      localStorage.removeItem("role");
-      return null;
-    }
-  });
-
-  // Cập nhật localStorage khi user hoặc role thay đổi
   useEffect(() => {
-    if (user) {
-      localStorage.setItem("user", JSON.stringify(user));
-      localStorage.setItem("role", user.role); // Lưu role vào localStorage
-    } else {
-      localStorage.removeItem("user");
-      localStorage.removeItem("role");
-    }
-  }, [user]);
+    // Kiểm tra localStorage khi tải trang
+    const storedToken = localStorage.getItem("token");
+    const storedRoleId = localStorage.getItem("roleId");
 
-  // Hàm đăng nhập với phân quyền
-  const login = (userData) => {
-    setUser(userData);
-    setRole(userData.role);
-
-    // Điều hướng dựa trên vai trò của người dùng
-    if (userData.role === "Manager" || userData.role === "Staff") {
-      navigate("/dashboard");
-    } else {
-      navigate("/");
+    if (storedToken && storedRoleId) {
+      setToken(storedToken);
+      setRoleId(Number(storedRoleId));
     }
+  }, []);
+
+  // Đăng nhập - Lưu token & roleId
+  const login = (userData, token, roleId) => {
+    localStorage.setItem("token", token);
+    localStorage.setItem("roleId", roleId);
+
+    setToken(token);
+    setRoleId(roleId);
   };
 
-  // Hàm đăng xuất
+  // Đăng xuất - Xóa thông tin khỏi localStorage
   const logout = () => {
-    setUser(null);
-    setRole(null);
-    localStorage.removeItem("user");
-    localStorage.removeItem("role");
-    navigate("/login");
+    localStorage.removeItem("token");
+    localStorage.removeItem("roleId");
+
+    setToken(null);
+    setRoleId(null);
   };
 
   return (
-    <AuthContext.Provider value={{ user, role, login, logout }}>
+    <AuthContext.Provider value={{ roleId, token, login, logout }}>
       {children}
     </AuthContext.Provider>
   );
 };
-
-// Custom hook để sử dụng AuthContext
-export const useAuth = () => useContext(AuthContext);

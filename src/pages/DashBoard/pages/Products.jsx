@@ -16,16 +16,17 @@ import {
   Col,
 } from "antd";
 import productApi from "../../../services/product";
+import Swal from "sweetalert2";
 const { TextArea } = Input;
 
 const Products = () => {
-  const { products, skinTypes, categories, axiosInstance, setProducts } =
-    useDataContext();
+  const { products, skinTypes, categories, setProducts } = useDataContext();
 
   const [currentPage, setCurrentPage] = React.useState(1);
   const [filter, setFilter] = React.useState("All");
   const [editingProduct, setEditingProduct] = React.useState(null);
   const [showEditModal, setShowEditModal] = React.useState(false);
+  const [loading, setLoading] = React.useState(false); // Thêm trạng thái loading
   const productsPerPage = 5;
   const [newProduct, setNewProduct] = React.useState({
     productName: "",
@@ -39,20 +40,24 @@ const Products = () => {
   const [showAddModal, setShowAddModal] = React.useState(false);
   const [sortOrder, setSortOrder] = React.useState(null);
 
-  const sortedProducts = React.useMemo(() => {
-    if (!sortOrder) return products;
-    const sorted = [...products].sort((a, b) =>
-      sortOrder === "asc" ? a.price - b.price : b.price - a.price
-    );
-    return sorted;
-  }, [products, sortOrder]);
+  const filteredProducts = React.useMemo(() => {
+    let updatedProducts = [...products];
 
-  const filteredProducts =
-    filter === "All"
-      ? sortedProducts
-      : sortedProducts.filter((p) => p.status === filter);
+    if (filter !== "All") {
+      updatedProducts = updatedProducts.filter((p) =>
+        filter === "Còn hàng" ? p.quantity > 0 : p.quantity === 0
+      );
+    }
 
-  const totalPages = Math.ceil(filteredProducts.length / productsPerPage);
+    if (sortOrder) {
+      updatedProducts.sort((a, b) =>
+        sortOrder === "asc" ? a.price - b.price : b.price - a.price
+      );
+    }
+
+    return updatedProducts;
+  }, [products, filter, sortOrder]);
+
   const displayedProducts = React.useMemo(
     () =>
       filteredProducts.slice(
@@ -63,31 +68,50 @@ const Products = () => {
   );
 
   const handleDelete = async (productId) => {
-    try {
-      const response = await productApi.deleteProduct(productId);
-      if (response.status >= 200 && response.status < 300) {
-        setProducts((prev) => prev.filter((p) => p.productId !== productId));
-        message.success(`Product delete successfully`);
-      } else {
-        message.error(`Failed to delete product`);
+    const result = await Swal.fire({
+      title: "Bạn có chắc chắn muốn xóa?",
+      text: "Hành động này không thể hoàn tác!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "OK",
+      cancelButtonText: "Hủy",
+    });
+
+    if (result.isConfirmed) {
+      try {
+        const response = await productApi.deleteProduct(productId);
+        if (response.status >= 200 && response.status < 300) {
+          setProducts((prev) => prev.filter((p) => p.productId !== productId));
+          Swal.fire("Xóa thành công!", "Sản phẩm đã được xóa.", "success");
+        } else {
+          Swal.fire("Lỗi!", "Không thể xóa sản phẩm.", "error");
+        }
+      } catch (error) {
+        console.error("Lỗi xóa sản phẩm:", error);
+        Swal.fire("Lỗi!", "Đã xảy ra lỗi khi xóa sản phẩm.", "error");
       }
-    } catch (error) {
-      console.error(`Error delete product:`, error);
-      message.error(`Failed to delete product`);
     }
   };
   //chua lam
   const handleSaveEdit = async (values) => {
     try {
-      await axiosInstance.put(`/Products/${values.productId}`, values);
-      setProducts((prev) =>
-        prev.map((p) => (p.productId === values.productId ? values : p))
+      const updatedProduct = await productApi.editProduct(
+        values.productId,
+        values
       );
+
+      // Cập nhật state với sản phẩm đã chỉnh sửa
+      setProducts((prev) =>
+        prev.map((p) => (p.productId === values.productId ? updatedProduct : p))
+      );
+
       setShowEditModal(false);
-      message.success("Product updated successfully");
+      message.success("Cập nhật sản phẩm thành công!");
     } catch (error) {
       console.error("Error updating product:", error);
-      message.error("Failed to update product");
+      message.error("Cập nhật sản phẩm bị lỗi");
     }
   };
 
@@ -106,25 +130,29 @@ const Products = () => {
         categoryId: 1,
         skinTypeId: 1,
       });
-      message.success("Product added successfully");
+      message.success("Thêm sản phẩm thành công!");
     } catch (error) {
       console.error("Error adding product:", error);
-      message.error("Failed to add product");
+      message.error("Lỗi thêm sản phẩm");
     }
   };
 
   const columns = [
     {
       title: "Hình ảnh",
-      dataIndex: "image",
-      key: "image",
-      render: (image, record) => (
-        <img
-          src={image}
-          alt={record.productName}
-          style={{ width: "50px", height: "50px", objectFit: "cover" }}
-        />
-      ),
+      dataIndex: "images",
+      key: "images",
+      render: (images) => {
+        const imageUrl =
+          images?.length > 0 ? images[0].imageUrl : "/placeholder.jpg";
+        return (
+          <img
+            src={imageUrl}
+            alt="Product"
+            style={{ width: "50px", height: "50px", objectFit: "cover" }}
+          />
+        );
+      },
     },
     { title: "Tên", dataIndex: "productName", key: "productName" },
     {
@@ -136,13 +164,27 @@ const Products = () => {
       sortOrder: sortOrder,
     },
     {
+      title: "Trạng thái",
+      dataIndex: "quantity",
+      key: "status",
+      render: (quantity) =>
+        quantity > 0 ? (
+          <span className="text-green-600 font-semibold">Còn hàng</span>
+        ) : (
+          <span className="text-red-600 font-semibold">Hết hàng</span>
+        ),
+    },
+    {
       title: "Hành động",
       key: "action",
       render: (_, record) => (
         <Space size="middle">
           <Button
             type="primary"
-            // onClick={() => handleAction(record.productId, "edit")}
+            onClick={() => {
+              setEditingProduct(record); // Lưu sản phẩm cần chỉnh sửa vào state
+              setShowEditModal(true); // Hiển thị modal chỉnh sửa
+            }}
           >
             <FaEdit />
           </Button>
@@ -205,18 +247,28 @@ const Products = () => {
       </div>
 
       <Modal
-        title="Chỉnh sửa sản phẩm"
         open={showEditModal}
         onCancel={() => setShowEditModal(false)}
         footer={null}
+        destroyOnClose={true} // Reset form khi đóng modal
       >
-        <ProductForm
-          item={editingProduct}
-          onSubmit={handleSaveEdit}
-          onCancel={() => setShowEditModal(false)}
-          skinTypes={skinTypes}
-          categories={categories}
-        />
+        {editingProduct && (
+          <ProductForm
+            key={editingProduct.productId} // Đảm bảo form re-render khi chỉnh sản phẩm mới
+            item={editingProduct}
+            onSubmit={async (values) => {
+              try {
+                await handleSaveEdit(values); // Gọi API để cập nhật sản phẩm
+                setShowEditModal(false); // Đóng modal sau khi lưu thành công
+              } catch (error) {
+                console.error("Lỗi cập nhật sản phẩm:", error);
+              }
+            }}
+            onCancel={() => setShowEditModal(false)}
+            skinTypes={skinTypes}
+            categories={categories}
+          />
+        )}
       </Modal>
 
       <Modal

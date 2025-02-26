@@ -75,21 +75,26 @@ const ProductsPage = () => {
                 <Droplet size={18} className="text-blue-400" /> Loại da
               </label>
               <div className="grid grid-cols-2 gap-2">
-                {["Tất cả", "Da dầu", "Da khô", "Da thường", "Da hỗn hợp"].map(
-                  (type) => (
-                    <button
-                      key={type}
-                      className={`px-3 py-1.5 text-sm rounded-full font-medium transition-all duration-200 border border-gray-300 hover:bg-purple-100 hover:text-purple-600 shadow-md ${
-                        selectedSkinType === type
-                          ? "bg-gray-500 text-white"
-                          : "bg-white"
-                      }`}
-                      onClick={() => setSelectedSkinType(type)}
-                    >
-                      {type}
-                    </button>
-                  )
-                )}
+                {[
+                  "Tất cả",
+                  "Da Dầu",
+                  "Da Khô",
+                  "Da Thường",
+                  "Da Hỗn Hợp",
+                  "Da Nhạy Cảm",
+                ].map((type) => (
+                  <button
+                    key={type}
+                    className={`px-3 py-1.5 text-sm rounded-full font-medium transition-all duration-200 border border-gray-300 hover:bg-purple-100 hover:text-purple-600 shadow-md ${
+                      selectedSkinType === type
+                        ? "bg-gray-500 text-white"
+                        : "bg-white"
+                    }`}
+                    onClick={() => setSelectedSkinType(type)}
+                  >
+                    {type}
+                  </button>
+                ))}
               </div>
             </div>
 
@@ -105,8 +110,8 @@ const ProductsPage = () => {
                   "Sữa rửa mặt",
                   "Toner",
                   "Serum",
-                  "Kem trị mụn",
-                  "Kem chống nắng",
+                  "Kem Dưỡng",
+                  "Kem Chống Nắng",
                 ].map((category) => (
                   <button
                     key={category}
