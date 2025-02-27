@@ -27,7 +27,9 @@ import Promotion from "./pages/DashBoard/pages/Promotion.jsx";
 import RoutineBuilderPage from "./features/skincare-routine/RoutineBuilderPage.jsx";
 import AboutUs from "./pages/AboutUs/AboutUs.jsx";
 import Events from "./pages/DashBoard/pages/EventsControll.jsx";
+import HistoryOrder from "./pages/Checkout/ViewHistoryOrder.jsx";
 // import ProtectedRoute from "./context/ProtectedRoute.jsx";
+
 import Unauthorized from "./pages/Unauthorized/unauthorized.jsx";
 
 import "slick-carousel/slick/slick.css";
@@ -48,6 +50,7 @@ const App = () => (
     <Route path="/checkoutprocess" element={<CheckoutProcess />} />
     <Route path="/paymentsuccess" element={<PaymentSuccess />} />
     <Route path="/vieworder" element={<ViewOrder />} />
+    <Route path="/historyorder" element={<HistoryOrder />} />
     <Route path="/viewcart" element={<Viewcart />} />
     <Route path="/contact" element={<Contact />} />
     <Route path="/quizz" element={<Quizz />} />
