@@ -3,12 +3,12 @@ import {
   FaUser,
   FaSearch,
   FaCalendarAlt,
-  FaPlus,
   FaEdit,
   FaTrash,
 } from "react-icons/fa";
 import { useUsersContext } from "../../../context/UserContext";
 import usersAPI from "../../../services/users";
+import Swal from "sweetalert2";
 
 const Customers = () => {
   const { users, fetchUsers } = useUsersContext();
@@ -85,14 +85,27 @@ const Customers = () => {
   };
 
   const handleDeleteUser = async (userId) => {
-    if (window.confirm("Bạn có chắc chắn muốn xóa người dùng này?")) {
-      try {
-        await usersAPI.deleteUser(userId);
-        fetchUsers();
-      } catch (error) {
-        console.error("Error deleting user:", error);
+    Swal.fire({
+      title: "Bạn có chắc chắn?",
+      text: "Hành động này không thể hoàn tác!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "Xóa",
+      cancelButtonText: "Hủy",
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        try {
+          await usersAPI.deleteUser(userId);
+          fetchUsers();
+          Swal.fire("Đã xóa!", "Người dùng đã được xóa.", "success");
+        } catch (error) {
+          Swal.fire("Lỗi!", "Không thể xóa người dùng.", "error");
+          console.error("Error deleting user:", error);
+        }
       }
-    }
+    });
   };
 
   return (

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import StatCard from "../components/StatCard";
 import SalesChart from "../charts/SalesChart";
 import RevenueChart from "../charts/RevenueChart";
@@ -12,8 +12,38 @@ import {
   FaChartLine,
   FaPercentage,
 } from "react-icons/fa";
+import { useUsersContext } from "../../../context/UserContext";
+import { useDataContext } from "../../../context/DataContext";
 
 const Dashboard = () => {
+  const { users } = useUsersContext();
+  const { products } = useDataContext();
+  const [orders, setOrders] = useState([]);
+  const [revenue, setRevenue] = useState(0);
+
+  useEffect(() => {
+    const fetchOrders = async () => {
+      try {
+        const response = await axiosInstance.get("/Orders");
+        setOrders(response.data);
+      } catch (error) {
+        console.error("Error fetching orders data:", error);
+      }
+    };
+
+    const fetchRevenue = async () => {
+      try {
+        const response = await axiosInstance.get("/Revenue");
+        setRevenue(response.data.totalRevenue);
+      } catch (error) {
+        console.error("Error fetching revenue data:", error);
+      }
+    };
+
+    fetchOrders();
+    fetchRevenue();
+  }, []);
+
   return (
     <div className="flex h-screen bg-gray-100">
       <div className="flex-1 flex flex-col p-6 space-y-6">
@@ -22,29 +52,29 @@ const Dashboard = () => {
           <StatCard
             icon={<FaUsers />}
             title="Users"
-            value="1,234"
-            subtitle="+5.2% this month"
+            value={users.length}
+            subtitle="Updated dynamically"
           />
           <StatCard
             icon={<FaShoppingCart />}
             title="Orders"
-            value="567"
-            subtitle="+12% this week"
+            value={orders.length}
+            subtitle="Fetched from API"
           />
           <StatCard
             icon={<FaBox />}
             title="Products"
-            value="78"
-            subtitle="In stock: 50"
+            value={products.length}
+            subtitle="Stock data from API"
           />
           <StatCard
             icon={<FaMoneyBillWave />}
-            title="Doanh thu"
+            title="Revenue"
             value={new Intl.NumberFormat("vi-VN", {
               style: "currency",
               currency: "VND",
-            }).format(5550000)}
-            subtitle="+8.4% quý này"
+            }).format(revenue)}
+            subtitle="Real-time revenue"
           />
         </div>
 
@@ -68,13 +98,13 @@ const Dashboard = () => {
             value="22.5%"
             subtitle="Stable trend"
           />
-          <CustomersChart />
+          <CustomersChart users={users} />
         </div>
 
         {/* Recent Orders */}
         <div className="bg-white p-6 rounded-lg shadow-md">
           <h2 className="text-xl font-semibold text-gray-700 mb-4">
-            Orders gần đây
+            Recent Orders
           </h2>
           <RecentOrders />
         </div>

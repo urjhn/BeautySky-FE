@@ -10,6 +10,7 @@ import { DataProvider } from "./context/DataContext.jsx";
 import { ReviewProvider } from "./context/ReviewContext.jsx";
 import { NewsProvider } from "./context/EvenContext.jsx";
 import { UsersProvider } from "./context/UserContext.jsx";
+import { OrdersProvider } from "./context/OrdersContext.jsx";
 
 const root = createRoot(document.getElementById("root"));
 
@@ -23,11 +24,13 @@ root.render(
           <ThemeProvider>
             <UsersProvider>
               <DataProvider>
-                <ReviewProvider>
-                  <NewsProvider>
-                    <App />
-                  </NewsProvider>
-                </ReviewProvider>
+                <OrdersProvider>
+                  <ReviewProvider>
+                    <NewsProvider>
+                      <App />
+                    </NewsProvider>
+                  </ReviewProvider>
+                </OrdersProvider>
               </DataProvider>
             </UsersProvider>
           </ThemeProvider>

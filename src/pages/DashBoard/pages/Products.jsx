@@ -164,6 +164,12 @@ const Products = () => {
       sortOrder: sortOrder,
     },
     {
+      title: "Số lượng",
+      dataIndex: "quantity",
+      key: "quantity",
+      render: (quantity) => <span className="font-semibold">{quantity}</span>,
+    },
+    {
       title: "Trạng thái",
       dataIndex: "quantity",
       key: "status",
