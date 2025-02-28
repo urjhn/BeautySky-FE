@@ -9,9 +9,11 @@ import {
 import { useUsersContext } from "../../../context/UserContext";
 import usersAPI from "../../../services/users";
 import Swal from "sweetalert2";
+import { useOrdersContext } from "../../../context/OrdersContext";
 
 const Customers = () => {
   const { users, fetchUsers } = useUsersContext();
+  const { orders, fetchOrders } = useOrdersContext();
   const [currentPage, setCurrentPage] = useState(1);
   const customersPerPage = 9;
   const [searchTerm, setSearchTerm] = useState("");
@@ -22,6 +24,7 @@ const Customers = () => {
 
   useEffect(() => {
     fetchUsers();
+    fetchOrders();
   }, []);
 
   useEffect(() => {
@@ -108,6 +111,10 @@ const Customers = () => {
     });
   };
 
+  const getOrderCount = (userId) => {
+    return orders.filter((order) => order.userId === userId).length;
+  };
+
   return (
     <div className="p-6 bg-gray-100 min-h-screen">
       <h1 className="text-3xl font-bold text-gray-900 mb-4">Khách hàng</h1>
@@ -180,7 +187,7 @@ const Customers = () => {
                           {name}
                         </span>
                       </td>
-                      <td className="p-3">{customer.orders}</td>
+                      <td className="p-3">{getOrderCount(customer.userId)}</td>
                       <td className="p-3">
                         <span
                           className={`px-3 py-1 rounded-full text-white text-sm ${
