@@ -57,7 +57,10 @@ const Products = () => {
                   >
                     <div className="flex justify-center">
                       <img
-                        src={data.image}
+                        src={
+                          data.productsImages?.[0]?.imageUrl ||
+                          "https://via.placeholder.com/200"
+                        }
                         alt={data.productName}
                         className="h-[250px] w-[200px] object-contain rounded-2xl border border-gray-300 transition-transform duration-300 hover:scale-105 hover:border-blue-400"
                       />

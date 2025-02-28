@@ -60,7 +60,10 @@ const TopProducts = () => {
                     onClick={() => navigate(`/product/${product.productId}`)}
                   >
                     <img
-                      src={product.image}
+                      src={
+                        product.productsImages?.[0]?.imageUrl ||
+                        "https://via.placeholder.com/150"
+                      }
                       alt={product.productName}
                       className="w-[150px] h-[150px] absolute left-1/2 top-0 transform -translate-x-1/2 -translate-y-1/4 group-hover:scale-105 duration-300 drop-shadow-md object-contain"
                     />

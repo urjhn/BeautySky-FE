@@ -140,11 +140,13 @@ const Products = () => {
   const columns = [
     {
       title: "Hình ảnh",
-      dataIndex: "images",
-      key: "images",
-      render: (images) => {
+      dataIndex: "productsImages",
+      key: "productsImages",
+      render: (productsImages) => {
         const imageUrl =
-          images?.length > 0 ? images[0].imageUrl : "/placeholder.jpg";
+          productsImages?.length > 0
+            ? productsImages[0].imageUrl
+            : "/placeholder.jpg"; // Nếu không có ảnh, hiển thị ảnh mặc định
         return (
           <img
             src={imageUrl}
