@@ -6,6 +6,8 @@ import { useCart } from "../../context/CartContext";
 import { NavbarMenu } from "../Navbar/Data";
 import Logo from "../../assets/logo.png";
 import Namebrand from "../../assets/namebrand.png";
+import { Menu, Dropdown, Avatar } from "antd";
+import { UserOutlined } from "@ant-design/icons";
 
 const Navbar = () => {
   const navigate = useNavigate();
@@ -57,6 +59,21 @@ const Navbar = () => {
     setUser(null);
     navigate("/login"); // Chuyển hướng về trang đăng nhập
   };
+
+  const menu = (
+    <Menu>
+      <Menu.Item key="profile">
+        <Link to="/profile">Tài khoản của bạn</Link>
+      </Menu.Item>
+      <Menu.Item key="orders">
+        <Link to="/orders">Quản lý đơn hàng</Link>
+      </Menu.Item>
+      <Menu.Divider />
+      <Menu.Item key="logout" onClick={handleLogout}>
+        Đăng xuất
+      </Menu.Item>
+    </Menu>
+  );
 
   return (
     <nav className="bg-white shadow-md pr-1 pl-1">
@@ -125,24 +142,17 @@ const Navbar = () => {
 
           {/* User Section */}
           {user ? (
-            <div className="flex items-center gap-4">
-              <Link to="/profile" className="flex items-center gap-2">
-                <img
-                  src={
-                    user.avatar ||
-                    "https://cellphones.com.vn/sforum/wp-content/uploads/2024/02/avatar-anh-meo-cute-3.jpg"
-                  }
-                  alt="Avatar"
-                  className="w-10 h-10 rounded-full border"
-                />
-              </Link>
-              <button
-                onClick={handleLogout}
-                className="text-red-600 font-semibold hover:text-red-800"
-              >
-                Đăng xuất
-              </button>
-            </div>
+            <Dropdown overlay={menu} placement="bottomRight" arrow>
+              <Avatar
+                size="large"
+                icon={<UserOutlined />}
+                src={
+                  user.avatar ||
+                  "https://cellphones.com.vn/sforum/wp-content/uploads/2024/02/avatar-anh-meo-cute-3.jpg"
+                }
+                style={{ cursor: "pointer" }}
+              />
+            </Dropdown>
           ) : (
             <div className="flex gap-4">
               <Link
