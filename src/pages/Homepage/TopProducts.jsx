@@ -80,7 +80,7 @@ const TopProducts = () => {
   return (
     <div>
       <div className="container py-20">
-        <div className="text-center mb-10 max-w-[800px] mx-auto">
+        <div className="text-center pb-2 max-w-[800px] mx-auto">
           <p data-aos="fade-up" className="text-sm text-black">
             Sản phẩm được đánh giá cao nhất dành cho bạn
           </p>
