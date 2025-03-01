@@ -2,12 +2,15 @@ import { createRoot } from "react-dom/client";
 import { BrowserRouter as Router } from "react-router-dom"; // Vẫn giữ Router ở đây
 import { CartProvider } from "./context/CartContext.jsx";
 import { ThemeProvider } from "./pages/DashBoard/context/ThemeContext.jsx";
-import { EventProvider } from "./context/EvenContext.jsx";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 import { AuthProvider } from "./context/AuthContext";
 import "./index.css";
 import App from "./App.jsx";
 import { DataProvider } from "./context/DataContext.jsx";
+import { ReviewProvider } from "./context/ReviewContext.jsx";
+import { NewsProvider } from "./context/EvenContext.jsx";
+import { UsersProvider } from "./context/UserContext.jsx";
+import { OrdersProvider } from "./context/OrdersContext.jsx";
 
 const root = createRoot(document.getElementById("root"));
 
@@ -19,11 +22,17 @@ root.render(
       <AuthProvider>
         <CartProvider>
           <ThemeProvider>
-            <EventProvider>
+            <UsersProvider>
               <DataProvider>
-                <App />
+                <OrdersProvider>
+                  <ReviewProvider>
+                    <NewsProvider>
+                      <App />
+                    </NewsProvider>
+                  </ReviewProvider>
+                </OrdersProvider>
               </DataProvider>
-            </EventProvider>
+            </UsersProvider>
           </ThemeProvider>
         </CartProvider>
       </AuthProvider>

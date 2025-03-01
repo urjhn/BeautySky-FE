@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   FaCheckCircle,
   FaTimesCircle,
@@ -6,61 +6,48 @@ import {
   FaSearch,
 } from "react-icons/fa";
 import { formatCurrency } from "../../../utils/formatCurrency";
-
-const allOrders = [
-  {
-    id: "ORD001",
-    customer: "John Doe",
-    amount: "260000",
-    date: "2025-02-10",
-    status: "Completed",
-  },
-  {
-    id: "ORD002",
-    customer: "Jane Smith",
-    amount: "550000",
-    date: "2025-02-11",
-    status: "Pending",
-  },
-  {
-    id: "ORD003",
-    customer: "Alice Johnson",
-    amount: "230000",
-    date: "2025-02-12",
-    status: "Cancelled",
-  },
-  {
-    id: "ORD004",
-    customer: "David Brown",
-    amount: "950000",
-    date: "2025-02-13",
-    status: "Completed",
-  },
-  {
-    id: "ORD005",
-    customer: "Emma Wilson",
-    amount: "350000",
-    date: "2025-02-14",
-    status: "Pending",
-  },
-];
+import { useOrdersContext } from "../../../context/OrdersContext";
+import { useUsersContext } from "../../../context/UserContext";
 
 const Order = () => {
+  const { orders, fetchOrders } = useOrdersContext();
+  const { users, fetchUsers } = useUsersContext();
   const [currentPage, setCurrentPage] = useState(1);
   const ordersPerPage = 5;
   const [searchTerm, setSearchTerm] = useState("");
 
-  // Lọc danh sách đơn hàng theo từ khóa tìm kiếm
-  const filteredOrders = allOrders.filter(
-    (order) =>
-      order.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      order.customer.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      order.amount.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      order.date.includes(searchTerm) ||
-      order.status.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  useEffect(() => {
+    fetchOrders();
+    fetchUsers();
+  }, []);
 
-  // Tính toán danh sách đơn hàng hiển thị trên trang hiện tại
+  // Get user's full name based on userId
+  const getUserFullName = (userId) => {
+    const user = users.find((u) => u.userId === userId);
+    return user ? user.fullName : "Unknown User";
+  };
+
+  // Filter orders based on search term
+  const filteredOrders = orders.filter((order) => {
+    const orderId = order.orderId?.toString().toLowerCase() || "";
+    const userId = order.userId?.toString().toLowerCase() || "";
+    const fullName = getUserFullName(order.userId)?.toLowerCase() || "";
+    const totalAmount = order.finalAmount?.toString().toLowerCase() || "";
+    const orderDate =
+      new Date(order.orderDate).toLocaleDateString().toLowerCase() || "";
+    const status = order.status?.toLowerCase() || "";
+
+    return (
+      orderId.includes(searchTerm.toLowerCase()) ||
+      userId.includes(searchTerm.toLowerCase()) ||
+      fullName.includes(searchTerm.toLowerCase()) ||
+      totalAmount.includes(searchTerm.toLowerCase()) ||
+      orderDate.includes(searchTerm.toLowerCase()) ||
+      status.includes(searchTerm.toLowerCase())
+    );
+  });
+
+  // Pagination calculation
   const indexOfLastOrder = currentPage * ordersPerPage;
   const indexOfFirstOrder = indexOfLastOrder - ordersPerPage;
   const currentOrders = filteredOrders.slice(
@@ -68,7 +55,7 @@ const Order = () => {
     indexOfLastOrder
   );
 
-  // Tổng số trang
+  // Total pages
   const totalPages = Math.ceil(filteredOrders.length / ordersPerPage);
 
   return (
@@ -92,19 +79,21 @@ const Order = () => {
           <thead>
             <tr className="bg-gray-200">
               <th className="p-3 text-left">Order ID</th>
-              <th className="p-3 text-left">Customer</th>
-              <th className="p-3 text-left">Amount</th>
-              <th className="p-3 text-left">Date</th>
+              <th className="p-3 text-left">Customer Name</th>
+              <th className="p-3 text-left">Total Amount</th>
+              <th className="p-3 text-left">Order Date</th>
               <th className="p-3 text-left">Status</th>
             </tr>
           </thead>
           <tbody>
             {currentOrders.map((order) => (
-              <tr key={order.id} className="border-t">
-                <td className="p-3">{order.id}</td>
-                <td className="p-3">{order.customer}</td>
-                <td className="p-3">{formatCurrency(order.amount)}</td>
-                <td className="p-3">{order.date}</td>
+              <tr key={order.orderId} className="border-t">
+                <td className="p-3">{order.orderId}</td>
+                <td className="p-3">{getUserFullName(order.userId)}</td>
+                <td className="p-3">{formatCurrency(order.finalAmount)}</td>
+                <td className="p-3">
+                  {new Date(order.orderDate).toLocaleDateString()}
+                </td>
                 <td className="p-3 flex items-center">
                   {order.status === "Completed" ? (
                     <FaCheckCircle className="text-green-500 mr-2" />
@@ -120,7 +109,7 @@ const Order = () => {
           </tbody>
         </table>
 
-        {/* Pagination Box */}
+        {/* Pagination */}
         <div className="flex justify-center mt-4 gap-2">
           {Array.from({ length: totalPages }, (_, index) => (
             <button

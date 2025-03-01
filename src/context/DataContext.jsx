@@ -2,15 +2,14 @@ import { createContext, useEffect, useState, useContext } from "react";
 import productApi from "../services/product";
 import skinTypeApi from "../services/skintype";
 import categoryApi from "../services/category";
-import productsImagesApi from "../services/productsImages";
+import productImagesAPI from "../services/productImages";
 const DataContext = createContext();
 
 const DataProvider = ({ children }) => {
   const [products, setProducts] = useState([]);
   const [skinTypes, setSkinTypes] = useState([]);
   const [categories, setCategories] = useState([]);
-  const [productsImages, setProductsImages] = useState([]);
-
+  const [productImages, setProductImages] = useState([]);
   const fetchSkinTypes = async () => {
     try {
       const response = await skinTypeApi.getAll();
@@ -31,31 +30,51 @@ const DataProvider = ({ children }) => {
   const fetchProduct = async () => {
     try {
       const response = await productApi.getAll();
-      setProducts(response.data);
+      const productsData = response.data;
+
+      // Gán hình ảnh cho từng sản phẩm
+      const updatedProducts = productsData.map((product) => {
+        const images = productImages.filter(
+          (img) => img.productId === product.productId
+        );
+        return { ...product, images };
+      });
+
+      setProducts(updatedProducts);
     } catch (error) {
       console.error("Error fetching product data:", error);
     }
   };
-
-  const fetchProductsImages = async () => {
+  const fetchProductImages = async () => {
     try {
-      const response = await productsImagesApi.getAll();
-      setProductsImages(response.data);
+      const response = await productImagesAPI.getAll();
+      setProductImages(response.data);
     } catch (error) {
-      console.error("Error fetching product images data:", error);
+      console.error("Error fetching productImages data:", error);
     }
   };
-
   useEffect(() => {
-    fetchProduct();
-    fetchSkinTypes();
-    fetchCategories();
-    fetchProductsImages();
+    const fetchData = async () => {
+      await fetchProductImages(); // Fetch ảnh trước
+      await fetchProduct(); // Fetch sản phẩm sau khi có ảnh
+      fetchSkinTypes();
+      fetchCategories();
+    };
+    fetchData();
   }, []);
 
   return (
     <DataContext.Provider
-      value={{ products, skinTypes, categories,productsImages, setProducts,setProductsImages,  fetchProduct }}
+      value={{
+        products,
+        skinTypes,
+        categories,
+        productImages,
+        setProducts,
+        setProductImages,
+        fetchProductImages,
+        fetchProduct,
+      }}
     >
       {children}
     </DataContext.Provider>

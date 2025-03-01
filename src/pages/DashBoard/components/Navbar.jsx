@@ -2,10 +2,9 @@ import React from "react";
 import { FaSearch, FaBell } from "react-icons/fa";
 import Logo from "../public/images/logo.png";
 import Brandname from "../public/images/namebrand.png";
-import { useDataContext } from "../../../context/DataContext";
+// import { useDataContext } from "../../../context/DataContext";
 
 const Navbar = () => {
-
   return (
     <div className="bg-white px-6 py-3 shadow flex justify-between items-center">
       {/* Logo + Brand Name */}
