@@ -83,7 +83,7 @@ const Products = () => {
           </p>
           <h1
             data-aos="fade-up"
-            className="text-4xl font-bold text-[#6BBCFE] underline underline-offset-8 decoration-2 decoration-black"
+            className="text-4xl font-bold text-[#6BBCFE] underline underline-offset-8 decoration-1 decoration-black"
           >
             Dòng sản phẩm
           </h1>
