@@ -10,6 +10,7 @@ const DashboardEvents = () => {
     title: "",
     content: "",
     imageUrl: "",
+    createDate: new Date().toISOString().split("T")[0],
     startDate: "",
     endDate: "",
   });
@@ -27,23 +28,25 @@ const DashboardEvents = () => {
 
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setForm((prev) => ({ ...prev, imageUrl: reader.result }));
-      };
-      reader.readAsDataURL(file);
-    }
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      // Hiển thị ảnh trước khi submit, imageUrl này sẽ cần thay đổi thành URL thực tế
+      setForm((prev) => ({ ...prev, imageUrl: reader.result }));
+    };
+    reader.readAsDataURL(file);
   };
 
   const handleSubmit = async () => {
     try {
+      let response;
       if (form.id) {
-        // Nếu đang sửa, gọi API cập nhật
-        await newsAPI.editNews(form.id, {
+        // Nếu đang cập nhật sự kiện
+        response = await newsAPI.editNews(form.id, {
           title: form.title,
           content: form.content,
-          imageUrl: form.imageUrl,
+          imageUrl: form.imageUrl, // Ảnh đã được hiển thị trước đó
           startDate: form.startDate,
           endDate: form.endDate,
         });
@@ -53,26 +56,35 @@ const DashboardEvents = () => {
           "success"
         );
       } else {
-        // Nếu đang thêm mới, gọi API tạo mới với đầy đủ các trường
-        await newsAPI.createNews({
+        // Nếu đang tạo sự kiện mới
+        response = await newsAPI.createNews({
           title: form.title,
           content: form.content,
-          imageUrl: form.imageUrl,
+          imageUrl: form.imageUrl, // Ảnh được gửi lên API kèm dữ liệu sự kiện
+          createDate: form.createDate,
           startDate: form.startDate,
           endDate: form.endDate,
         });
         Swal.fire("Thêm thành công!", "Sự kiện mới đã được tạo.", "success");
       }
 
-      fetchNews(); // Load lại danh sách sự kiện
+      // Cập nhật danh sách sự kiện mà không cần gọi lại API
+      setNews((prev) =>
+        form.id
+          ? prev.map((item) => (item.id === form.id ? response.data : item))
+          : [...prev, response.data]
+      );
+
+      // Reset form sau khi lưu thành công
       setForm({
         id: null,
         title: "",
         content: "",
+        createDate: new Date().toISOString().split("T")[0],
         imageUrl: "",
         startDate: "",
         endDate: "",
-      }); // Reset form
+      });
     } catch (error) {
       console.error("Lỗi khi lưu sự kiện:", error);
       Swal.fire("Lỗi!", "Không thể lưu sự kiện. Vui lòng thử lại!", "error");
@@ -124,6 +136,12 @@ const DashboardEvents = () => {
         />
         <input
           type="date"
+          value={form.createDate}
+          readOnly
+          className="p-2 border rounded bg-gray-200"
+        />
+        <input
+          type="date"
           value={form.startDate}
           onChange={(e) => setForm({ ...form, startDate: e.target.value })}
           className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
@@ -153,34 +171,36 @@ const DashboardEvents = () => {
         <table className="w-full border-collapse bg-white shadow-lg rounded-lg">
           <thead>
             <tr className="bg-blue-400 text-white">
-              <th className="p-4 text-left">📌 Tiêu đề</th>
-              <th className="p-4 text-left">📖 Nội dung</th>
-              <th className="p-4">🖼 Ảnh</th>
-              <th className="p-4">⚡ Hành động</th>
+              <th className="p-3 text-left">📌 Tiêu đề</th>
+              <th className="p-3 text-left">📖 Nội dung</th>
+              <th className="p-3">📅 Ngày tạo</th>
+              <th className="p-3">🖼 Ảnh</th>
+              <th className="p-3">⚡ Hành động</th>
             </tr>
           </thead>
           <tbody>
             {currentEvents.map((event) => (
               <tr key={event.id} className="border-b hover:bg-gray-100">
-                <td className="p-4">{event.title}</td>
-                <td className="p-4">{event.content}</td>
-                <td className="p-4 flex justify-center">
+                <td className="p-3">{event.title}</td>
+                <td className="p-3">{event.content}</td>
+                <td className="p-3">{event.createDate}</td>
+                <td className="p-3 flex justify-center">
                   <img
                     src={event.imageUrl}
                     alt="Event"
                     className="w-20 h-20 object-cover rounded-lg shadow-md"
                   />
                 </td>
-                <td className="p-4 flex-row space-x-2">
+                <td className="p-3 space-x-2">
                   <button
                     onClick={() => setForm(event)}
-                    className="px-4 py-2 text-yellow-600 hover:text-yellow-700"
+                    className="text-yellow-600 hover:text-yellow-700"
                   >
                     ✏️ Sửa
                   </button>
                   <button
                     onClick={() => handleDelete(event.id)}
-                    className="px-4 py-2 text-red-600 hover:text-red-700"
+                    className="text-red-600 hover:text-red-700"
                   >
                     ❌ Xóa
                   </button>
