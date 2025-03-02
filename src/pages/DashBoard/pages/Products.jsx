@@ -14,10 +14,12 @@ import {
   message,
   Row,
   Col,
+  // Upload,
 } from "antd";
 import productApi from "../../../services/product";
 import Swal from "sweetalert2";
 const { TextArea } = Input;
+// import { PlusOutlined } from "@ant-design/icons";
 
 const Products = () => {
   const { products, skinTypes, categories, setProducts } = useDataContext();
@@ -29,13 +31,22 @@ const Products = () => {
   const [loading, setLoading] = React.useState(false); // Thêm trạng thái loading
   const productsPerPage = 5;
   const [newProduct, setNewProduct] = React.useState({
+    productId: 0,
     productName: "",
     price: 0,
-    quantity: 0,
+    quantity: 1000,
     description: "",
     ingredient: "",
-    categoryId: 1,
-    skinTypeId: 1,
+    categoryId: 0,
+    skinTypeId: 0,
+    // productsImages: [
+    //   {
+    //     productsImageId: 0,
+    //     imageDescription: "",
+    //     imageUrl: "",
+    //     productId: 0,
+    //   },
+    // ],
   });
   const [showAddModal, setShowAddModal] = React.useState(false);
   const [sortOrder, setSortOrder] = React.useState(null);
@@ -122,18 +133,36 @@ const Products = () => {
       setProducts((prev) => [...prev, response]);
       setShowAddModal(false);
       setNewProduct({
+        productId: 0,
         productName: "",
         price: 0,
         quantity: 1000,
         description: "",
         ingredient: "",
-        categoryId: 1,
-        skinTypeId: 1,
+        categoryId: 0,
+        skinTypeId: 0,
+        productsImages: [],
       });
-      message.success("Thêm sản phẩm thành công!");
+
+      // Hiển thị thông báo thành công với SweetAlert2
+      Swal.fire({
+        icon: "success",
+        title: "Thành công!",
+        text: `Sản phẩm "${values.productName}" đã được thêm thành công!`,
+        confirmButtonColor: "#3085d6",
+        confirmButtonText: "OK",
+      });
     } catch (error) {
       console.error("Error adding product:", error);
-      message.error("Lỗi thêm sản phẩm");
+
+      // Hiển thị thông báo lỗi với SweetAlert2
+      Swal.fire({
+        icon: "error",
+        title: "Lỗi!",
+        text: "Lỗi thêm sản phẩm, vui lòng thử lại",
+        confirmButtonColor: "#d33",
+        confirmButtonText: "Thử lại",
+      });
     }
   };
 
@@ -324,6 +353,13 @@ const ProductForm = ({
     padding: "16px", // Add padding for better readability
   };
 
+  // const normFile = (e) => {
+  //   if (Array.isArray(e)) {
+  //     return e;
+  //   }
+  //   return e?.fileList;
+  // };
+
   return (
     <Form form={form} layout="vertical" onFinish={onFinish}>
       <h2 className="text-xl font-semibold mb-4">
@@ -424,6 +460,23 @@ const ProductForm = ({
         <Form.Item label="Thành phần" name="ingredient">
           <TextArea rows={2} />
         </Form.Item>
+        {/* <Form.Item
+          label="Hình ảnh sản phẩm"
+          name="productsImages"
+          valuePropName="fileList"
+          getValueFromEvent={normFile}
+        >
+          <Upload
+            listType="picture-card"
+            beforeUpload={() => false} // Không tải lên ngay mà lưu vào state
+            multiple
+          >
+            <div>
+              <PlusOutlined />
+              <div style={{ marginTop: 8 }}>Tải lên</div>
+            </div>
+          </Upload>
+        </Form.Item> */}
       </div>
       <Form.Item style={{ textAlign: "right" }}>
         <Space>

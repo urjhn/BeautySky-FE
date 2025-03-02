@@ -25,9 +25,12 @@ const usersAPI = {
       payload
     );
   },
-  deleteUser: async () => {
+  deleteUser: async (userId) => {
     return await axiosInstance.delete(
-      `${endPoint}/Delete User By ID that can only be used by Staff, Manager`
+      `${endPoint}/Delete User By ID that can only be used by Staff, Manager`,
+      {
+        params: { userId }, // Truyền userId qua query params
+      }
     );
   },
 };
