@@ -1,137 +1,67 @@
-// import React, { useState } from "react";
-// import { FaUserCircle, FaEdit, FaSignOutAlt } from "react-icons/fa";
-// import Navbar from "../../components/Navbar/Navbar";
-// import Footer from "../../components/Footer/Footer";
-
-// const UserProfile = () => {
-//   const [isEditing, setIsEditing] = useState(false);
-//   const [user, setUser] = useState({
-//     fullName: "Nguyễn Văn A",
-//     username: "nguyenvana",
-//     email: "nguyenvana@example.com",
-//     phone: "0987654321",
-//     address: "123 Đường ABC, Quận 1, TP. Hồ Chí Minh",
-//   });
-//   const [newFullName, setNewFullName] = useState(user.fullName);
-
-//   // Xử lý chỉnh sửa thông tin
-//   const handleEdit = () => setIsEditing(true);
-//   const handleSave = () => {
-//     setUser({ ...user, fullName: newFullName });
-//     setIsEditing(false);
-//   };
-
-//   return (
-//     <>
-//       <Navbar />
-//       <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-b from-blue-300 to-white py-10 animate-fadeIn">
-//         <div className="bg-white shadow-2xl rounded-3xl p-10 w-96 text-center transition-transform transform hover:scale-105 duration-300">
-//           {/* Ảnh đại diện */}
-//           <img
-//             src="/images/avatar.jpg"
-//             alt="User Avatar"
-//             className="w-24 h-24 rounded-full shadow-lg mx-auto border-4 border-blue-400"
-//           />
-
-//           {/* Thông tin */}
-//           <div className="mt-6 space-y-3">
-//             {isEditing ? (
-//               <input
-//                 type="text"
-//                 value={newFullName}
-//                 onChange={(e) => setNewFullName(e.target.value)}
-//                 className="border p-2 rounded-lg text-center w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
-//               />
-//             ) : (
-//               <h2 className="text-2xl font-bold text-gray-900 animate-pulse">
-//                 {user.fullName}
-//               </h2>
-//             )}
-//             <p className="text-gray-600">
-//               Tên đăng nhập:{" "}
-//               <span className="font-semibold">{user.username}</span>
-//             </p>
-//             <p className="text-gray-600">
-//               Email: <span className="font-semibold">{user.email}</span>
-//             </p>
-//             <p className="text-gray-600">
-//               Số điện thoại: <span className="font-semibold">{user.phone}</span>
-//             </p>
-//             <p className="text-gray-600">
-//               Địa chỉ: <span className="font-semibold">{user.address}</span>
-//             </p>
-//           </div>
-
-//           {/* Nút chức năng */}
-//           <div className="mt-8 flex flex-col gap-4">
-//             {isEditing ? (
-//               <button
-//                 onClick={handleSave}
-//                 className="w-full bg-green-500 text-white py-3 rounded-lg flex items-center justify-center gap-2 shadow-md hover:bg-green-600 transition-transform transform hover:scale-105"
-//               >
-//                 <FaEdit /> Lưu
-//               </button>
-//             ) : (
-//               <button
-//                 onClick={handleEdit}
-//                 className="w-full bg-blue-500 text-white py-3 rounded-lg flex items-center justify-center gap-2 shadow-md hover:bg-blue-600 transition-transform transform hover:scale-105"
-//               >
-//                 <FaEdit /> Chỉnh sửa
-//               </button>
-//             )}
-
-//             <button className="w-full bg-red-500 text-white py-3 rounded-lg flex items-center justify-center gap-2 shadow-md hover:bg-red-600 transition-transform transform hover:scale-105">
-//               <FaSignOutAlt /> Đăng xuất
-//             </button>
-//           </div>
-//         </div>
-//       </div>
-//       <Footer />
-//     </>
-//   );
-// };
-
-// export default UserProfile;
-
 import React, { useState, useEffect } from "react";
-import { FaEdit, FaSignOutAlt } from "react-icons/fa";
+import { FaEdit, FaSignOutAlt, FaEye, FaEyeSlash } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
 import Navbar from "../../components/Navbar/Navbar";
 import Footer from "../../components/Footer/Footer";
-import { useNavigate } from "react-router-dom";
+import usersAPI from "../../services/users";
+import { useUsersContext } from "../../context/UserContext";
 
 const UserProfile = () => {
   const navigate = useNavigate();
+  const { users, fetchUsers, setUsers } = useUsersContext();
   const [isEditing, setIsEditing] = useState(false);
   const [user, setUser] = useState(null);
-  const [newFullName, setNewFullName] = useState("");
+  const [formData, setFormData] = useState({});
+  const [showPassword, setShowPassword] = useState(false);
 
+  // Lấy dữ liệu user từ context khi component mount
   useEffect(() => {
-    // Lấy thông tin người dùng từ localStorage
-    const storedUser = localStorage.getItem("user");
-    if (storedUser) {
-      const parsedUser = JSON.parse(storedUser);
-      setUser(parsedUser);
-      setNewFullName(parsedUser.fullName);
+    if (users.length > 0) {
+      const currentUser = users[0]; // Giả sử user đầu tiên là user hiện tại
+      setUser(currentUser);
+      setFormData({ ...currentUser, password: "" }); // Không load mật khẩu cũ vì bảo mật
+    } else {
+      fetchUsers();
     }
-  }, []);
+  }, [users, fetchUsers]);
 
+  // Hàm bật/tắt chế độ chỉnh sửa
   const handleEdit = () => setIsEditing(true);
-  const handleSave = () => {
-    if (user) {
-      const updatedUser = { ...user, fullName: newFullName };
-      setUser(updatedUser);
-      localStorage.setItem("user", JSON.stringify(updatedUser));
+
+  // Hàm lưu thông tin chỉnh sửa
+  const handleSave = async () => {
+    if (!user) return;
+    try {
+      const updatedData = { ...formData };
+      if (!updatedData.password) {
+        delete updatedData.password; // Không gửi mật khẩu nếu không thay đổi
+      }
+      await usersAPI.editUser(updatedData);
+      setUser(updatedData);
+      setUsers((prevUsers) =>
+        prevUsers.map((u) => (u.id === user.id ? updatedData : u))
+      );
+      setIsEditing(false);
+    } catch (error) {
+      console.error("Lỗi khi cập nhật thông tin:", error);
     }
-    setIsEditing(false);
   };
 
+  // Hàm xử lý thay đổi input
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  // Hàm đăng xuất và reset dữ liệu
   const handleLogout = () => {
-    localStorage.removeItem("user");
     localStorage.removeItem("token");
     localStorage.removeItem("role");
+    setUser(null);
+    setFormData({});
     navigate("/login");
   };
 
+  // Kiểm tra nếu chưa có dữ liệu user
   if (!user) {
     return (
       <p className="text-center mt-10 text-gray-600">Đang tải thông tin...</p>
@@ -142,61 +72,94 @@ const UserProfile = () => {
     <>
       <Navbar />
       <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-b from-blue-300 to-white py-10 animate-fadeIn">
-        <div className="bg-white shadow-2xl rounded-3xl p-10 w-96 text-center transition-transform transform hover:scale-105 duration-300">
+        <div className="bg-white shadow-2xl rounded-3xl p-10 w-96 text-center">
           <img
-            src="/images/avatar.jpg"
+            src="https://cellphones.com.vn/sforum/wp-content/uploads/2024/02/avatar-anh-meo-cute-3.jpg"
             alt="User Avatar"
             className="w-24 h-24 rounded-full shadow-lg mx-auto border-4 border-blue-400"
           />
-
           <div className="mt-6 space-y-3">
             {isEditing ? (
               <input
                 type="text"
-                value={newFullName}
-                onChange={(e) => setNewFullName(e.target.value)}
-                className="border p-2 rounded-lg text-center w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
+                name="fullName"
+                value={formData.fullName || ""}
+                onChange={handleChange}
+                className="border p-2 rounded-lg text-center w-full focus:ring-2 focus:ring-blue-500"
               />
             ) : (
               <h2 className="text-2xl font-bold text-gray-900">
-                {user.fullName}
+                {user.fullName || "Chưa có tên"}
               </h2>
             )}
-            <p className="text-gray-600">
-              Tên đăng nhập:{" "}
-              <span className="font-semibold">{user.username}</span>
-            </p>
-            <p className="text-gray-600">
-              Email: <span className="font-semibold">{user.email}</span>
-            </p>
-            <p className="text-gray-600">
-              Số điện thoại: <span className="font-semibold">{user.phone}</span>
-            </p>
-            <p className="text-gray-600">
-              Địa chỉ: <span className="font-semibold">{user.address}</span>
-            </p>
+            <div className="relative">
+              {isEditing ? (
+                <input
+                  type={showPassword ? "text" : "password"}
+                  name="password"
+                  value={formData.password || ""}
+                  onChange={handleChange}
+                  placeholder="Nhập mật khẩu mới"
+                  className="border p-2 rounded-lg text-center w-full focus:ring-2 focus:ring-blue-500"
+                />
+              ) : (
+                <p className="text-gray-600">Mật khẩu: ******</p>
+              )}
+              {isEditing && (
+                <span
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute top-3 right-3 cursor-pointer"
+                >
+                  {showPassword ? <FaEyeSlash /> : <FaEye />}
+                </span>
+              )}
+            </div>
+            {[
+              { label: "Tên đăng nhập", name: "userName" },
+              { label: "Email", name: "email" },
+              { label: "Số điện thoại", name: "phone" },
+              { label: "Địa chỉ", name: "address" },
+            ].map((field) => (
+              <div key={field.name}>
+                <p className="text-gray-600">
+                  {field.label}:{" "}
+                  {isEditing ? (
+                    <input
+                      type="text"
+                      name={field.name}
+                      value={formData[field.name] || ""}
+                      onChange={handleChange}
+                      className="border p-2 rounded-lg text-center w-full focus:ring-2 focus:ring-blue-500"
+                    />
+                  ) : (
+                    <span className="font-semibold">
+                      {user[field.name] || "Chưa có thông tin"}
+                    </span>
+                  )}
+                </p>
+              </div>
+            ))}
           </div>
 
           <div className="mt-8 flex flex-col gap-4">
             {isEditing ? (
               <button
                 onClick={handleSave}
-                className="w-full bg-green-500 text-white py-3 rounded-lg flex items-center justify-center gap-2 shadow-md hover:bg-green-600 transition-transform transform hover:scale-105"
+                className="w-full bg-green-500 text-white py-3 rounded-lg flex items-center justify-center gap-2 hover:bg-green-600"
               >
                 <FaEdit /> Lưu
               </button>
             ) : (
               <button
                 onClick={handleEdit}
-                className="w-full bg-blue-500 text-white py-3 rounded-lg flex items-center justify-center gap-2 shadow-md hover:bg-blue-600 transition-transform transform hover:scale-105"
+                className="w-full bg-blue-500 text-white py-3 rounded-lg flex items-center justify-center gap-2 hover:bg-blue-600"
               >
                 <FaEdit /> Chỉnh sửa
               </button>
             )}
-
             <button
               onClick={handleLogout}
-              className="w-full bg-red-500 text-white py-3 rounded-lg flex items-center justify-center gap-2 shadow-md hover:bg-red-600 transition-transform transform hover:scale-105"
+              className="w-full bg-red-500 text-white py-3 rounded-lg flex items-center justify-center gap-2 hover:bg-red-600"
             >
               <FaSignOutAlt /> Đăng xuất
             </button>

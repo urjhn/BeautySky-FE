@@ -20,7 +20,6 @@ const ProductsPage = () => {
   const [selectedCategory, setSelectedCategory] = useState("Tất cả");
   const [sortOrder, setSortOrder] = useState("asc");
   const itemsPerPage = 12;
-  const navigate = useNavigate();
 
   useEffect(() => {
     setCurrentPage(1);

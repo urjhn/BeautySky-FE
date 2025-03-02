@@ -7,7 +7,7 @@ const productImagesAPI = {
     const response = await axiosInstance.get(endPoint);
     return response;
   },
-  createproductImages: async (payload) => {
+  getImageByProductId: async (payload) => {
     const response = await axiosInstance.get(`${endPoint}/${id}`, payload);
     if (response.status >= 200 && response.status < 300) {
       return response;

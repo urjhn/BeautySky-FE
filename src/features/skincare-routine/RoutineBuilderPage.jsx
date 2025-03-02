@@ -23,7 +23,8 @@ const routineSteps = [
     step: "Kem trị mụn",
     product: {
       name: "Kem trị mụn La Roche-Posay",
-      image: "/images/laroche.jpg" },
+      image: "/images/laroche.jpg",
+    },
   },
   {
     step: "Kem chống nắng",
