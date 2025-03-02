@@ -10,6 +10,7 @@ import { useUsersContext } from "../../../context/UserContext";
 import usersAPI from "../../../services/users";
 import Swal from "sweetalert2";
 import { useOrdersContext } from "../../../context/OrdersContext";
+import { Plus } from "lucide-react";
 
 const Customers = () => {
   const { users, fetchUsers } = useUsersContext();
@@ -21,6 +22,17 @@ const Customers = () => {
   const [endDate, setEndDate] = useState("");
   const [filteredCustomers, setFilteredCustomers] = useState([]);
   const [editingUser, setEditingUser] = useState(null);
+  const [showAddUserModal, setShowAddUserModal] = useState(false);
+  const [newUser, setNewUser] = useState({
+    userName: "",
+    fullName: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+    phone: "",
+    address: "",
+    roleId: 2, // Mặc định là Staff
+  });
 
   useEffect(() => {
     fetchUsers();
@@ -115,9 +127,45 @@ const Customers = () => {
     return orders.filter((order) => order.userId === userId).length;
   };
 
+  const handleAddUser = async () => {
+    if (!newUser.fullName || !newUser.email || !newUser.password) {
+      Swal.fire("Lỗi", "Vui lòng điền đầy đủ thông tin.", "error");
+      return;
+    }
+    try {
+      const response = await usersAPI.createUser(newUser);
+      if (response.status >= 200 && response.status < 300) {
+        Swal.fire("Thành công!", "Thành viên đã được thêm.", "success");
+        fetchUsers();
+        setShowAddUserModal(false);
+        setNewUser({
+          userName: "",
+          fullName: "",
+          email: "",
+          password: "",
+          confirmPassword: "",
+          phone: "",
+          address: "",
+          roleId: 2,
+        });
+      }
+    } catch (error) {
+      Swal.fire("Lỗi!", "Không thể thêm thành viên.", "error");
+      console.error("Error adding user:", error);
+    }
+  };
+
   return (
     <div className="p-6 bg-gray-100 min-h-screen">
-      <h1 className="text-3xl font-bold text-gray-900 mb-4">Khách hàng</h1>
+      <div className="flex items-center justify-between mb-4">
+        <h1 className="text-3xl font-bold text-gray-900">Khách hàng</h1>
+        <button
+          className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white text-lg font-semibold rounded-lg hover:bg-blue-600"
+          onClick={() => setShowAddUserModal(true)}
+        >
+          <Plus size={20} /> Thêm thành viên
+        </button>
+      </div>
       <div className="bg-white p-4 rounded-lg shadow">
         {/* Search Bar + Date Filters */}
         <div className="flex flex-wrap justify-between items-center mb-4 gap-4">
@@ -155,6 +203,101 @@ const Customers = () => {
             </div>
           </div>
         </div>
+        {/* Modal thêm thành viên */}
+        {showAddUserModal && (
+          <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex justify-center items-center">
+            <div className="bg-white p-6 rounded-lg shadow-lg w-96">
+              <h2 className="text-2xl font-bold mb-4">Thêm thành viên</h2>
+              <input
+                type="text"
+                placeholder="Tên tài khoản"
+                className="w-full p-2 border rounded mb-2"
+                value={newUser.userName}
+                onChange={(e) =>
+                  setNewUser({ ...newUser, userName: e.target.value })
+                }
+              />
+              <input
+                type="text"
+                placeholder="Họ và tên"
+                className="w-full p-2 border rounded mb-2"
+                value={newUser.fullName}
+                onChange={(e) =>
+                  setNewUser({ ...newUser, fullName: e.target.value })
+                }
+              />
+              <input
+                type="email"
+                placeholder="Email"
+                className="w-full p-2 border rounded mb-2"
+                value={newUser.email}
+                onChange={(e) =>
+                  setNewUser({ ...newUser, email: e.target.value })
+                }
+              />
+              <input
+                type="password"
+                placeholder="Mật khẩu"
+                className="w-full p-2 border rounded mb-2"
+                value={newUser.password}
+                onChange={(e) =>
+                  setNewUser({ ...newUser, password: e.target.value })
+                }
+              />
+              <input
+                type="password"
+                placeholder="Xác nhận mật khẩu"
+                className="w-full p-2 border rounded mb-2"
+                value={newUser.confirmPassword}
+                onChange={(e) =>
+                  setNewUser({ ...newUser, confirmPassword: e.target.value })
+                }
+              />
+              <input
+                type="text"
+                placeholder="Số điện thoại"
+                className="w-full p-2 border rounded mb-2"
+                value={newUser.phone}
+                onChange={(e) =>
+                  setNewUser({ ...newUser, phone: e.target.value })
+                }
+              />
+              <input
+                type="text"
+                placeholder="Địa chỉ"
+                className="w-full p-2 border rounded mb-2"
+                value={newUser.address}
+                onChange={(e) =>
+                  setNewUser({ ...newUser, address: e.target.value })
+                }
+              />
+              <select
+                className="w-full p-2 border rounded mb-2"
+                value={newUser.roleId}
+                onChange={(e) =>
+                  setNewUser({ ...newUser, roleId: Number(e.target.value) })
+                }
+              >
+                <option value={2}>Staff</option>
+                <option value={3}>Manager</option>
+              </select>
+              <div className="flex justify-end gap-2">
+                <button
+                  className="px-4 py-2 bg-gray-400 text-white rounded hover:bg-gray-500"
+                  onClick={() => setShowAddUserModal(false)}
+                >
+                  Hủy
+                </button>
+                <button
+                  className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+                  onClick={handleAddUser}
+                >
+                  Thêm
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Customer Table */}
         {filteredCustomers.length > 0 ? (

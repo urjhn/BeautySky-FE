@@ -57,7 +57,7 @@ const RoutineBuilderPage = () => {
         <input
           type="text"
           placeholder="Nhập tên lộ trình"
-          className="border p-3 mt-4 w-3/4 max-w-lg rounded-lg shadow-lg focus:outline-none focus:ring-4 focus:ring-blue-400 transition"
+          className="border p-3 mt-4 w-3/4 max-w-lg rounded-lg  shadow-lg focus:outline-none focus:ring-4 focus:ring-blue-400 transition"
           value={routineName}
           onChange={(e) => setRoutineName(e.target.value)}
         />
