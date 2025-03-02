@@ -9,6 +9,8 @@ import App from "./App.jsx";
 import { DataProvider } from "./context/DataContext.jsx";
 import { ReviewProvider } from "./context/ReviewContext.jsx";
 import { NewsProvider } from "./context/EvenContext.jsx";
+import { UsersProvider } from "./context/UserContext.jsx";
+import { OrdersProvider } from "./context/OrdersContext.jsx";
 
 const root = createRoot(document.getElementById("root"));
 
@@ -20,13 +22,17 @@ root.render(
       <AuthProvider>
         <CartProvider>
           <ThemeProvider>
-            <DataProvider>
-              <ReviewProvider>
-                <NewsProvider>
-                  <App />
-                </NewsProvider>
-              </ReviewProvider>
-            </DataProvider>
+            <UsersProvider>
+              <DataProvider>
+                <OrdersProvider>
+                  <ReviewProvider>
+                    <NewsProvider>
+                      <App />
+                    </NewsProvider>
+                  </ReviewProvider>
+                </OrdersProvider>
+              </DataProvider>
+            </UsersProvider>
           </ThemeProvider>
         </CartProvider>
       </AuthProvider>

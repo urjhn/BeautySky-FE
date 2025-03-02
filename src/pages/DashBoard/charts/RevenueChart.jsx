@@ -1,13 +1,13 @@
 import React from "react";
 import { Bar } from "react-chartjs-2";
 
-const RevenueChart = () => {
+const RevenueChart = ({ revenueGrowth }) => {
   const data = {
-    labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun"],
+    labels: revenueGrowth.map((item) => item.month), // Lấy danh sách tháng
     datasets: [
       {
         label: "Revenue",
-        data: [3000, 5000, 7000, 9000, 12000, 15000],
+        data: revenueGrowth.map((item) => item.revenue), // Lấy doanh thu theo tháng
         backgroundColor: "#36A2EB",
       },
     ],

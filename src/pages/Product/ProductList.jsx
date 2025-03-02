@@ -22,7 +22,7 @@ const ProductList = ({ selectedSkinType, selectedCategory }) => {
       id: product.productId,
       name: product.productName,
       price: product.price,
-      image: product.image,
+      image: product.productsImages?.[0]?.imageUrl || product.image,
       quantity: 1,
     });
   };
@@ -58,7 +58,7 @@ const ProductList = ({ selectedSkinType, selectedCategory }) => {
               >
                 <div className="relative overflow-hidden rounded-lg">
                   <img
-                    src={product.image}
+                    src={product.productsImages?.[0]?.imageUrl || product.image}
                     alt={product.productName}
                     className="w-full h-56 object-cover rounded-lg"
                   />
