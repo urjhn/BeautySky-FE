@@ -95,10 +95,19 @@ const Customers = () => {
   };
 
   const handleEditUser = (user) => {
-    setEditingUser(user);
+    setEditingUser(user); // Đánh dấu đang chỉnh sửa user
+    setNewUser({
+      userName: user.userName || "",
+      fullName: user.fullName || "",
+      email: user.email || "",
+      password: "", // Không hiển thị password cũ vì bảo mật
+      confirmPassword: "", // Không hiển thị password cũ vì bảo mật
+      phone: user.phone || "",
+      address: user.address || "",
+      roleId: user.roleId || 2,
+    });
     setShowAddUserModal(true);
   };
-
   const handleDeleteUser = async (userId) => {
     Swal.fire({
       title: "Bạn có chắc chắn?",
@@ -112,9 +121,13 @@ const Customers = () => {
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {
-          await usersAPI.deleteUser(userId);
-          fetchUsers();
-          Swal.fire("Đã xóa!", "Người dùng đã được xóa.", "success");
+          const response = await usersAPI.deleteUser(userId);
+          if (response.status >= 200 && response.status < 300) {
+            fetchUsers(); // Cập nhật danh sách người dùng sau khi xóa
+            Swal.fire("Đã xóa!", "Người dùng đã được xóa.", "success");
+          } else {
+            Swal.fire("Lỗi!", "Không thể xóa người dùng.", "error");
+          }
         } catch (error) {
           Swal.fire("Lỗi!", "Không thể xóa người dùng.", "error");
           console.error("Error deleting user:", error);
@@ -163,7 +176,8 @@ const Customers = () => {
           className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white text-lg font-semibold rounded-lg hover:bg-blue-600"
           onClick={() => setShowAddUserModal(true)}
         >
-          <Plus size={20} /> Thêm thành viên
+          {editingUser ? <FaEdit size={20} /> : <Plus size={20} />}
+          {editingUser ? "Chỉnh sửa thành viên" : "Thêm thành viên"}
         </button>
       </div>
       <div className="bg-white p-4 rounded-lg shadow">

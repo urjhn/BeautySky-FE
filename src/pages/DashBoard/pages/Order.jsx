@@ -8,6 +8,7 @@ import {
 import { formatCurrency } from "../../../utils/formatCurrency";
 import { useOrdersContext } from "../../../context/OrdersContext";
 import { useUsersContext } from "../../../context/UserContext";
+import orderAPI from "../../../services/order";
 
 const Order = () => {
   const { orders, fetchOrders } = useOrdersContext();
@@ -15,6 +16,7 @@ const Order = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const ordersPerPage = 5;
   const [searchTerm, setSearchTerm] = useState("");
+  const [filterStatus, setFilterStatus] = useState("All");
 
   useEffect(() => {
     fetchOrders();
@@ -27,6 +29,42 @@ const Order = () => {
     return user ? user.fullName : "Unknown User";
   };
 
+  const handleApproveOrder = async (orderId) => {
+    try {
+      // Gọi API cập nhật trạng thái đơn hàng thành "Completed"
+      await orderAPI.editOrder(orderId, { status: "Completed" });
+
+      // Sau khi cập nhật, tải lại danh sách đơn hàng để hiển thị thay đổi
+      fetchOrders();
+    } catch (error) {
+      console.error(`Lỗi khi cập nhật đơn hàng ${orderId}:`, error);
+    }
+  };
+
+  const handleApproveAllOrders = async () => {
+    try {
+      const pendingOrders = orders.filter(
+        (order) => order.status === "Pending"
+      );
+
+      if (pendingOrders.length === 0) {
+        alert("Không có đơn hàng nào cần duyệt.");
+        return;
+      }
+
+      await Promise.all(
+        pendingOrders.map((order) =>
+          orderAPI.editOrder(order.orderId, { status: "Completed" })
+        )
+      );
+
+      console.log("Tất cả đơn hàng Pending đã được duyệt.");
+      fetchOrders(); // Tải lại danh sách đơn hàng sau khi duyệt
+    } catch (error) {
+      console.error("Lỗi khi duyệt tất cả đơn hàng:", error);
+    }
+  };
+
   // Filter orders based on search term
   const filteredOrders = orders.filter((order) => {
     const orderId = order.orderId?.toString().toLowerCase() || "";
@@ -37,14 +75,18 @@ const Order = () => {
       new Date(order.orderDate).toLocaleDateString().toLowerCase() || "";
     const status = order.status?.toLowerCase() || "";
 
-    return (
+    const matchesSearch =
       orderId.includes(searchTerm.toLowerCase()) ||
       userId.includes(searchTerm.toLowerCase()) ||
       fullName.includes(searchTerm.toLowerCase()) ||
       totalAmount.includes(searchTerm.toLowerCase()) ||
       orderDate.includes(searchTerm.toLowerCase()) ||
-      status.includes(searchTerm.toLowerCase())
-    );
+      status.includes(searchTerm.toLowerCase());
+
+    const matchesFilter =
+      filterStatus === "All" || order.status === filterStatus;
+
+    return matchesSearch && matchesFilter;
   });
 
   // Pagination calculation
@@ -74,6 +116,24 @@ const Order = () => {
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
+          <div className="flex gap-4 items-center">
+            <select
+              value={filterStatus}
+              onChange={(e) => setFilterStatus(e.target.value)}
+              className="px-3 py-2 border rounded-md"
+            >
+              <option value="All">Tất cả</option>
+              <option value="Pending">Chờ xử lý</option>
+              <option value="Completed">Đã hoàn thành</option>
+              <option value="Cancelled">Đã hủy</option>
+            </select>
+          </div>
+          <button
+            onClick={handleApproveAllOrders}
+            className="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600"
+          >
+            Duyệt Tất Cả
+          </button>
         </div>
         <table className="w-full border-collapse">
           <thead>
@@ -83,6 +143,7 @@ const Order = () => {
               <th className="p-3 text-left">Total Amount</th>
               <th className="p-3 text-left">Order Date</th>
               <th className="p-3 text-left">Status</th>
+              <th className="p-3 text-left">Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -96,13 +157,25 @@ const Order = () => {
                 </td>
                 <td className="p-3 flex items-center">
                   {order.status === "Completed" ? (
-                    <FaCheckCircle className="text-green-500 mr-2" />
+                    <FaCheckCircle className="text-green-600 mr-2" />
                   ) : order.status === "Cancelled" ? (
                     <FaTimesCircle className="text-red-500 mr-2" />
                   ) : (
                     <FaClock className="text-yellow-500 mr-2" />
                   )}
                   {order.status}
+                </td>
+                <td className="p-3">
+                  {order.status === "Pending" ? (
+                    <button
+                      onClick={() => handleApproveOrder(order.orderId)}
+                      className="px-3 py-1 bg-blue-500 text-white rounded-md hover:bg-blue-600"
+                    >
+                      Duyệt
+                    </button>
+                  ) : (
+                    <span className="text-green-600">Completed</span>
+                  )}
                 </td>
               </tr>
             ))}

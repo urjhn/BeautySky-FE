@@ -2,7 +2,7 @@ import axiosInstance from "../config/axios/axiosInstance";
 
 const endPoint = "/Orders";
 
-const orderApi = {
+const orderAPI = {
   getAll: async () => {
     const response = await axiosInstance.get(endPoint);
     return response;
@@ -25,4 +25,4 @@ const orderApi = {
   },
 };
 
-export default orderApi;
+export default orderAPI;
