@@ -12,6 +12,7 @@ import {
   FaRegStar,
   FaUpload,
 } from "react-icons/fa";
+import Swal from "sweetalert2";
 
 const ProductDetail = () => {
   const { id } = useParams();
@@ -78,13 +79,34 @@ const ProductDetail = () => {
   };
 
   const handleAddToCart = () => {
-    if (!product) return;
-    addToCart({
-      productId: product.productId,
-      productName: product.productName,
+    if (!product || product.quantity === 0) {
+      Swal.fire({
+        icon: "error",
+        title: "Hết hàng!",
+        text: "Sản phẩm này đã hết hàng, vui lòng chọn sản phẩm khác.",
+        confirmButtonColor: "#d33",
+      });
+      return;
+    }
+
+    const cartItem = {
+      id: product.productId,
+      name: product.productName,
       price: product.price,
-      image: product.image,
+      image:
+        product.productsImages?.[0]?.imageUrl ||
+        product.image ||
+        "https://via.placeholder.com/150",
       quantity: 1, // Mặc định thêm 1 sản phẩm
+    };
+
+    addToCart(cartItem);
+
+    Swal.fire({
+      icon: "success",
+      title: "Đã thêm vào giỏ hàng!",
+      text: `${product.productName} đã được thêm vào giỏ hàng.`,
+      confirmButtonColor: "#3085d6",
     });
   };
 

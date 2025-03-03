@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { motion } from "framer-motion";
 import {
   CheckCircleIcon,
@@ -13,8 +14,10 @@ import { formatCurrency } from "../../utils/formatCurrency";
 
 const OrderHistory = () => {
   const navigate = useNavigate();
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 3;
+  const [selectedTab, setSelectedTab] = useState("Đã giao hàng");
 
-  // Danh sách đơn hàng (Có thể thay bằng API sau này)
   const orders = [
     {
       orderId: "#ORD20240227",
@@ -54,6 +57,13 @@ const OrderHistory = () => {
     },
   ];
 
+  const filteredOrders = orders.filter((order) => order.status === selectedTab);
+  const totalPages = Math.ceil(filteredOrders.length / itemsPerPage);
+  const paginatedOrders = filteredOrders.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
   return (
     <>
       <Navbar />
@@ -62,13 +72,32 @@ const OrderHistory = () => {
           <h1 className="text-3xl font-bold text-gray-800 text-center mb-6">
             🛒 Lịch sử đơn hàng
           </h1>
+
+          <div className="flex justify-center gap-4 mb-6">
+            {["Đã giao hàng", "Đang giao hàng", "Đã hủy"].map((tab) => (
+              <button
+                key={tab}
+                onClick={() => {
+                  setSelectedTab(tab);
+                  setCurrentPage(1);
+                }}
+                className={`px-4 py-2 rounded-lg font-medium transition ${
+                  selectedTab === tab
+                    ? "bg-blue-500 text-white"
+                    : "bg-gray-200 text-gray-700"
+                }`}
+              >
+                {tab}
+              </button>
+            ))}
+          </div>
+
           <div className="overflow-x-auto">
             <table className="w-full border-collapse border border-gray-300 rounded-lg overflow-hidden">
               <thead>
                 <tr className="bg-blue-500 text-white">
                   <th className="p-3 text-left">Mã đơn hàng</th>
                   <th className="p-3 text-left">Ngày đặt</th>
-                  <th className="p-3 text-left">Trạng thái</th>
                   <th className="p-3 text-left">Sản phẩm</th>
                   <th className="p-3 text-left">Thanh toán</th>
                   <th className="p-3 text-left">Mã vận chuyển</th>
@@ -77,7 +106,7 @@ const OrderHistory = () => {
                 </tr>
               </thead>
               <tbody>
-                {orders.map((order, index) => (
+                {paginatedOrders.map((order, index) => (
                   <motion.tr
                     key={index}
                     initial={{ opacity: 0, y: 10 }}
@@ -87,16 +116,6 @@ const OrderHistory = () => {
                   >
                     <td className="p-4 font-semibold">{order.orderId}</td>
                     <td className="p-4">{order.date}</td>
-                    <td className="p-4 flex items-center font-medium">
-                      {order.status === "Đã giao hàng" ? (
-                        <CheckCircleIcon className="w-5 h-5 text-green-500 mr-2" />
-                      ) : order.status === "Đang giao hàng" ? (
-                        <TruckIcon className="w-5 h-5 text-blue-500 mr-2" />
-                      ) : (
-                        <XCircleIcon className="w-5 h-5 text-red-500 mr-2" />
-                      )}
-                      {order.status}
-                    </td>
                     <td className="p-4 text-sm">{order.items.join(", ")}</td>
                     <td className="p-4 flex items-center">
                       <CreditCardIcon className="w-5 h-5 text-indigo-500 mr-2" />
@@ -108,7 +127,11 @@ const OrderHistory = () => {
                     </td>
                     <td className="p-4 text-center">
                       <button
-                        onClick={() => navigate(`/order/${order.orderId}`)}
+                        onClick={() =>
+                          navigate(
+                            `/orderdetail/${order.orderId.replace("#", "")}`
+                          )
+                        }
                         className="px-4 py-2 bg-blue-500 text-white rounded-lg shadow hover:bg-blue-600 transition flex items-center"
                       >
                         <EyeIcon className="w-5 h-5 mr-1" /> Xem
@@ -119,6 +142,25 @@ const OrderHistory = () => {
               </tbody>
             </table>
           </div>
+
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div className="flex justify-center mt-6 gap-2">
+              {[...Array(totalPages)].map((_, i) => (
+                <button
+                  key={i}
+                  onClick={() => setCurrentPage(i + 1)}
+                  className={`px-3 py-1 rounded-lg ${
+                    currentPage === i + 1
+                      ? "bg-blue-500 text-white"
+                      : "bg-gray-200 text-gray-700"
+                  }`}
+                >
+                  {i + 1}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
       </div>
       <Footer />
