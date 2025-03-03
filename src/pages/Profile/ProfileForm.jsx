@@ -26,19 +26,16 @@ const ProfileForm = ({ initialValues, onFinish }) => {
         {!isEditing ? (
           <div>
             <p>
-              <strong>User Name:</strong> {initialValues?.userName}
+              <strong>First Name:</strong> {initialValues?.userName}
             </p>
             <p>
-              <strong>Full Name:</strong> {initialValues?.fullName}
+              <strong>Last Name:</strong> {initialValues?.fullName}
             </p>
             <p>
               <strong>Email:</strong> {initialValues?.email}
             </p>
             <p>
               <strong>Address:</strong> {initialValues?.address}
-            </p>
-            <p>
-              <strong>Phone:</strong> {initialValues?.phone}
             </p>
             <Button type="primary" onClick={handleEditClick}>
               Edit Profile
