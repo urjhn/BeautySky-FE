@@ -14,7 +14,7 @@ const usersAPI = {
     }
     return response;
   },
-  editUser: async (payload) => {
+  editUser: async (id, payload) => {
     return await axiosInstance.put(`${endPoint}/${id}`, payload);
   },
   deleteUser: async (id) => {
