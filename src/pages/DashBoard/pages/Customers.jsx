@@ -196,8 +196,13 @@ const Customers = () => {
         Swal.fire("Lỗi", "Mật khẩu xác nhận không khớp.", "error");
         return;
       }
+      // Thêm console.log ở đây để debug
+      console.log("Editing user:", editingUser);
+      console.log("User ID:", editingUser.id);
+      console.log("Payload:", userPayload);
+
       
-      const response = await usersAPI.editUser(editingUser.id, userPayload);
+      const response = await usersAPI.editUser(editingUser.userId, userPayload);
       
       if (response.status >= 200 && response.status < 300) {
         Swal.fire("Thành công!", "Thông tin thành viên đã được cập nhật.", "success");
