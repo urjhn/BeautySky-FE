@@ -8,7 +8,7 @@ import ProductDetail from "./pages/Product/ProductDetail.jsx";
 import CheckoutInfomation from "./pages/Checkout/CheckoutInformation.jsx";
 import CheckoutProcess from "./pages/Checkout/CheckoutProcess.jsx";
 import PaymentSuccess from "./pages/Checkout/PaymentSuccess.jsx";
-import ViewOrder from "./pages/Checkout/ViewOrder.jsx";
+import ViewOrder from "./pages/Orders/ViewOrder.jsx";
 import Viewcart from "./pages/Product/Viewcart.jsx";
 import Quizz from "./features/quiz/QuizPage.jsx";
 import Error from "./pages/Errors/NotFoundPage.jsx";
@@ -27,7 +27,7 @@ import Promotion from "./pages/DashBoard/pages/Promotion.jsx";
 import RoutineBuilderPage from "./features/skincare-routine/RoutineBuilderPage.jsx";
 import AboutUs from "./pages/AboutUs/AboutUs.jsx";
 import Events from "./pages/DashBoard/pages/EventsControll.jsx";
-import HistoryOrder from "./pages/Checkout/ViewHistoryOrder.jsx";
+import HistoryOrder from "./pages/Orders/ViewHistoryOrder.jsx";
 // import ProtectedRoute from "./context/ProtectedRoute.jsx";
 
 import Unauthorized from "./pages/Unauthorized/unauthorized.jsx";
