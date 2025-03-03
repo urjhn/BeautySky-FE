@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import ReCAPTCHA from "react-google-recaptcha";
 import Navbar from "../../components/Navbar/Navbar";
 import Footer from "../../components/Footer/Footer";
 import loginImage from "../../assets/login/login.png";
 import { loginUser } from "../../services/apiRequest";
+// import { AuthContext } from "../../context/AuthContext";
 
 function Login() {
   const [formData, setFormData] = useState({ email: "", password: "" });
@@ -12,6 +13,7 @@ function Login() {
   const [error, setError] = useState("");
   const [recaptchaToken, setRecaptchaToken] = useState("");
   const navigate = useNavigate();
+  // const { login } = useContext(AuthContext);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });

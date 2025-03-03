@@ -7,30 +7,26 @@ export const AuthProvider = ({ children }) => {
   const [token, setToken] = useState(null);
 
   useEffect(() => {
-    // Kiểm tra localStorage khi tải trang
     const storedToken = localStorage.getItem("token");
     const storedRoleId = localStorage.getItem("roleId");
 
     if (storedToken && storedRoleId) {
       setToken(storedToken);
-      setRoleId(Number(storedRoleId));
+      setRoleId(storedRoleId);
     }
   }, []);
 
-  // Đăng nhập - Lưu token & roleId
-  const login = (userData, token, roleId) => {
+  const login = (user, token, roleId) => {
     localStorage.setItem("token", token);
     localStorage.setItem("roleId", roleId);
+    localStorage.setItem("user", JSON.stringify(user));
 
     setToken(token);
     setRoleId(roleId);
   };
 
-  // Đăng xuất - Xóa thông tin khỏi localStorage
   const logout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("roleId");
-
+    localStorage.clear();
     setToken(null);
     setRoleId(null);
   };

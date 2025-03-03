@@ -53,6 +53,24 @@ const DataProvider = ({ children }) => {
       console.error("Error fetching productImages data:", error);
     }
   };
+
+  const uploadProductImage = async (file, productId) => {
+    try {
+      const imageUrl = await productImagesAPI.uploadproductImages(file);
+      if (imageUrl) {
+        // Save uploaded image to the backend (if needed)
+        await productImagesAPI.editproductImages(productId, { imageUrl });
+
+        // Refresh product images
+        await fetchProductImages();
+        await fetchProduct();
+      }
+      return imageUrl;
+    } catch (error) {
+      console.error("Error uploading product image:", error);
+      return null;
+    }
+  };
   useEffect(() => {
     const fetchData = async () => {
       await fetchProductImages(); // Fetch ảnh trước
@@ -74,6 +92,7 @@ const DataProvider = ({ children }) => {
         setProductImages,
         fetchProductImages,
         fetchProduct,
+        uploadProductImage,
       }}
     >
       {children}

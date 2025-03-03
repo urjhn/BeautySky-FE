@@ -28,6 +28,7 @@ import RoutineBuilderPage from "./features/skincare-routine/RoutineBuilderPage.j
 import AboutUs from "./pages/AboutUs/AboutUs.jsx";
 import Events from "./pages/DashBoard/pages/EventsControll.jsx";
 import HistoryOrder from "./pages/Orders/ViewHistoryOrder.jsx";
+import OrderDetail from "./pages/Orders/OrderDetail.jsx";
 // import ProtectedRoute from "./context/ProtectedRoute.jsx";
 
 import Unauthorized from "./pages/Unauthorized/unauthorized.jsx";
@@ -51,6 +52,7 @@ const App = () => (
     <Route path="/paymentsuccess" element={<PaymentSuccess />} />
     <Route path="/vieworder" element={<ViewOrder />} />
     <Route path="/historyorder" element={<HistoryOrder />} />
+    <Route path="/orderdetail/:orderId:" element={<OrderDetail />} />
     <Route path="/viewcart" element={<Viewcart />} />
     <Route path="/contact" element={<Contact />} />
     <Route path="/quizz" element={<Quizz />} />

@@ -14,12 +14,12 @@ import {
   message,
   Row,
   Col,
-  // Upload,
+  Upload,
 } from "antd";
 import productApi from "../../../services/product";
 import Swal from "sweetalert2";
 const { TextArea } = Input;
-// import { PlusOutlined } from "@ant-design/icons";
+import { PlusOutlined } from "@ant-design/icons";
 
 const Products = () => {
   const { products, skinTypes, categories, setProducts } = useDataContext();

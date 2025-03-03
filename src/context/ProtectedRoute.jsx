@@ -3,13 +3,13 @@ import { useContext } from "react";
 import { AuthContext } from "./AuthContext";
 
 const ProtectedRoute = ({ allowedRoles }) => {
-  const { roleId } = useContext(AuthContext);
+  const { roleId, token } = useContext(AuthContext);
 
-  if (!roleId) {
+  if (!token) {
     return <Navigate to="/login" replace />;
   }
 
-  if (!allowedRoles.includes(roleId)) {
+  if (!allowedRoles.includes(String(roleId))) {
     return <Navigate to="/unauthorized" replace />;
   }
 
