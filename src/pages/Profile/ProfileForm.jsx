@@ -26,10 +26,10 @@ const ProfileForm = ({ initialValues, onFinish }) => {
         {!isEditing ? (
           <div>
             <p>
-              <strong>First Name:</strong> {initialValues?.firstName}
+              <strong>First Name:</strong> {initialValues?.userName}
             </p>
             <p>
-              <strong>Last Name:</strong> {initialValues?.lastName}
+              <strong>Last Name:</strong> {initialValues?.fullName}
             </p>
             <p>
               <strong>Email:</strong> {initialValues?.email}

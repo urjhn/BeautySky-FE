@@ -109,31 +109,49 @@ const Customers = () => {
     setShowAddUserModal(true);
   };
   const handleDeleteUser = async (userId) => {
-    Swal.fire({
-      title: "Bạn có chắc chắn?",
-      text: "Hành động này không thể hoàn tác!",
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonColor: "#d33",
-      cancelButtonColor: "#3085d6",
-      confirmButtonText: "Xóa",
-      cancelButtonText: "Hủy",
-    }).then(async (result) => {
+    try {
+      const result = await Swal.fire({
+        title: "Bạn có chắc chắn?",
+        text: "Hành động này không thể hoàn tác!",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#d33",
+        cancelButtonColor: "#3085d6",
+        confirmButtonText: "Xóa",
+        cancelButtonText: "Hủy",
+      });
+  
       if (result.isConfirmed) {
         try {
           const response = await usersAPI.deleteUser(userId);
-          if (response.status >= 200 && response.status < 300) {
-            fetchUsers(); // Cập nhật danh sách người dùng sau khi xóa
-            Swal.fire("Đã xóa!", "Người dùng đã được xóa.", "success");
+          
+          if (response && response.status === 200) {
+            await fetchUsers(); // Refresh user list after successful deletion
+            Swal.fire({
+              title: "Đã xóa!",
+              text: "Người dùng đã được xóa thành công.",
+              icon: "success"
+            });
           } else {
-            Swal.fire("Lỗi!", "Không thể xóa người dùng.", "error");
+            throw new Error("Delete failed");
           }
         } catch (error) {
-          Swal.fire("Lỗi!", "Không thể xóa người dùng.", "error");
           console.error("Error deleting user:", error);
+          Swal.fire({
+            title: "Lỗi!",
+            text: "Không thể xóa người dùng. Vui lòng thử lại sau.",
+            icon: "error"
+          });
         }
       }
-    });
+    } catch (error) {
+      console.error("Error in delete operation:", error);
+      Swal.fire({
+        title: "Lỗi!",
+        text: "Đã xảy ra lỗi không mong muốn.",
+        icon: "error"
+      });
+    }
   };
 
   const getOrderCount = (userId) => {
