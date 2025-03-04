@@ -93,6 +93,8 @@ const DataProvider = ({ children }) => {
         fetchProductImages,
         fetchProduct,
         uploadProductImage,
+        fetchSkinTypes,
+        fetchCategories,
       }}
     >
       {children}
