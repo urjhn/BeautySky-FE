@@ -1,5 +1,5 @@
 import React from "react";
-import { Routes, Route } from "react-router-dom"; // Chỉ cần Routes, không cần Router
+import { Routes, Route } from "react-router-dom";
 import Home from "./pages/Homepage/Homepage.jsx";
 import Login from "./pages/Login/Login.jsx";
 import Register from "./pages/Register/Register.jsx";
@@ -62,18 +62,28 @@ const App = () => (
     <Route path="/routine-builder" element={<RoutineBuilderPage />} />
     <Route path="/unauthorized" element={<Unauthorized />} />
     {/* Dashboard Routes (Chỉ Manager và Staff mới truy cập) */}
-    <Route path="/dashboard" element={<DashboardLayout />}>
+    <Route
+      path="/dashboardlayout"
+      element={
+        <ProtectedRoute requiredRole={[2, 3]}>
+          <DashboardLayout />
+        </ProtectedRoute>
+      }
+    >
+      {/* Chỉ Manager mới thấy Dashboard */}
       <Route
-        index
+        path="dashboard"
         element={
-          <ProtectedRoute requiredRole={[2, 3]}>
+          <ProtectedRoute requiredRole={3}>
             <Dashboard />
           </ProtectedRoute>
         }
       />
+
+      {/* Cả Manager & Staff đều thấy */}
       <Route path="blogs" element={<BlogManagement />} />
       <Route path="promotions" element={<Promotion />} />
-      <Route path="customers" element={<Customers />} />
+      <Route index element={<Customers />} />
       <Route path="orders" element={<Order />} />
       <Route path="products" element={<Products />} />
       <Route path="reports" element={<Report />} />

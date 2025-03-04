@@ -56,7 +56,7 @@ const Navbar = () => {
     <Menu>
       {user?.roleId === 2 || user?.roleId === 3 ? (
         <Menu.Item key="dashboard">
-          <Link to="/dashboard">Quản trị hệ thống</Link>
+          <Link to="/dashboardlayout">Quản trị hệ thống</Link>
         </Menu.Item>
       ) : null}
       <Menu.Item key="profile">

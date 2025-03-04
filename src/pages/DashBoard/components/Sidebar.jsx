@@ -21,36 +21,53 @@ const Sidebar = () => {
       {/* Navigation */}
       <nav>
         <ul className="space-y-2">
-          <NavItem icon={<FaChartBar />} title="Dashboard" to="/dashboard" />
-          <NavItem icon={<FaHome />} title="Cửa hàng" to="/" />
           <NavItem
             icon={<FaUsers />}
             title="Khách hàng"
-            to="/dashboard/customers"
+            to="/dashboardlayout"
           />
+          <NavItem
+            icon={<FaChartBar />}
+            title="Dashboard"
+            to="/dashboardlayout/dashboard"
+          />
+          <NavItem icon={<FaHome />} title="Cửa hàng" to="/" />
+
           <NavItem
             icon={<FaShoppingCart />}
             title="Orders"
-            to="/dashboard/orders"
+            to="/dashboardlayout/orders"
           />
-          <NavItem icon={<FaBox />} title="Sản phẩm" to="/dashboard/products" />
-          <NavItem icon={<FaBlog />} title="Blogs" to="/dashboard/blogs" />
+          <NavItem
+            icon={<FaBox />}
+            title="Sản phẩm"
+            to="/dashboardlayout/products"
+          />
+          <NavItem
+            icon={<FaBlog />}
+            title="Blogs"
+            to="/dashboardlayout/blogs"
+          />
           <NavItem
             icon={<FaTags />}
             title="Khuyến mãi"
-            to="/dashboard/promotions"
+            to="/dashboardlayout/promotions"
           />
           <NavItem
             icon={<FaFileAlt />}
             title="Báo cáo"
-            to="/dashboard/reports"
+            to="/dashboardlayout/reports"
           />
           <NavItem
             icon={<FaCalendarAlt />}
             title="Sự kiện"
-            to="/dashboard/events"
+            to="/dashboardlayout/events"
           />
-          <NavItem icon={<FaCog />} title="Cài đặt" to="/dashboard/settings" />
+          <NavItem
+            icon={<FaCog />}
+            title="Cài đặt"
+            to="/dashboardlayout/settings"
+          />
         </ul>
       </nav>
     </aside>
