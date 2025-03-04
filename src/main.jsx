@@ -10,6 +10,7 @@ import { UsersProvider } from "./context/UserContext.jsx";
 import { OrdersProvider } from "./context/OrdersContext.jsx";
 import { ThemeProvider } from "./pages/DashBoard/context/ThemeContext.jsx";
 import { BlogsProvider } from "./context/BlogsContext.jsx";
+import { AuthProvider } from "./context/AuthContext.jsx";
 
 const root = createRoot(document.getElementById("root"));
 
@@ -17,22 +18,24 @@ root.render(
   <Router>
     {" "}
     {/* Chỉ có 1 Router ở đây */}
-    <CartProvider>
-      <UsersProvider>
-        <DataProvider>
-          <OrdersProvider>
-            <ReviewProvider>
-              <ThemeProvider>
-                <NewsProvider>
-                  <BlogsProvider>
-                    <App />
-                  </BlogsProvider>
-                </NewsProvider>
-              </ThemeProvider>
-            </ReviewProvider>
-          </OrdersProvider>
-        </DataProvider>
-      </UsersProvider>
-    </CartProvider>
+    <AuthProvider>
+      <CartProvider>
+        <UsersProvider>
+          <DataProvider>
+            <OrdersProvider>
+              <ReviewProvider>
+                <ThemeProvider>
+                  <NewsProvider>
+                    <BlogsProvider>
+                      <App />
+                    </BlogsProvider>
+                  </NewsProvider>
+                </ThemeProvider>
+              </ReviewProvider>
+            </OrdersProvider>
+          </DataProvider>
+        </UsersProvider>
+      </CartProvider>
+    </AuthProvider>
   </Router>
 );

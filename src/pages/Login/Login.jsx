@@ -4,9 +4,10 @@ import ReCAPTCHA from "react-google-recaptcha";
 import Navbar from "../../components/Navbar/Navbar";
 import Footer from "../../components/Footer/Footer";
 import loginImage from "../../assets/login/login.png";
-import { loginUser } from "../../services/apiRequest";
+import AuthContext from "../../context/AuthContext";
 
 function Login() {
+  const { login } = useContext(AuthContext);
   const [formData, setFormData] = useState({ email: "", password: "" });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -34,18 +35,10 @@ function Login() {
     setLoading(true);
     setError("");
 
-    const newUser = { email, password, recaptchaToken };
-
     try {
-      const res = await loginUser(newUser, navigate);
-
-      if (res) {
-        localStorage.setItem("user", JSON.stringify(res.user));
-
-        // Gọi hàm login từ context để cập nhật user và điều hướng
-        login(res.user);
-        console.log("Đăng nhập thành công!");
-      }
+      await login({ email, password, recaptchaToken });
+      console.log("Đăng nhập thành công!");
+      navigate("/");
     } catch (err) {
       setError(
         err.response?.data?.message ||
@@ -55,53 +48,6 @@ function Login() {
       setLoading(false);
     }
   };
-
-  const handleGoogleSignIn = () => {
-    // Chuyển hướng người dùng đến endpoint đăng nhập Google của bạn
-    window.location.href = "https://localhost:7112/api/Google/google-login";
-  };
-
-  // Hàm xử lý phản hồi đăng nhập Google (gọi khi nhận được phản hồi từ backend)
-  const handleGoogleLoginResponse = async (response) => {
-    try {
-      // Lưu thông tin người dùng và token vào localStorage
-      localStorage.setItem("user", JSON.stringify(response.user));
-      localStorage.setItem("token", response.token);
-      localStorage.setItem("role", response.user.role);
-
-      console.log("Đăng nhập Google thành công!");
-
-      // Chuyển hướng người dùng dựa trên vai trò
-      if (response.user.role === "Manager" || response.user.role === "Staff") {
-        navigate("/dashboard");
-      } else {
-        navigate("/");
-      }
-    } catch (error) {
-      console.error("Lỗi xử lý phản hồi đăng nhập Google:", error);
-      setError("Lỗi xử lý đăng nhập Google!");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Sử dụng useEffect để kiểm tra tham số trả về từ backend sau khi đăng nhập Google
-  useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const googleLoginResponse = urlParams.get("googleLoginResponse");
-
-    if (googleLoginResponse) {
-      try {
-        // Chuyển đổi chuỗi JSON thành đối tượng
-        const response = JSON.parse(googleLoginResponse);
-        // Xử lý phản hồi đăng nhập Google
-        handleGoogleLoginResponse(response);
-      } catch (error) {
-        console.error("Lỗi chuyển đổi JSON:", error);
-        setError("Lỗi xử lý đăng nhập Google!");
-      }
-    }
-  }, [navigate]);
 
   return (
     <>
@@ -163,24 +109,6 @@ function Login() {
                 </Link>
               </div>
             </div>
-            <div className="relative my-6">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t"></div>
-              </div>
-              <div className="relative flex justify-center text-sm">
-                <span className="bg-white px-2 text-gray-500">HOẶC</span>
-              </div>
-            </div>
-            <button
-              onClick={handleGoogleSignIn}
-              className="w-full py-2 rounded-lg bg-red-500 hover:bg-red-600 text-white transition duration-300"
-              disabled={loading}
-            >
-              {loading ? "Đang xử lý..." : "Đăng nhập với Google"}
-            </button>
-            <p className="text-center text-gray-500 text-xs mt-4">
-              Terms & Conditions of FASCO
-            </p>
           </div>
         </div>
       </div>
