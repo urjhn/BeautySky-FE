@@ -80,7 +80,7 @@ const TopProducts = () => {
   return (
     <div>
       <div className="container py-20">
-        <div className="text-center pb-2 max-w-[800px] mx-auto">
+        <div className="text-center max-w-[800px] mx-auto">
           <p data-aos="fade-up" className="text-sm text-black">
             Sản phẩm được đánh giá cao nhất dành cho bạn
           </p>
@@ -100,7 +100,7 @@ const TopProducts = () => {
           {products.length > 0 ? (
             <Slider {...settings} className="pb-4">
               {products.map((product) => (
-                <div key={product.productId} className="px-3 pb-4 pt-16">
+                <div key={product.productId} className="px-3 pb-4 pt-1">
                   <div
                     data-aos="zoom-in"
                     className="rounded-xl bg-white dark:bg-gray-300 dark:hover:bg-[#6BBCFE] relative shadow-lg shadow-blue-400 duration-300 group h-[420px] p-3 mx-2 mt-10 flex flex-col"

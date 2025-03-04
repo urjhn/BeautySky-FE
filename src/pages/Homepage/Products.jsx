@@ -87,6 +87,9 @@ const Products = () => {
           >
             Dòng sản phẩm
           </h1>
+          <p data-aos="fade-up" className="text-xs text-gray-400 py-4">
+            Hãy chăm sóc da cùng Sky Beauty®
+          </p>
         </div>
 
         {/* Slider Section */}
