@@ -40,31 +40,13 @@ const Navbar = () => {
     if (!searchQuery) return;
     try {
       const [products, blogs, categories, skinTypes] = await Promise.all([
-        productAPI.getAll(),
-        blogsAPI.getAll(),
-        categoryApi.getAll(),
-        skinTypeApi.getAll(),
+        productAPI.searchProduct(searchQuery),
+        blogsAPI.searchBlogs(searchQuery),
+        categoryApi.searchCategory(searchQuery),
+        skinTypeApi.searchSkinType(searchQuery),
       ]);
 
-      const filteredProducts = products.data.filter((item) =>
-        item.name.toLowerCase().includes(searchQuery.toLowerCase())
-      );
-      const filteredBlogs = blogs.data.filter((item) =>
-        item.title.toLowerCase().includes(searchQuery.toLowerCase())
-      );
-      const filteredCategories = categories.filter((item) =>
-        item.name.toLowerCase().includes(searchQuery.toLowerCase())
-      );
-      const filteredSkinTypes = skinTypes.filter((item) =>
-        item.name.toLowerCase().includes(searchQuery.toLowerCase())
-      );
-
-      setSearchResults([
-        ...filteredProducts,
-        ...filteredBlogs,
-        ...filteredCategories,
-        ...filteredSkinTypes,
-      ]);
+      setSearchResults([...products, ...blogs, ...categories, ...skinTypes]);
       setShowProductDropdown(true);
     } catch (error) {
       console.error("Lỗi tìm kiếm:", error);
@@ -146,30 +128,24 @@ const Navbar = () => {
             <button onClick={handleSearch} className="absolute right-3 top-2">
               <IoMdSearch className="text-gray-500 hover:text-[#6BBCFE]" />
             </button>
+            {showProductDropdown && (
+              <div className="absolute bg-white shadow-md mt-2 w-full z-10 p-2">
+                {searchResults.length > 0 ? (
+                  searchResults.map((item, index) => (
+                    <Link
+                      key={index}
+                      to={`/${item.type}/${item.id}`}
+                      className="block p-2 hover:bg-gray-100"
+                    >
+                      {item.name || item.title}
+                    </Link>
+                  ))
+                ) : (
+                  <p className="text-gray-500 p-2">Không tìm thấy kết quả</p>
+                )}
+              </div>
+            )}
           </div>
-
-          {showProductDropdown && (
-            <div
-              className="absolute bg-white shadow-lg rounded-md w-64 mt-1"
-              ref={dropdownRef}
-            >
-              {searchResults.length > 0 ? (
-                searchResults.map((item, index) => (
-                  <Link
-                    key={index}
-                    to={`/detail/${item.id}`}
-                    className="block px-4 py-2 hover:bg-gray-100"
-                  >
-                    {item.name || item.title}
-                  </Link>
-                ))
-              ) : (
-                <p className="px-4 py-2 text-gray-500">
-                  Không tìm thấy kết quả
-                </p>
-              )}
-            </div>
-          )}
 
           {/* Cart */}
           <Link
