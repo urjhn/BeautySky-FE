@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Form, Input, Button, Typography, Card } from "antd";
-import { useAuth } from "../../context/AuthContext";
-import { useUsersContext } from "../../context/UserContext";
+import { useAuth } from "../../../context/AuthContext";
+import { useUsersContext } from "../../../context/UserContext";
 
 const { Title } = Typography;
 

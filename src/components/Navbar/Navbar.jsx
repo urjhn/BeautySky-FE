@@ -7,8 +7,12 @@ import { useAuth } from "../../context/AuthContext"; // 🆕 Import useAuth
 import { NavbarMenu } from "../Navbar/Data";
 import Logo from "../../assets/logo.png";
 import Namebrand from "../../assets/namebrand.png";
-import { Menu, Dropdown, Avatar } from "antd";
+import { Menu, Popover, Avatar } from "antd";
 import { UserOutlined } from "@ant-design/icons";
+import productAPI from "../../services/product";
+import blogsAPI from "../../services/blogs";
+import categoryApi from "../../services/category";
+import skinTypeApi from "../../services/skintype";
 
 const Navbar = () => {
   const navigate = useNavigate();
@@ -28,7 +32,6 @@ const Navbar = () => {
         setShowProductDropdown(false);
       }
     };
-
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
@@ -36,11 +39,32 @@ const Navbar = () => {
   const handleSearch = async () => {
     if (!searchQuery) return;
     try {
-      const response = await fetch(
-        `http://localhost:5000/search?query=${searchQuery}`
+      const [products, blogs, categories, skinTypes] = await Promise.all([
+        productAPI.getAll(),
+        blogsAPI.getAll(),
+        categoryApi.getAll(),
+        skinTypeApi.getAll(),
+      ]);
+
+      const filteredProducts = products.data.filter((item) =>
+        item.name.toLowerCase().includes(searchQuery.toLowerCase())
       );
-      const data = await response.json();
-      setSearchResults(data);
+      const filteredBlogs = blogs.data.filter((item) =>
+        item.title.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+      const filteredCategories = categories.filter((item) =>
+        item.name.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+      const filteredSkinTypes = skinTypes.filter((item) =>
+        item.name.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+
+      setSearchResults([
+        ...filteredProducts,
+        ...filteredBlogs,
+        ...filteredCategories,
+        ...filteredSkinTypes,
+      ]);
       setShowProductDropdown(true);
     } catch (error) {
       console.error("Lỗi tìm kiếm:", error);
@@ -124,6 +148,29 @@ const Navbar = () => {
             </button>
           </div>
 
+          {showProductDropdown && (
+            <div
+              className="absolute bg-white shadow-lg rounded-md w-64 mt-1"
+              ref={dropdownRef}
+            >
+              {searchResults.length > 0 ? (
+                searchResults.map((item, index) => (
+                  <Link
+                    key={index}
+                    to={`/detail/${item.id}`}
+                    className="block px-4 py-2 hover:bg-gray-100"
+                  >
+                    {item.name || item.title}
+                  </Link>
+                ))
+              ) : (
+                <p className="px-4 py-2 text-gray-500">
+                  Không tìm thấy kết quả
+                </p>
+              )}
+            </div>
+          )}
+
           {/* Cart */}
           <Link
             to="/viewcart"
@@ -139,7 +186,7 @@ const Navbar = () => {
 
           {/* 🆕 User Section */}
           {user ? (
-            <Dropdown overlay={menu} placement="bottomRight" arrow>
+            <Popover content={menu} trigger="click" placement="bottomRight">
               <Avatar
                 size="large"
                 icon={<UserOutlined />}
@@ -149,7 +196,7 @@ const Navbar = () => {
                 }
                 style={{ cursor: "pointer" }}
               />
-            </Dropdown>
+            </Popover>
           ) : (
             <div className="flex gap-4">
               <Link

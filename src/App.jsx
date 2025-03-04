@@ -30,6 +30,7 @@ import Events from "./pages/DashBoard/pages/EventsControll.jsx";
 import HistoryOrder from "./pages/Orders/ViewHistoryOrder.jsx";
 import OrderDetail from "./pages/Orders/OrderDetail.jsx";
 import ProtectedRoute from "./context/ProtectedRoute.jsx";
+import ProfileAdmin from "./pages/DashBoard/pages/ProfileAdmin.jsx";
 
 import Unauthorized from "./pages/Unauthorized/unauthorized.jsx";
 
@@ -89,6 +90,7 @@ const App = () => (
       <Route path="reports" element={<Report />} />
       <Route path="events" element={<Events />} />
       <Route path="settings" element={<Setting />} />
+      <Route path="profileadmin" element={<ProfileAdmin />} />
     </Route>
   </Routes>
 );
