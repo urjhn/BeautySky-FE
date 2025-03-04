@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import Swal from "sweetalert2";
 import Navbar from "../../components/Navbar/Navbar";
 import Footer from "../../components/Footer/Footer";
-import usersAPI from "../../services/users";
-import { useUsersContext } from "../../context/UserContext";
-import { Layout, Breadcrumb, Typography } from "antd";
+import { useAuth } from "../../context/AuthContext";
+import { Layout, Breadcrumb } from "antd";
 import ProfileSidebar from "./ProfileSidebar";
 import ProfileForm from "./ProfileForm";
 
@@ -12,62 +12,86 @@ const { Content } = Layout;
 
 const UserProfile = () => {
   const navigate = useNavigate();
-  const { users, fetchUsers, setUsers } = useUsersContext();
+  const { user, updateUser, logout } = useAuth();
 
-  // Giữ lại các state này, dù có thể không sử dụng trực tiếp ở đây
-  const [isEditing, setIsEditing] = useState(false);
-  const [user, setUser] = useState(null);
-  const [formData, setFormData] = useState({});
-  const [showPassword, setShowPassword] = useState(false);
+  const [formData, setFormData] = useState({
+    userId: "",
+    userName: "",
+    fullName: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+    roleId: "",
+    phone: "",
+    address: "",
+    dateCreate: "",
+    isActive: true,
+  });
 
-  // Lấy dữ liệu user từ context khi component mount
   useEffect(() => {
-    if (users.length > 0) {
-      const currentUser = users[0]; // Giả sử user đầu tiên là user hiện tại
-      setUser(currentUser);
-      setFormData({ ...currentUser, password: "" }); // Không load mật khẩu cũ vì bảo mật
-    } else {
-      fetchUsers();
+    if (user) {
+      setFormData({
+        userId: user.userId || "",
+        userName: user.userName || "",
+        fullName: user.fullName || "",
+        email: user.email || "",
+        password: "",
+        confirmPassword: "",
+        roleId: user.roleId || "",
+        phone: user.phone || "",
+        address: user.address || "",
+        dateCreate: user.dateCreate || "",
+        isActive: user.isActive ?? true,
+      });
     }
-  }, [users, fetchUsers]);
+  }, [user]);
 
-  // Hàm bật/tắt chế độ chỉnh sửa (giữ lại, dù chưa dùng)
-  const handleEdit = () => setIsEditing(true);
-
-  // Hàm lưu thông tin chỉnh sửa (giữ lại, dù chưa dùng)
+  // Cập nhật dữ liệu người dùng
   const handleSave = async (values) => {
-    if (!user) return;
     try {
-      const updatedData = { ...formData, ...values }; // Kết hợp formData cũ và values mới từ form
+      const updatedData = { ...formData, ...values };
       if (!updatedData.password) {
         delete updatedData.password; // Không gửi mật khẩu nếu không thay đổi
+        delete updatedData.confirmPassword;
       }
-      await usersAPI.editUser(updatedData);
-      setUser(updatedData);
-      setUsers((prevUsers) =>
-        prevUsers.map((u) => (u.id === user.id ? updatedData : u))
-      );
-      setIsEditing(false);
+      await updateUser(updatedData);
+
+      Swal.fire({
+        icon: "success",
+        title: "Cập nhật thành công!",
+        text: "Thông tin tài khoản đã được cập nhật.",
+        confirmButtonColor: "#6bbcfe",
+      });
+
+      setFormData(updatedData);
     } catch (error) {
+      Swal.fire({
+        icon: "error",
+        title: "Lỗi!",
+        text: "Không thể cập nhật thông tin, vui lòng thử lại.",
+        confirmButtonColor: "#ff4d4f",
+      });
       console.error("Lỗi khi cập nhật thông tin:", error);
     }
   };
 
-  // Hàm xử lý thay đổi input (giữ lại, dù chưa dùng)
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
-
-  // Hàm đăng xuất và reset dữ liệu (giữ lại, dù chưa dùng)
+  // Đăng xuất
   const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("role");
-    setUser(null);
-    setFormData({});
-    navigate("/login");
+    Swal.fire({
+      title: "Bạn có chắc muốn đăng xuất?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#6bbcfe",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Đăng xuất",
+    }).then((result) => {
+      if (result.isConfirmed) {
+        logout();
+        navigate("/login");
+      }
+    });
   };
 
-  // Kiểm tra nếu chưa có dữ liệu user
   if (!user) {
     return (
       <p className="text-center mt-10 text-gray-600">Đang tải thông tin...</p>
@@ -87,9 +111,8 @@ const UserProfile = () => {
             className="site-layout-background"
             style={{ padding: "24px 0" }}
           >
-            <ProfileSidebar />
+            <ProfileSidebar onLogout={handleLogout} />
             <Content style={{ padding: "0 24px", minHeight: 280 }}>
-              {/* Truyền onFinish và initialValues */}
               <ProfileForm initialValues={formData} onFinish={handleSave} />
             </Content>
           </Layout>

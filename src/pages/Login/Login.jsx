@@ -1,18 +1,24 @@
-import React, { useState, useEffect, useContext } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import ReCAPTCHA from "react-google-recaptcha";
+import Swal from "sweetalert2";
 import Navbar from "../../components/Navbar/Navbar";
 import Footer from "../../components/Footer/Footer";
 import loginImage from "../../assets/login/login.png";
-import AuthContext from "../../context/AuthContext";
+import { useAuth } from "../../context/AuthContext";
 
 function Login() {
-  const { login } = useContext(AuthContext);
+  const { user, login } = useAuth();
   const [formData, setFormData] = useState({ email: "", password: "" });
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-  const [recaptchaToken, setRecaptchaToken] = useState("");
+  const [recaptchaToken, setRecaptchaToken] = useState(null);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (user) {
+      navigate("/");
+    }
+  }, [user, navigate]);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -20,29 +26,37 @@ function Login() {
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    const { email, password } = formData;
 
-    if (!email || !password) {
-      setError("Vui lòng điền đầy đủ thông tin");
+    if (!formData.email || !formData.password) {
+      Swal.fire("Lỗi!", "Vui lòng điền đầy đủ thông tin.", "error");
       return;
     }
 
     if (!recaptchaToken) {
-      setError("Vui lòng xác minh reCAPTCHA");
+      Swal.fire("Lỗi!", "Vui lòng xác minh reCAPTCHA.", "error");
       return;
     }
 
     setLoading(true);
-    setError("");
 
     try {
-      await login({ email, password, recaptchaToken });
-      console.log("Đăng nhập thành công!");
+      await login({ ...formData, recaptchaToken });
+
+      Swal.fire({
+        icon: "success",
+        title: "Đăng nhập thành công!",
+        text: "Chào mừng bạn quay trở lại!",
+        timer: 2000,
+        showConfirmButton: false,
+      });
+
       navigate("/");
     } catch (err) {
-      setError(
+      Swal.fire(
+        "Lỗi!",
         err.response?.data?.message ||
-          "Đăng nhập không thành công, vui lòng thử lại"
+          "Đăng nhập không thành công. Vui lòng thử lại.",
+        "error"
       );
     } finally {
       setLoading(false);
@@ -61,11 +75,12 @@ function Login() {
               className="w-full h-full object-cover"
             />
           </div>
+
           <div className="w-full md:w-1/2 p-8 flex flex-col justify-center">
             <h3 className="text-2xl font-semibold text-center mb-4">
               Đăng nhập
             </h3>
-            {error && <p className="text-red-600 text-center mb-4">{error}</p>}
+
             <form onSubmit={handleLogin} className="space-y-4">
               <input
                 type="email"
@@ -85,10 +100,15 @@ function Login() {
                 className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500"
                 required
               />
+
+              {/* Google reCAPTCHA */}
               <ReCAPTCHA
                 sitekey="6LdigtQqAAAAANHvagd73iYJm0B4n2mQjXvf9aX9"
-                onChange={setRecaptchaToken}
+                onChange={(token) => setRecaptchaToken(token)}
+                onExpired={() => setRecaptchaToken(null)}
               />
+
+              {/* Nút đăng nhập */}
               <button
                 type="submit"
                 disabled={loading}
@@ -101,13 +121,14 @@ function Login() {
                 {loading ? "Đang đăng nhập..." : "Đăng nhập"}
               </button>
             </form>
+
             <div className="flex justify-between items-center mt-4 text-sm">
-              <div className="text-gray-600">
-                <p>Bạn chưa có tài khoản?</p>
+              <p className="text-gray-600">
+                Bạn chưa có tài khoản?{" "}
                 <Link to="/register" className="text-blue-500 hover:underline">
                   Đăng ký
                 </Link>
-              </div>
+              </p>
             </div>
           </div>
         </div>

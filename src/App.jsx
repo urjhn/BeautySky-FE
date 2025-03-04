@@ -29,7 +29,7 @@ import AboutUs from "./pages/AboutUs/AboutUs.jsx";
 import Events from "./pages/DashBoard/pages/EventsControll.jsx";
 import HistoryOrder from "./pages/Orders/ViewHistoryOrder.jsx";
 import OrderDetail from "./pages/Orders/OrderDetail.jsx";
-// import ProtectedRoute from "./context/ProtectedRoute.jsx";
+import ProtectedRoute from "./context/ProtectedRoute.jsx";
 
 import Unauthorized from "./pages/Unauthorized/unauthorized.jsx";
 
@@ -62,9 +62,15 @@ const App = () => (
     <Route path="/routine-builder" element={<RoutineBuilderPage />} />
     <Route path="/unauthorized" element={<Unauthorized />} />
     {/* Dashboard Routes (Chỉ Manager và Staff mới truy cập) */}
-    {/* <Route element={<ProtectedRoute allowedRoles={["2", "3"]} />}> */}
     <Route path="/dashboard" element={<DashboardLayout />}>
-      <Route index element={<Dashboard />} />
+      <Route
+        index
+        element={
+          <ProtectedRoute requiredRole={(2, 3)}>
+            <Dashboard />
+          </ProtectedRoute>
+        }
+      />
       <Route path="blogs" element={<BlogManagement />} />
       <Route path="promotions" element={<Promotion />} />
       <Route path="customers" element={<Customers />} />
@@ -74,7 +80,6 @@ const App = () => (
       <Route path="events" element={<Events />} />
       <Route path="settings" element={<Setting />} />
     </Route>
-    {/* </Route> */}
   </Routes>
 );
 

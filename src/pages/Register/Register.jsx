@@ -3,8 +3,13 @@ import { Link, useNavigate } from "react-router-dom";
 import Navbar from "../../components/Navbar/Navbar";
 import Footer from "../../components/Footer/Footer";
 import registerImage from "../../assets/register/register.png";
+import { useAuth } from "../../context/AuthContext";
+import Swal from "sweetalert2";
 
 function Register() {
+  const { register } = useAuth();
+  const navigate = useNavigate();
+
   const [formData, setFormData] = useState({
     fullName: "",
     userName: "",
@@ -14,16 +19,14 @@ function Register() {
     password: "",
     confirmPassword: "",
   });
-  const [error, setError] = useState("");
+
   const [loading, setLoading] = useState(false);
-  const navigate = useNavigate();
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleRegister = async (e) => {
-    e.preventDefault();
+  const validateForm = () => {
     const {
       fullName,
       userName,
@@ -34,33 +37,61 @@ function Register() {
       confirmPassword,
     } = formData;
 
+    if (
+      !fullName ||
+      !userName ||
+      !email ||
+      !phone ||
+      !address ||
+      !password ||
+      !confirmPassword
+    ) {
+      return "Vui lòng điền đầy đủ thông tin.";
+    }
+
+    if (!/\S+@\S+\.\S+/.test(email)) {
+      return "Email không hợp lệ.";
+    }
+
+    if (!/^\d{10,11}$/.test(phone)) {
+      return "Số điện thoại không hợp lệ.";
+    }
+
+    if (password.length < 6) {
+      return "Mật khẩu phải có ít nhất 6 ký tự.";
+    }
+
     if (password !== confirmPassword) {
-      setError("Mật khẩu và xác nhận mật khẩu không khớp");
+      return "Mật khẩu và xác nhận mật khẩu không khớp.";
+    }
+
+    return "";
+  };
+
+  const handleRegister = async (e) => {
+    e.preventDefault();
+
+    const validationError = validateForm();
+    if (validationError) {
+      Swal.fire("Lỗi", validationError, "error");
       return;
     }
 
     setLoading(true);
-    setError("");
-
-    const newUser = {
-      fullName,
-      userName,
-      email,
-      phone,
-      address,
-      password,
-      confirmPassword,
-    };
 
     try {
-      await registerUser(newUser, navigate); // ✅ Gọi API đăng ký
-
-      console.log("Đăng ký thành công! Chuyển hướng đến trang đăng nhập...");
-      navigate("/login"); // ✅ Chuyển hướng sau khi đăng ký thành công
+      await register(formData);
+      Swal.fire({
+        title: "Đăng ký thành công!",
+        text: "Bạn có thể đăng nhập ngay bây giờ.",
+        icon: "success",
+        confirmButtonColor: "#6bbcfe",
+      }).then(() => navigate("/login"));
     } catch (err) {
-      setError(
-        err.response?.data?.message ||
-          "Đăng ký không thành công, vui lòng thử lại"
+      Swal.fire(
+        "Lỗi",
+        err.response?.data?.message || "Đăng ký thất bại!",
+        "error"
       );
     } finally {
       setLoading(false);
@@ -85,72 +116,28 @@ function Register() {
               Tạo tài khoản
             </h3>
 
-            {error && <p className="text-red-600 text-center">{error}</p>}
-
             <form onSubmit={handleRegister} className="space-y-4">
-              <input
-                type="text"
-                name="fullName"
-                placeholder="Họ và tên"
-                value={formData.fullName}
-                onChange={handleChange}
-                className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500"
-                required
-              />
-              <input
-                type="text"
-                name="userName"
-                placeholder="Tên người dùng"
-                value={formData.userName}
-                onChange={handleChange}
-                className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500"
-                required
-              />
-              <input
-                type="email"
-                name="email"
-                placeholder="Email"
-                value={formData.email}
-                onChange={handleChange}
-                className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500"
-                required
-              />
-              <input
-                type="text"
-                name="phone"
-                placeholder="Số điện thoại"
-                value={formData.phone}
-                onChange={handleChange}
-                className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500"
-                required
-              />
-              <input
-                type="text"
-                name="address"
-                placeholder="Địa chỉ"
-                value={formData.address}
-                onChange={handleChange}
-                className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500"
-                required
-              />
-              <input
-                type="password"
-                name="password"
-                placeholder="Mật khẩu"
-                value={formData.password}
-                onChange={handleChange}
-                className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500"
-                required
-              />
-              <input
-                type="password"
-                name="confirmPassword"
-                placeholder="Xác nhận mật khẩu"
-                value={formData.confirmPassword}
-                onChange={handleChange}
-                className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500"
-                required
-              />
+              {Object.keys(formData).map((field) => (
+                <input
+                  key={field}
+                  type={
+                    field.includes("password")
+                      ? "password"
+                      : field === "email"
+                      ? "email"
+                      : "text"
+                  }
+                  name={field}
+                  placeholder={
+                    field === "confirmPassword" ? "Xác nhận mật khẩu" : field
+                  }
+                  value={formData[field]}
+                  onChange={handleChange}
+                  className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500"
+                  required
+                />
+              ))}
+
               <button
                 type="submit"
                 disabled={loading}

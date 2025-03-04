@@ -1,10 +1,7 @@
 import { Link } from "react-router-dom";
-import Navbar from "../../components/Navbar/Navbar";
-import Footer from "../../components/Footer/Footer";
 const Unauthorized = () => {
   return (
     <>
-      <Navbar />
       <div className="flex flex-col items-center justify-center h-screen bg-gray-100 text-center p-6">
         <div className="bg-white shadow-lg rounded-2xl p-8 max-w-md">
           <h1 className="text-3xl font-bold text-red-600 mb-4">
@@ -21,7 +18,6 @@ const Unauthorized = () => {
           </Link>
         </div>
       </div>
-      <Footer />
     </>
   );
 };

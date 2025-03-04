@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { IoMdSearch } from "react-icons/io";
 import { FaShoppingCart } from "react-icons/fa";
 import { useCart } from "../../context/CartContext";
+import { useAuth } from "../../context/AuthContext"; // 🆕 Import useAuth
 import { NavbarMenu } from "../Navbar/Data";
 import Logo from "../../assets/logo.png";
 import Namebrand from "../../assets/namebrand.png";
@@ -12,16 +13,9 @@ import { UserOutlined } from "@ant-design/icons";
 const Navbar = () => {
   const navigate = useNavigate();
   const { cartItems } = useCart();
+  const { user, logout } = useAuth();
+
   const cartCount = cartItems.reduce((acc, item) => acc + item.quantity, 0);
-
-  // 🔹 Lấy user & role từ localStorage
-  const [user, setUser] = useState(() => {
-    const storedUser = localStorage.getItem("user");
-    return storedUser || null;
-    // return storedUser ? JSON.parse(storedUser) : null;
-  });
-
-  const role = localStorage.getItem("role"); // Lấy vai trò của user
 
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState([]);
@@ -54,14 +48,17 @@ const Navbar = () => {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem("user"); // Xóa user khỏi localStorage
-    localStorage.removeItem("roleId"); // Xóa role
-    setUser(null);
-    navigate("/login"); // Chuyển hướng về trang đăng nhập
+    logout();
+    navigate("/login");
   };
 
   const menu = (
     <Menu>
+      {user?.roleId === 2 || user?.roleId === 3 ? (
+        <Menu.Item key="dashboard">
+          <Link to="/dashboard">Quản trị hệ thống</Link>
+        </Menu.Item>
+      ) : null}
       <Menu.Item key="profile">
         <Link to="/profile">Tài khoản của bạn</Link>
       </Menu.Item>
@@ -140,7 +137,7 @@ const Navbar = () => {
             )}
           </Link>
 
-          {/* User Section */}
+          {/* 🆕 User Section */}
           {user ? (
             <Dropdown overlay={menu} placement="bottomRight" arrow>
               <Avatar

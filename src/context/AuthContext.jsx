@@ -12,16 +12,18 @@ export const AuthProvider = ({ children }) => {
     const token = localStorage.getItem("token");
     const roleId = localStorage.getItem("roleId");
     if (token && roleId) {
-      setUser({ token, roleId });
+      setUser({ token, roleId: parseInt(roleId, 10) });
     }
   }, []);
 
   const login = async (userData) => {
     try {
       const data = await authAPI.login(userData, navigate);
-      setUser({ token: data.token, roleId: data.roleId });
+      const roleId = parseInt(data.roleId, 10);
+
+      setUser({ token: data.token, roleId });
       localStorage.setItem("token", data.token);
-      localStorage.setItem("roleId", data.roleId);
+      localStorage.setItem("roleId", roleId);
     } catch (err) {
       console.error("Login failed", err);
     }
@@ -49,7 +51,6 @@ export const AuthProvider = ({ children }) => {
   );
 };
 
-// ✅ Export `useAuth` để sử dụng trong Navbar và các component khác
 export const useAuth = () => useContext(AuthContext);
 
 export default AuthContext;
