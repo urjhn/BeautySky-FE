@@ -20,9 +20,11 @@ import productApi from "../../../services/product";
 import Swal from "sweetalert2";
 const { TextArea } = Input;
 import { PlusOutlined } from "@ant-design/icons";
+import productImagesAPI from "../../../services/productImages";
 
 const Products = () => {
-  const { products, skinTypes, categories, setProducts } = useDataContext();
+  const { products, skinTypes, categories, setProducts, fetchProduct } =
+    useDataContext();
 
   const [currentPage, setCurrentPage] = React.useState(1);
   const [filter, setFilter] = React.useState("All");
@@ -42,26 +44,45 @@ const Products = () => {
     productsImages: [],
   });
 
-  const handleImageUpload = (file, fileList, setFieldValue) => {
+  const handleImageUpload = async (file, fileList, setFieldValue) => {
     const isImage = file.type.startsWith("image/");
     if (!isImage) {
       message.error("Chỉ cho phép tải lên hình ảnh");
       return false;
     }
-    // Return the file object to allow uploading
+
     const newImage = file.originFileObj;
     const reader = new FileReader();
-    reader.onload = () => {
+
+    // Hiển thị preview trước khi upload
+    reader.onload = async () => {
+      const previewUrl = reader.result;
+
+      // Cập nhật UI trước khi upload ảnh lên server
       setFieldValue("productsImages", [
         ...(fileList || []),
-        { imageUrl: reader.result }, // Set preview URL for uploaded image
+        { imageUrl: previewUrl }, // URL tạm thời để xem trước
       ]);
+
+      // Upload ảnh lên backend và lấy URL từ Amazon S3
+      const uploadedImageUrl = await productImagesAPI.uploadproductImages(
+        newImage
+      );
+
+      if (uploadedImageUrl) {
+        // Cập nhật lại state với URL thực tế từ backend
+        setFieldValue("productsImages", [
+          ...(fileList || []),
+          { imageUrl: uploadedImageUrl }, // URL thực từ S3
+        ]);
+      } else {
+        message.error("Tải ảnh lên thất bại!");
+      }
     };
+
     reader.readAsDataURL(newImage);
     return true;
   };
-
-
 
   const [showAddModal, setShowAddModal] = React.useState(false);
   const [sortOrder, setSortOrder] = React.useState(null);
@@ -127,27 +148,30 @@ const Products = () => {
   const handleSaveEdit = async (values) => {
     try {
       setLoading(true);
-      
+
       // Đảm bảo productId có trong editingProduct
       if (!editingProduct || !editingProduct.productId) {
         throw new Error("Missing product ID");
       }
-      
+
       const dataToSend = {
         ...values,
-        productId: editingProduct.productId // Đảm bảo bạn đang truyền đúng productId
+        productId: editingProduct.productId, // Đảm bảo bạn đang truyền đúng productId
       };
-      
+
       console.log("Sending data to API:", dataToSend);
-      
+
       const response = await productApi.editProduct(
-        editingProduct.productId, dataToSend
+        editingProduct.productId,
+        dataToSend
       );
-  
+
       if (response && response.status >= 200 && response.status < 300) {
         const updatedProduct = response.data || response;
         setProducts((prev) =>
-          prev.map((p) => (p.productId === editingProduct.productId ? updatedProduct : p))
+          prev.map((p) =>
+            p.productId === editingProduct.productId ? updatedProduct : p
+          )
         );
         setShowEditModal(false);
         Swal.fire({
@@ -155,6 +179,7 @@ const Products = () => {
           title: "Thành công!",
           text: `Sản phẩm "${values.productName}" đã được cập nhật thành công!`,
         });
+        fetchProduct(response);
       } else {
         throw new Error("Edit failed");
       }
@@ -169,18 +194,21 @@ const Products = () => {
       setLoading(false);
     }
   };
-  
 
   const handleAddProduct = async (values) => {
     try {
       setLoading(true);
       console.log("Adding product with values:", values);
-      
+
       const response = await productApi.createProduct(values);
-      
-      if (response && (response.status >= 200 && response.status < 300 || response.productId)) {
+
+      if (
+        response &&
+        ((response.status >= 200 && response.status < 300) ||
+          response.productId)
+      ) {
         const newProductData = response.data || response;
-        
+
         setProducts((prev) => [...prev, newProductData]);
         setShowAddModal(false);
         setNewProduct({
@@ -202,6 +230,7 @@ const Products = () => {
           confirmButtonColor: "#3085d6",
           confirmButtonText: "OK",
         });
+        fetchProduct(response);
       } else {
         throw new Error("Add failed");
       }
@@ -220,85 +249,87 @@ const Products = () => {
     }
   };
 
-  const columns = React.useMemo(() => [
-    {
-      title: "Hình ảnh",
-      dataIndex: "productsImages",
-      key: "productsImages",
-      render: (productsImages) => {
-        const imageUrl = productsImages?.length > 0
-          ? productsImages[0].imageUrl
-          : "/placeholder.jpg"; // Placeholder image if no image available
-        return (
-          <img
-            src={imageUrl}
-            alt="Product"
-            style={{ width: "50px", height: "50px", objectFit: "cover" }}
-          />
-        );
+  const columns = React.useMemo(
+    () => [
+      {
+        title: "Hình ảnh",
+        dataIndex: "productsImages",
+        key: "productsImages",
+        render: (productsImages) => {
+          const imageUrl =
+            productsImages?.length > 0
+              ? productsImages[0].imageUrl
+              : "/placeholder.jpg"; // Placeholder image if no image available
+          return (
+            <img
+              src={imageUrl}
+              alt="Product"
+              style={{ width: "50px", height: "50px", objectFit: "cover" }}
+            />
+          );
+        },
       },
-    },
-    { title: "Tên", dataIndex: "productName", key: "productName" },
-    {
-      title: "Giá",
-      dataIndex: "price",
-      key: "price",
-      render: (price) => formatCurrency(price),
-      sorter: (a, b) => a.price - b.price,
-      sortOrder: sortOrder,
-    },
-    {
-      title: "Số lượng",
-      dataIndex: "quantity",
-      key: "quantity",
-      render: (quantity) => <span className="font-semibold">{quantity}</span>,
-    },
-    {
-      title: "Trạng thái",
-      dataIndex: "quantity",
-      key: "status",
-      render: (quantity) =>
-        quantity > 0 ? (
-          <span className="text-green-600 font-semibold">Còn hàng</span>
-        ) : (
-          <span className="text-red-600 font-semibold">Hết hàng</span>
+      { title: "Tên", dataIndex: "productName", key: "productName" },
+      {
+        title: "Giá",
+        dataIndex: "price",
+        key: "price",
+        render: (price) => formatCurrency(price),
+        sorter: (a, b) => a.price - b.price,
+        sortOrder: sortOrder,
+      },
+      {
+        title: "Số lượng",
+        dataIndex: "quantity",
+        key: "quantity",
+        render: (quantity) => <span className="font-semibold">{quantity}</span>,
+      },
+      {
+        title: "Trạng thái",
+        dataIndex: "quantity",
+        key: "status",
+        render: (quantity) =>
+          quantity > 0 ? (
+            <span className="text-green-600 font-semibold">Còn hàng</span>
+          ) : (
+            <span className="text-red-600 font-semibold">Hết hàng</span>
+          ),
+      },
+      {
+        title: "Hành động",
+        key: "action",
+        render: (_, record) => (
+          <Space size="middle">
+            <Button
+              type="primary"
+              onClick={() => {
+                setEditingProduct(record);
+                setShowEditModal(true);
+              }}
+              disabled={loading}
+            >
+              <FaEdit />
+            </Button>
+            <Button
+              type="danger"
+              onClick={() => handleDelete(record.productId)}
+              disabled={loading}
+            >
+              <FaTrash />
+            </Button>
+          </Space>
         ),
-    },
-    {
-      title: "Hành động",
-      key: "action",
-      render: (_, record) => (
-        <Space size="middle">
-          <Button
-            type="primary"
-            onClick={() => {
-              setEditingProduct(record);
-              setShowEditModal(true);
-            }}
-            disabled={loading}
-          >
-            <FaEdit />
-          </Button>
-          <Button 
-            type="danger" 
-            onClick={() => handleDelete(record.productId)}
-            disabled={loading}
-          >
-            <FaTrash />
-          </Button>
-        </Space>
-      ),
-    },
-  ], [loading, sortOrder]);
-  
-  
+      },
+    ],
+    [loading, sortOrder]
+  );
 
   return (
     <div className="p-6 bg-gray-100 min-h-screen">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold text-gray-800">Danh sách sản phẩm</h1>
-        <Button 
-          type="primary" 
+        <Button
+          type="primary"
           onClick={() => setShowAddModal(true)}
           disabled={loading}
         >
@@ -428,7 +459,9 @@ const ProductForm = ({
 
   const onFinish = (values) => {
     // Include productId if in edit mode
-    const formData = isAddMode ? values : { ...values, productId: item?.productId };
+    const formData = isAddMode
+      ? values
+      : { ...values, productId: item?.productId };
     console.log("Form submission data:", formData);
     onSubmit(formData);
   };
@@ -442,31 +475,65 @@ const ProductForm = ({
   // Add hidden productId field for edit mode
   return (
     <Form form={form} layout="vertical" onFinish={onFinish}>
-      <h2 className="text-xl font-semibold mb-4">{isAddMode ? "Thêm sản phẩm" : "Chỉnh sửa sản phẩm"}</h2>
-      
-      <Form.Item label="Tên sản phẩm" name="productName" rules={[{ required: true, message: "Vui lòng nhập tên sản phẩm!" }]}>
+      <h2 className="text-xl font-semibold mb-4">
+        {isAddMode ? "Thêm sản phẩm" : "Chỉnh sửa sản phẩm"}
+      </h2>
+
+      <Form.Item
+        label="Tên sản phẩm"
+        name="productName"
+        rules={[{ required: true, message: "Vui lòng nhập tên sản phẩm!" }]}
+      >
         <Input disabled={loading} />
       </Form.Item>
 
       <Row gutter={16}>
         <Col span={12}>
-          <Form.Item label="Giá" name="price" rules={[{ required: true, message: "Vui lòng nhập giá!" }]}>
+          <Form.Item
+            label="Giá"
+            name="price"
+            rules={[{ required: true, message: "Vui lòng nhập giá!" }]}
+          >
             <InputNumber style={{ width: "100%" }} min={0} disabled={loading} />
           </Form.Item>
         </Col>
         <Col span={12}>
-          <Form.Item label="Số lượng" name="quantity" rules={[{ required: true, message: "Vui lòng nhập số lượng!" }]}>
+          <Form.Item
+            label="Số lượng"
+            name="quantity"
+            rules={[{ required: true, message: "Vui lòng nhập số lượng!" }]}
+          >
             <InputNumber style={{ width: "100%" }} min={0} disabled={loading} />
           </Form.Item>
         </Col>
       </Row>
 
-      <Form.Item label="Loại sản phẩm" name="categoryId" rules={[{ required: true, message: "Vui lòng chọn loại sản phẩm!" }]}>
-        <Select options={categories.map((c) => ({ value: c.categoryId, label: c.categoryName }))} disabled={loading} />
+      <Form.Item
+        label="Loại sản phẩm"
+        name="categoryId"
+        rules={[{ required: true, message: "Vui lòng chọn loại sản phẩm!" }]}
+      >
+        <Select
+          options={categories.map((c) => ({
+            value: c.categoryId,
+            label: c.categoryName,
+          }))}
+          disabled={loading}
+        />
       </Form.Item>
 
-      <Form.Item label="Loại da" name="skinTypeId" rules={[{ required: true, message: "Vui lòng chọn loại da!" }]}>
-        <Select options={skinTypes.map((s) => ({ value: s.skinTypeId, label: s.skinTypeName }))} disabled={loading} />
+      <Form.Item
+        label="Loại da"
+        name="skinTypeId"
+        rules={[{ required: true, message: "Vui lòng chọn loại da!" }]}
+      >
+        <Select
+          options={skinTypes.map((s) => ({
+            value: s.skinTypeId,
+            label: s.skinTypeName,
+          }))}
+          disabled={loading}
+        />
       </Form.Item>
 
       <Form.Item label="Mô tả" name="description">
@@ -480,8 +547,10 @@ const ProductForm = ({
       {/* Image Upload Field */}
       <Form.Item label="Hình ảnh">
         <Upload
-          beforeUpload={(file, fileList) => handleImageUpload(file, fileList, form.setFieldsValue)}
-          fileList={form.getFieldValue('productsImages')}
+          beforeUpload={(file, fileList) =>
+            handleImageUpload(file, fileList, form.setFieldsValue)
+          }
+          fileList={form.getFieldValue("productsImages")}
           showUploadList={false}
         >
           <Button icon={<PlusOutlined />} disabled={loading}>
@@ -492,8 +561,15 @@ const ProductForm = ({
 
       <Form.Item style={{ textAlign: "right" }}>
         <Space>
-          <Button onClick={onCancel} disabled={loading}>Hủy</Button>
-          <Button type="primary" htmlType="submit" loading={loading} disabled={loading}>
+          <Button onClick={onCancel} disabled={loading}>
+            Hủy
+          </Button>
+          <Button
+            type="primary"
+            htmlType="submit"
+            loading={loading}
+            disabled={loading}
+          >
             {isAddMode ? "Thêm" : "Lưu"}
           </Button>
         </Space>

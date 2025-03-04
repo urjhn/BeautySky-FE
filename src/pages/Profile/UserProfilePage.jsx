@@ -83,7 +83,10 @@ const UserProfile = () => {
             <Breadcrumb.Item>Home</Breadcrumb.Item>
             <Breadcrumb.Item>My Account</Breadcrumb.Item>
           </Breadcrumb>
-          <Layout className="site-layout-background" style={{ padding: "24px 0" }}>
+          <Layout
+            className="site-layout-background"
+            style={{ padding: "24px 0" }}
+          >
             <ProfileSidebar />
             <Content style={{ padding: "0 24px", minHeight: 280 }}>
               {/* Truyền onFinish và initialValues */}
