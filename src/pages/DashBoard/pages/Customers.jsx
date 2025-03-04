@@ -154,6 +154,84 @@ const Customers = () => {
     }
   };
 
+
+  const handleUpdateUser = async () => {
+    if (!editingUser) return;
+    
+    if (!newUser.fullName || !newUser.email) {
+      Swal.fire("Lỗi", "Vui lòng điền đầy đủ thông tin.", "error");
+      return;
+    }
+    
+    try {
+      // Chuẩn bị dữ liệu để gửi lên server
+      const userPayload = {
+        userName: newUser.userName,
+        fullName: newUser.fullName,
+        email: newUser.email,
+        phone: newUser.phone,
+        address: newUser.address,
+        roleId: newUser.roleId,
+      };
+      
+      // Chỉ gửi password nếu người dùng đã nhập
+      if (newUser.password && newUser.password === newUser.confirmPassword) {
+        userPayload.password = newUser.password;
+      } else if (newUser.password && newUser.password !== newUser.confirmPassword) {
+        Swal.fire("Lỗi", "Mật khẩu xác nhận không khớp.", "error");
+        return;
+      }
+      
+      // Thêm console.log ở đây để debug
+      console.log("Editing user:", editingUser);
+      console.log("User ID:", editingUser.id);
+      console.log("Payload:", userPayload);
+      
+    
+      
+      // Chỉ gửi password nếu người dùng đã nhập
+      if (newUser.password && newUser.password === newUser.confirmPassword) {
+        userPayload.password = newUser.password;
+      } else if (newUser.password && newUser.password !== newUser.confirmPassword) {
+        Swal.fire("Lỗi", "Mật khẩu xác nhận không khớp.", "error");
+        return;
+      }
+      // Thêm console.log ở đây để debug
+      console.log("Editing user:", editingUser);
+      console.log("User ID:", editingUser.id);
+      console.log("Payload:", userPayload);
+
+      
+      const response = await usersAPI.editUser(editingUser.userId, userPayload);
+      
+      if (response.status >= 200 && response.status < 300) {
+        Swal.fire("Thành công!", "Thông tin thành viên đã được cập nhật.", "success");
+        fetchUsers();
+        setShowAddUserModal(false);
+        setEditingUser(null);
+        setNewUser({
+          userName: "",
+          fullName: "",
+          email: "",
+          password: "",
+          confirmPassword: "",
+          phone: "",
+          address: "",
+          roleId: 2,
+        });
+      } else {
+        throw new Error("Update failed");
+      }
+    } catch (error) {
+      Swal.fire("Lỗi!", "Không thể cập nhật thông tin thành viên.", "error");
+      console.error("Error updating user:", error);
+    }
+  };
+
+
+
+
+
   const getOrderCount = (userId) => {
     return orders.filter((order) => order.userId === userId).length;
   };
@@ -185,6 +263,7 @@ const Customers = () => {
       console.error("Error adding user:", error);
     }
   };
+  
 
   return (
     <div className="p-6 bg-gray-100 min-h-screen">
@@ -239,7 +318,9 @@ const Customers = () => {
         {showAddUserModal && (
           <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex justify-center items-center">
             <div className="bg-white p-6 rounded-lg shadow-lg w-96">
-              <h2 className="text-2xl font-bold mb-4">Thêm thành viên</h2>
+            <h2 className="text-2xl font-bold mb-4">
+              {editingUser ? "Cập nhật thành viên" : "Thêm thành viên"}
+            </h2>         
               <input
                 type="text"
                 placeholder="Tên tài khoản"
@@ -322,9 +403,9 @@ const Customers = () => {
                 </button>
                 <button
                   className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-                  onClick={handleAddUser}
+                  onClick={editingUser ? handleUpdateUser : handleAddUser}
                 >
-                  Thêm
+                  {editingUser ? "Cập nhật" : "Thêm"}
                 </button>
               </div>
             </div>
