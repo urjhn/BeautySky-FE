@@ -65,69 +65,104 @@ const ProfileForm = ({ initialValues, onFinish }) => {
             layout="vertical"
             initialValues={initialValues}
             onFinish={onFinish}
+            className="bg-white p-6 rounded-lg shadow-md space-y-4"
           >
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-6">
               <Form.Item
-                label="Tên tài khoản"
+                label={
+                  <span className="font-medium text-gray-700">
+                    Tên tài khoản
+                  </span>
+                }
                 name="userName"
                 rules={[
                   { required: true, message: "Vui lòng nhập tên tài khoản!" },
                 ]}
               >
-                <Input className="rounded-md border-gray-300" />
+                <Input className="rounded-md border-gray-300 focus:ring-[#6BBCFE]" />
               </Form.Item>
+
               <Form.Item
-                label="Tên người dùng"
+                label={
+                  <span className="font-medium text-gray-700">
+                    Tên người dùng
+                  </span>
+                }
                 name="fullName"
                 rules={[
                   { required: true, message: "Vui lòng nhập tên người dùng!" },
                 ]}
               >
-                <Input className="rounded-md border-gray-300" />
+                <Input className="rounded-md border-gray-300 focus:ring-[#6BBCFE]" />
               </Form.Item>
             </div>
 
             <Form.Item
-              label="Email"
+              label={<span className="font-medium text-gray-700">Email</span>}
               name="email"
               rules={[
                 { required: true, message: "Vui lòng nhập email!" },
                 { type: "email", message: "Email không hợp lệ!" },
               ]}
             >
-              <Input className="rounded-md border-gray-300" />
+              <Input className="rounded-md border-gray-300 focus:ring-[#6BBCFE]" />
             </Form.Item>
 
             <Form.Item
-              label="Địa chỉ"
+              label={<span className="font-medium text-gray-700">Địa chỉ</span>}
               name="address"
               rules={[{ required: true, message: "Vui lòng nhập địa chỉ!" }]}
             >
-              <Input className="rounded-md border-gray-300" />
+              <Input className="rounded-md border-gray-300 focus:ring-[#6BBCFE]" />
             </Form.Item>
 
             <Form.Item
-              label="Số điện thoại"
+              label={
+                <span className="font-medium text-gray-700">Số điện thoại</span>
+              }
               name="phone"
               rules={[
                 { required: true, message: "Vui lòng nhập số điện thoại!" },
               ]}
             >
-              <Input className="rounded-md border-gray-300" />
+              <Input className="rounded-md border-gray-300 focus:ring-[#6BBCFE]" />
             </Form.Item>
 
-            <div className="border-t border-gray-300 pt-4 mt-4">
-              <Title level={4} className="text-gray-600">
+            {/* Đổi mật khẩu */}
+            <div className="border-t border-gray-300 pt-6">
+              <Title level={4} className="text-[#0272cd] font-semibold">
                 Đổi mật khẩu
               </Title>
-              <Form.Item label="Mật khẩu hiện tại" name="currentPassword">
-                <Input.Password className="rounded-md border-gray-300" />
-              </Form.Item>
-              <Form.Item label="Mật khẩu mới" name="newPassword">
-                <Input.Password className="rounded-md border-gray-300" />
-              </Form.Item>
+              <div className="grid grid-cols-2 gap-6">
+                <Form.Item
+                  label={
+                    <span className="font-medium text-gray-700">
+                      Mật khẩu hiện tại
+                    </span>
+                  }
+                  name="currentPassword"
+                >
+                  <Input.Password className="rounded-md border-gray-300 focus:ring-[#6BBCFE]" />
+                </Form.Item>
+
+                <Form.Item
+                  label={
+                    <span className="font-medium text-gray-700">
+                      Mật khẩu mới
+                    </span>
+                  }
+                  name="newPassword"
+                >
+                  <Input.Password className="rounded-md border-gray-300 focus:ring-[#6BBCFE]" />
+                </Form.Item>
+              </div>
+
               <Form.Item
-                label="Xác nhận mật khẩu mới"
+                label={
+                  <span className="font-medium text-gray-700">
+                    Xác nhận mật khẩu mới
+                  </span>
+                }
                 name="confirmNewPassword"
                 dependencies={["newPassword"]}
                 hasFeedback
@@ -143,18 +178,22 @@ const ProfileForm = ({ initialValues, onFinish }) => {
                   }),
                 ]}
               >
-                <Input.Password className="rounded-md border-gray-300" />
+                <Input.Password className="rounded-md border-gray-300 focus:ring-[#6BBCFE]" />
               </Form.Item>
             </div>
 
-            <div className="flex justify-end gap-3 mt-4">
-              <Button onClick={handleCancelClick} className="border-gray-400">
+            {/* Nút hành động */}
+            <div className="flex justify-end gap-4 mt-6">
+              <Button
+                onClick={handleCancelClick}
+                className="border-gray-400 px-6 py-2 text-gray-600 hover:bg-gray-200 transition-all rounded-lg"
+              >
                 Hủy
               </Button>
               <Button
                 type="primary"
                 htmlType="submit"
-                className="bg-[#6BBCFE] hover:bg-[#0272cd] transition-all"
+                className="bg-[#6BBCFE] hover:bg-[#0272cd] text-white px-6 py-2 font-semibold rounded-lg transition-all shadow-md"
               >
                 Lưu thay đổi
               </Button>
