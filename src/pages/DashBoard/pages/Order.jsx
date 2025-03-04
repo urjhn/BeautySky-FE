@@ -9,9 +9,10 @@ import { formatCurrency } from "../../../utils/formatCurrency";
 import { useOrdersContext } from "../../../context/OrdersContext";
 import { useUsersContext } from "../../../context/UserContext";
 import orderAPI from "../../../services/order";
+import Swal from "sweetalert2";
 
 const Order = () => {
-  const { orders, fetchOrders } = useOrdersContext();
+  const { orders, setOrders, fetchOrders } = useOrdersContext();
   const { users, fetchUsers } = useUsersContext();
   const [currentPage, setCurrentPage] = useState(1);
   const ordersPerPage = 5;
@@ -31,13 +32,28 @@ const Order = () => {
 
   const handleApproveOrder = async (orderId) => {
     try {
-      // Gọi API cập nhật trạng thái đơn hàng thành "Completed"
       await orderAPI.editOrder(orderId, { status: "Completed" });
 
-      // Sau khi cập nhật, tải lại danh sách đơn hàng để hiển thị thay đổi
-      fetchOrders();
+      setOrders((prevOrders) =>
+        prevOrders.map((order) =>
+          order.orderId === orderId ? { ...order, status: "Completed" } : order
+        )
+      );
+
+      Swal.fire({
+        icon: "success",
+        title: "Duyệt đơn hàng thành công!",
+        text: `Đơn hàng ${orderId} đã được hoàn tất.`,
+        confirmButtonColor: "#3085d6",
+      });
     } catch (error) {
       console.error(`Lỗi khi cập nhật đơn hàng ${orderId}:`, error);
+      Swal.fire({
+        icon: "error",
+        title: "Lỗi!",
+        text: "Đã xảy ra lỗi khi duyệt đơn hàng.",
+        confirmButtonColor: "#d33",
+      });
     }
   };
 
@@ -48,7 +64,11 @@ const Order = () => {
       );
 
       if (pendingOrders.length === 0) {
-        alert("Không có đơn hàng nào cần duyệt.");
+        Swal.fire({
+          icon: "info",
+          title: "Không có đơn hàng cần duyệt!",
+          text: "Tất cả đơn hàng đã được xử lý.",
+        });
         return;
       }
 
@@ -58,10 +78,26 @@ const Order = () => {
         )
       );
 
-      console.log("Tất cả đơn hàng Pending đã được duyệt.");
-      fetchOrders(); // Tải lại danh sách đơn hàng sau khi duyệt
+      setOrders((prevOrders) =>
+        prevOrders.map((order) =>
+          order.status === "Pending" ? { ...order, status: "Completed" } : order
+        )
+      );
+
+      Swal.fire({
+        icon: "success",
+        title: "Duyệt tất cả thành công!",
+        text: "Tất cả đơn hàng đang chờ đã được hoàn tất.",
+        confirmButtonColor: "#3085d6",
+      });
     } catch (error) {
       console.error("Lỗi khi duyệt tất cả đơn hàng:", error);
+      Swal.fire({
+        icon: "error",
+        title: "Lỗi!",
+        text: "Đã xảy ra lỗi khi duyệt tất cả đơn hàng.",
+        confirmButtonColor: "#d33",
+      });
     }
   };
 
