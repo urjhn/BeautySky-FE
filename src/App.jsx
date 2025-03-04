@@ -66,7 +66,7 @@ const App = () => (
       <Route
         index
         element={
-          <ProtectedRoute requiredRole={(2, 3)}>
+          <ProtectedRoute requiredRole={[2, 3]}>
             <Dashboard />
           </ProtectedRoute>
         }
