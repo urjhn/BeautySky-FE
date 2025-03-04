@@ -39,14 +39,6 @@ const Products = () => {
     ingredient: "",
     categoryId: 0,
     skinTypeId: 0,
-    // productsImages: [
-    //   {
-    //     productsImageId: 0,
-    //     imageDescription: "",
-    //     imageUrl: "",
-    //     productId: 0,
-    //   },
-    // ],
   });
   const [showAddModal, setShowAddModal] = React.useState(false);
   const [sortOrder, setSortOrder] = React.useState(null);
@@ -352,14 +344,6 @@ const ProductForm = ({
     overflowY: "auto", // Enable vertical scrolling
     padding: "16px", // Add padding for better readability
   };
-
-  // const normFile = (e) => {
-  //   if (Array.isArray(e)) {
-  //     return e;
-  //   }
-  //   return e?.fileList;
-  // };
-
   return (
     <Form form={form} layout="vertical" onFinish={onFinish}>
       <h2 className="text-xl font-semibold mb-4">
@@ -460,23 +444,6 @@ const ProductForm = ({
         <Form.Item label="Thành phần" name="ingredient">
           <TextArea rows={2} />
         </Form.Item>
-        {/* <Form.Item
-          label="Hình ảnh sản phẩm"
-          name="productsImages"
-          valuePropName="fileList"
-          getValueFromEvent={normFile}
-        >
-          <Upload
-            listType="picture-card"
-            beforeUpload={() => false} // Không tải lên ngay mà lưu vào state
-            multiple
-          >
-            <div>
-              <PlusOutlined />
-              <div style={{ marginTop: 8 }}>Tải lên</div>
-            </div>
-          </Upload>
-        </Form.Item> */}
       </div>
       <Form.Item style={{ textAlign: "right" }}>
         <Space>
