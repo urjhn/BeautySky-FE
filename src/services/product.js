@@ -16,8 +16,7 @@ const productApi = {
   },
   editProduct: async (id, payload) => {
     return await axiosInstance.put(
-      `${endPoint}/UpdateProductById/${id}`,
-      payload
+      `${endPoint}/${id}`,payload
     );
   },
   deleteProduct: async (id) => {
