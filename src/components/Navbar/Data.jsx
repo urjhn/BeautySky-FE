@@ -1,10 +1,9 @@
 import { AiFillHome, AiOutlineInfoCircle } from "react-icons/ai";
 import {
-  FaProductHunt,
+  FaBoxOpen,
   FaBlogger,
-  FaPhone,
-  FaQuestion,
-  FaTachometerAlt,
+  FaPhoneAlt,
+  FaQuestionCircle,
 } from "react-icons/fa";
 
 export const NavbarMenu = [
@@ -12,54 +11,36 @@ export const NavbarMenu = [
     id: 1,
     title: "Trang chính",
     link: "/#",
-    icon: <AiFillHome />,
+    icon: <AiFillHome className="text-xl text-blue-600" />,
   },
   {
     id: 2,
     title: "Giới thiệu",
     link: "/aboutus",
-    icon: <AiOutlineInfoCircle />,
+    icon: <AiOutlineInfoCircle className="text-xl text-green-600" />,
   },
   {
     id: 3,
     title: "Sản phẩm",
     link: "/product",
-    icon: <FaProductHunt />,
+    icon: <FaBoxOpen className="text-xl text-orange-600" />,
   },
   {
     id: 4,
     title: "Blogs",
     link: "/blog",
-    icon: <FaBlogger />,
+    icon: <FaBlogger className="text-xl text-red-600" />,
   },
   {
     id: 5,
     title: "Liên lạc",
     link: "/contact",
-    icon: <FaPhone />,
+    icon: <FaPhoneAlt className="text-xl text-purple-600" />,
   },
   {
     id: 6,
     title: "Test Skin Type",
     link: "/quizz",
-    icon: <FaQuestion />,
+    icon: <FaQuestionCircle className="text-xl text-pink-600" />,
   },
 ];
-
-// export const skinTypeOptions = [
-//   { value: "All", label: "Tất cả" },
-//   { value: "Oily_Skin", label: "Da dầu" },
-//   { value: "Dry_Skin", label: "Da khô" },
-//   { value: "Normal_Skin", label: "Da thường" },
-//   { value: "Combination_Skin", label: "Da hỗn hợp" }
-// ];
-
-// export const categoryOptions = [
-//   { value: "All", label: "Tất cả" },
-//   { value: "Makeup_Remover", label: "Tẩy trang" },
-//   { value: "Cleanser", label: "Sữa rửa mặt" },
-//   { value: "Toner", label: "Toner" },
-//   { value: "Serum", label: "Serum" },
-//   { value: "Acne_Treatment", label: "Kem trị mụn" },
-//   { value: "Sunscreen", label: "Kem chống nắng" }
-// ];
