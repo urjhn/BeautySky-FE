@@ -7,17 +7,18 @@ const CartContext = createContext();
 
 export const CartProvider = ({ children }) => {
   const [cartItems, setCartItems] = useState([]);
-  const { user } = useAuth(); // Lấy user từ AuthContext
+  const { user } = useAuth();
   const { fetchOrders } = useOrdersContext();
 
-  // 🛒 Lấy giỏ hàng từ API khi user thay đổi (đăng nhập, đăng xuất)
+  // 🛒 Lấy giỏ hàng từ API hoặc localStorage khi user thay đổi
   useEffect(() => {
     const fetchCart = async () => {
       if (user) {
         try {
           const response = await orderAPI.getAll();
           const userOrders = response.data.find(
-            (order) => order.userId === user.userId
+            (order) =>
+              order.userId === user.userId && order.status === "Pending"
           );
 
           if (userOrders) {
@@ -27,19 +28,29 @@ export const CartProvider = ({ children }) => {
               price: item.unitPrice,
             }));
             setCartItems(mappedCart);
+          } else {
+            const savedCart =
+              JSON.parse(localStorage.getItem("cartItems")) || [];
+            setCartItems(savedCart);
           }
         } catch (error) {
           console.error("Error fetching cart:", error);
         }
       } else {
-        setCartItems([]); // Xóa giỏ hàng khi đăng xuất
+        setCartItems([]);
+        localStorage.removeItem("cartItems");
       }
     };
 
     fetchCart();
-  }, [user]); // Tự động fetch khi user thay đổi
+  }, [user]);
 
-  // 🛒 Cập nhật giỏ hàng lên API
+  // 🌍 Lưu giỏ hàng vào localStorage khi thay đổi
+  useEffect(() => {
+    localStorage.setItem("cartItems", JSON.stringify(cartItems));
+  }, [cartItems]);
+
+  // 🛒 Đồng bộ giỏ hàng với API
   const syncCartWithAPI = async (updatedCart) => {
     if (!user) return;
 
@@ -65,7 +76,7 @@ export const CartProvider = ({ children }) => {
 
     try {
       await orderAPI.createOrder(orderData);
-      fetchOrders(); // Refresh đơn hàng
+      fetchOrders();
     } catch (error) {
       console.error("Error syncing cart with API:", error);
     }
@@ -102,15 +113,17 @@ export const CartProvider = ({ children }) => {
 
   // 🔄 Cập nhật số lượng sản phẩm
   const updateQuantity = (id, quantity) => {
-    setCartItems((prevItems) =>
-      prevItems.map((item) =>
+    setCartItems((prevItems) => {
+      const updatedCart = prevItems.map((item) =>
         item.id === id ? { ...item, quantity: Math.max(1, quantity) } : item
-      )
-    );
-    syncCartWithAPI(cartItems);
+      );
+
+      syncCartWithAPI(updatedCart);
+      return updatedCart;
+    });
   };
 
-  // Calculate the total price of all items in the cart
+  // 🛒 Tính tổng giá trị giỏ hàng
   const totalPrice =
     cartItems.reduce((acc, item) => acc + item.price * item.quantity, 0) || 0;
 
@@ -129,5 +142,5 @@ export const CartProvider = ({ children }) => {
   );
 };
 
-// Custom hook to access cart data
+// Custom hook để dùng CartContext
 export const useCart = () => useContext(CartContext);
