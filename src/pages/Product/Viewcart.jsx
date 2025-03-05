@@ -7,7 +7,13 @@ import orderApi from "../../services/order";
 import Navbar from "../../components/Navbar/Navbar";
 import Footer from "../../components/Footer/Footer";
 import { motion } from "framer-motion";
-import { FaTrash, FaPlus, FaMinus, FaArrowRight, FaShoppingCart } from "react-icons/fa";
+import {
+  FaTrash,
+  FaPlus,
+  FaMinus,
+  FaArrowRight,
+  FaShoppingCart,
+} from "react-icons/fa";
 import { CreditCardIcon, BanknotesIcon } from "@heroicons/react/24/solid";
 import { formatCurrency } from "../../utils/formatCurrency";
 
@@ -20,7 +26,13 @@ const initialPromotions = [
 
 const Viewcart = () => {
   const navigate = useNavigate();
-  const { cartItems, setCartItems, removeFromCart, updateQuantity, totalPrice } = useCart();
+  const {
+    cartItems,
+    setCartItems,
+    removeFromCart,
+    updateQuantity,
+    totalPrice,
+  } = useCart();
   const { orders, fetchOrders } = useOrdersContext();
   const [products, setProducts] = useState([]);
   const [errorMessage, setErrorMessage] = useState("");
@@ -29,16 +41,20 @@ const Viewcart = () => {
   const [selectedVoucher, setSelectedVoucher] = useState(null);
   const [paymentMethod, setPaymentMethod] = useState("VNPay");
   const [points, setPoints] = useState(0);
-  
+
   // Form data for checkout
   const [formData, setFormData] = useState(() => {
-    const savedData = JSON.parse(localStorage.getItem("checkoutData") || "null");
-    return savedData || {
-      name: "",
-      email: "",
-      phone: "",
-      address: "",
-    };
+    const savedData = JSON.parse(
+      localStorage.getItem("checkoutData") || "null"
+    );
+    return (
+      savedData || {
+        name: "",
+        email: "",
+        phone: "",
+        address: "",
+      }
+    );
   });
 
   // Fetch points on mount
@@ -100,11 +116,16 @@ const Viewcart = () => {
       return;
     }
     setShowCheckout(true);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const handleProceedToPayment = () => {
-    if (!formData.name || !formData.email || !formData.phone || !formData.address) {
+    if (
+      !formData.name ||
+      !formData.email ||
+      !formData.phone ||
+      !formData.address
+    ) {
       setErrorMessage("❌ Vui lòng nhập đầy đủ thông tin trước khi tiếp tục.");
       setTimeout(() => setErrorMessage(""), 3000);
       return;
@@ -136,7 +157,9 @@ const Viewcart = () => {
       <Navbar cartCount={cartItems.length} />
       <div className="min-h-screen bg-gray-50 flex flex-col items-center py-10 px-4">
         <h1 className="text-3xl font-bold text-gray-800 mb-6">
-          {showCheckout ? "Thanh toán đơn hàng" : "Chi tiết giỏ hàng và thanh toán"}
+          {showCheckout
+            ? "Thanh toán đơn hàng"
+            : "Chi tiết giỏ hàng và thanh toán"}
         </h1>
 
         {errorMessage && (
@@ -149,8 +172,12 @@ const Viewcart = () => {
           {cartItems.length === 0 && (
             <div className="flex flex-col items-center justify-center py-16 text-center">
               <FaShoppingCart className="text-6xl text-gray-300 mb-4" />
-              <h2 className="text-2xl font-semibold text-gray-600 mb-2">Giỏ hàng của bạn đang trống</h2>
-              <p className="text-gray-500 mb-6">Có vẻ như bạn chưa thêm sản phẩm nào vào giỏ hàng.</p>
+              <h2 className="text-2xl font-semibold text-gray-600 mb-2">
+                Giỏ hàng của bạn đang trống
+              </h2>
+              <p className="text-gray-500 mb-6">
+                Có vẻ như bạn chưa thêm sản phẩm nào vào giỏ hàng.
+              </p>
               <Link
                 to="/product"
                 className="bg-[#6bbcfe] text-white px-6 py-3 rounded-lg hover:bg-blue-600 shadow-md transform hover:scale-105 transition duration-300 flex items-center gap-2"
@@ -170,7 +197,9 @@ const Viewcart = () => {
                   </h2>
                   <div className="space-y-4">
                     <div>
-                      <label className="block text-gray-700 mb-1">Họ và tên</label>
+                      <label className="block text-gray-700 mb-1">
+                        Họ và tên
+                      </label>
                       <input
                         type="text"
                         name="name"
@@ -194,7 +223,9 @@ const Viewcart = () => {
                       />
                     </div>
                     <div>
-                      <label className="block text-gray-700 mb-1">Số điện thoại</label>
+                      <label className="block text-gray-700 mb-1">
+                        Số điện thoại
+                      </label>
                       <input
                         type="tel"
                         name="phone"
@@ -206,7 +237,9 @@ const Viewcart = () => {
                       />
                     </div>
                     <div>
-                      <label className="block text-gray-700 mb-1">Địa chỉ giao hàng</label>
+                      <label className="block text-gray-700 mb-1">
+                        Địa chỉ giao hàng
+                      </label>
                       <textarea
                         name="address"
                         placeholder="Địa chỉ giao hàng"
@@ -284,7 +317,9 @@ const Viewcart = () => {
                   <div className="bg-gray-100 p-4 rounded-lg">
                     <div className="max-h-96 overflow-y-auto space-y-3 mb-4">
                       {cartItems.map((item) => {
-                        const product = products.find((p) => p.productId === item.id) || {};
+                        const product =
+                          products.find((p) => p.productId === item.id) || {};
+
                         return (
                           <div
                             key={item.id}
@@ -292,21 +327,60 @@ const Viewcart = () => {
                           >
                             <div className="flex items-center">
                               <img
-                                src={product.productsImages?.[0]?.imageUrl || "placeholder.jpg"}
+                                src={
+                                  product.productsImages?.[0]?.imageUrl ||
+                                  "placeholder.jpg"
+                                }
                                 alt={product.productName || "Sản phẩm"}
                                 className="w-12 h-12 object-cover rounded"
                               />
                               <div className="ml-3">
-                                <p className="font-medium">{product.productName || "Tên sản phẩm"}</p>
-                                <p className="text-sm text-gray-500">SL: {item.quantity}</p>
+                                <p className="font-medium">
+                                  {product.productName || "Tên sản phẩm"}
+                                </p>
+                                <p className="text-sm text-gray-500">
+                                  SL: {item.quantity}
+                                </p>
+                                <div className="flex items-center mt-1">
+                                  <button
+                                    className="px-2 py-1 text-sm bg-gray-300 rounded hover:bg-gray-400"
+                                    onClick={() =>
+                                      updateQuantity(item.id, item.quantity - 1)
+                                    }
+                                    disabled={item.quantity <= 1}
+                                  >
+                                    -
+                                  </button>
+                                  <span className="mx-2">{item.quantity}</span>
+                                  <button
+                                    className="px-2 py-1 text-sm bg-gray-300 rounded hover:bg-gray-400"
+                                    onClick={() =>
+                                      updateQuantity(item.id, item.quantity + 1)
+                                    }
+                                  >
+                                    +
+                                  </button>
+                                </div>
                               </div>
                             </div>
-                            <span>{formatCurrency((item.price * item.quantity).toFixed(2))}</span>
+                            <div className="flex items-center space-x-2">
+                              <span>
+                                {formatCurrency(
+                                  (item.price * item.quantity).toFixed(2)
+                                )}
+                              </span>
+                              <button
+                                className="text-red-500 hover:text-red-700"
+                                onClick={() => removeFromCart(item.id)}
+                              >
+                                ❌
+                              </button>
+                            </div>
                           </div>
                         );
                       })}
                     </div>
-                    
+
                     <div className="space-y-2 border-t pt-3">
                       <div className="flex justify-between">
                         <span>Tổng tiền sản phẩm:</span>
@@ -315,7 +389,12 @@ const Viewcart = () => {
                       {selectedVoucher && (
                         <div className="flex justify-between text-green-600">
                           <span>Giảm giá ({selectedVoucher.name}):</span>
-                          <span>- {formatCurrency((totalPrice * selectedVoucher.discount) / 100)}</span>
+                          <span>
+                            -{" "}
+                            {formatCurrency(
+                              (totalPrice * selectedVoucher.discount) / 100
+                            )}
+                          </span>
                         </div>
                       )}
                       <div className="flex justify-between">
@@ -324,7 +403,9 @@ const Viewcart = () => {
                       </div>
                       <div className="flex justify-between font-bold text-lg border-t pt-2 mt-2">
                         <span>Tổng thanh toán:</span>
-                        <span className="text-red-500">{formatCurrency(discountedPrice)}</span>
+                        <span className="text-red-500">
+                          {formatCurrency(discountedPrice)}
+                        </span>
                       </div>
                     </div>
                   </div>

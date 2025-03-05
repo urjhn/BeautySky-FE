@@ -22,16 +22,14 @@ export const CartProvider = ({ children }) => {
 
   // Remove a product from the cart
   const removeFromCart = (id) => {
-    setCartItems((prevCart) => prevCart.filter((item) => item.id !== id));
+    setCartItems((prevItems) => prevItems.filter((item) => item.id !== id));
   };
 
   // Update the quantity of a product in the cart
-  const updateQuantity = (id, delta) => {
-    setCartItems((prevCart) =>
-      prevCart.map((item) =>
-        item.id === id
-          ? { ...item, quantity: Math.max(1, item.quantity + delta) }
-          : item
+  const updateQuantity = (id, quantity) => {
+    setCartItems((prevItems) =>
+      prevItems.map((item) =>
+        item.id === id ? { ...item, quantity: Math.max(1, quantity) } : item
       )
     );
   };
