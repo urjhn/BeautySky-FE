@@ -120,7 +120,7 @@ const Viewcart = () => {
         paymentMethod,
       })
     );
-    navigate("/checkoutprocess");
+    navigate("/paymentsuccess");
   };
 
   const discountedPrice = selectedVoucher
@@ -136,7 +136,7 @@ const Viewcart = () => {
       <Navbar cartCount={cartItems.length} />
       <div className="min-h-screen bg-gray-50 flex flex-col items-center py-10 px-4">
         <h1 className="text-3xl font-bold text-gray-800 mb-6">
-          {showCheckout ? "Thanh toán đơn hàng" : "Giỏ hàng của bạn"}
+          {showCheckout ? "Thanh toán đơn hàng" : "Chi tiết giỏ hàng và thanh toán"}
         </h1>
 
         {errorMessage && (
@@ -145,7 +145,7 @@ const Viewcart = () => {
           </div>
         )}
 
-        <div className="w-full max-w-4xl bg-white shadow-xl rounded-xl p-6">
+        <div className="w-full max-w-7xl bg-white shadow-xl rounded-xl p-6">
           {cartItems.length === 0 && (
             <div className="flex flex-col items-center justify-center py-16 text-center">
               <FaShoppingCart className="text-6xl text-gray-300 mb-4" />
@@ -282,7 +282,7 @@ const Viewcart = () => {
                     Tóm tắt đơn hàng
                   </h2>
                   <div className="bg-gray-100 p-4 rounded-lg">
-                    <div className="max-h-64 overflow-y-auto space-y-3 mb-4">
+                    <div className="max-h-96 overflow-y-auto space-y-3 mb-4">
                       {cartItems.map((item) => {
                         const product = products.find((p) => p.productId === item.id) || {};
                         return (
@@ -347,7 +347,7 @@ const Viewcart = () => {
                       : "bg-gray-300 text-gray-500 opacity-50 cursor-not-allowed"
                   }`}
                 >
-                  Tiếp tục thanh toán <FaArrowRight />
+                  Thanh toán <FaArrowRight />
                 </button>
               </div>
             </>
