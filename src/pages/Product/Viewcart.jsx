@@ -163,7 +163,64 @@ const Viewcart = () => {
           {cartItems.length > 0 && (
             <>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-               
+                {/* Checkout form */}
+                <div className="space-y-6">
+                  <h2 className="text-xl font-semibold text-gray-700 border-b pb-2">
+                    Thông tin thanh toán
+                  </h2>
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-gray-700 mb-1">Họ và tên</label>
+                      <input
+                        type="text"
+                        name="name"
+                        placeholder="Họ và tên"
+                        required
+                        className="p-3 border rounded-lg w-full focus:ring-2 focus:ring-blue-500"
+                        value={formData.name}
+                        onChange={handleInputChange}
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-gray-700 mb-1">Email</label>
+                      <input
+                        type="email"
+                        name="email"
+                        placeholder="Địa chỉ Email"
+                        required
+                        className="p-3 border rounded-lg w-full focus:ring-2 focus:ring-blue-500"
+                        value={formData.email}
+                        onChange={handleInputChange}
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-gray-700 mb-1">Số điện thoại</label>
+                      <input
+                        type="tel"
+                        name="phone"
+                        placeholder="Số điện thoại"
+                        required
+                        className="p-3 border rounded-lg w-full focus:ring-2 focus:ring-blue-500"
+                        value={formData.phone}
+                        onChange={handleInputChange}
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-gray-700 mb-1">Địa chỉ giao hàng</label>
+                      <textarea
+                        name="address"
+                        placeholder="Địa chỉ giao hàng"
+                        required
+                        className="p-3 border rounded-lg w-full focus:ring-2 focus:ring-blue-500 min-h-20"
+                        value={formData.address}
+                        onChange={handleInputChange}
+                      />
+                    </div>
+                  </div>
+
+                 
+                </div>
+
                 {/* Order summary */}
                 <div>
                   <h2 className="text-xl font-semibold text-gray-700 border-b pb-2 mb-4">
