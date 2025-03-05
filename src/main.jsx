@@ -11,6 +11,7 @@ import { OrdersProvider } from "./context/OrdersContext.jsx";
 import { ThemeProvider } from "./pages/DashBoard/context/ThemeContext.jsx";
 import { BlogsProvider } from "./context/BlogsContext.jsx";
 import { AuthProvider } from "./context/AuthContext.jsx";
+import { QuizProvider } from "./context/QuizContext.jsx";
 
 const root = createRoot(document.getElementById("root"));
 
@@ -23,15 +24,17 @@ root.render(
         <CartProvider>
           <UsersProvider>
             <DataProvider>
-              <ReviewProvider>
-                <ThemeProvider>
-                  <NewsProvider>
-                    <BlogsProvider>
-                      <App />
-                    </BlogsProvider>
-                  </NewsProvider>
-                </ThemeProvider>
-              </ReviewProvider>
+              <QuizProvider>
+                <ReviewProvider>
+                  <ThemeProvider>
+                    <NewsProvider>
+                      <BlogsProvider>
+                        <App />
+                      </BlogsProvider>
+                    </NewsProvider>
+                  </ThemeProvider>
+                </ReviewProvider>
+              </QuizProvider>
             </DataProvider>
           </UsersProvider>
         </CartProvider>
