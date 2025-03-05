@@ -75,8 +75,9 @@ const DashboardEvents = () => {
           : [...prev, response.data]
       );
              
-   
-
+      // Fetch news data
+      fetchNews(response);
+      
       // Reset form sau khi lưu thành công
       setForm({
         id: null,
