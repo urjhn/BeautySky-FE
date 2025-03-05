@@ -19,10 +19,10 @@ root.render(
     {" "}
     {/* Chỉ có 1 Router ở đây */}
     <AuthProvider>
-      <CartProvider>
-        <UsersProvider>
-          <DataProvider>
-            <OrdersProvider>
+      <OrdersProvider>
+        <CartProvider>
+          <UsersProvider>
+            <DataProvider>
               <ReviewProvider>
                 <ThemeProvider>
                   <NewsProvider>
@@ -32,10 +32,10 @@ root.render(
                   </NewsProvider>
                 </ThemeProvider>
               </ReviewProvider>
-            </OrdersProvider>
-          </DataProvider>
-        </UsersProvider>
-      </CartProvider>
+            </DataProvider>
+          </UsersProvider>
+        </CartProvider>
+      </OrdersProvider>
     </AuthProvider>
   </Router>
 );
