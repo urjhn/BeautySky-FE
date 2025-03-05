@@ -113,8 +113,19 @@ const Products = () => {
       ),
     [currentPage, filteredProducts]
   );
-
   const handleDelete = async (productId) => {
+    console.log("Đang xóa với ID:", productId);
+
+
+     if (!productId) {
+          Swal.fire({
+            title: "Lỗi!",
+            text: "Không tìm thấy ID sản phẩm",
+            icon: "error"
+          });
+          return;
+        }
+
     const result = await Swal.fire({
       title: "Bạn có chắc chắn muốn xóa?",
       text: "Hành động này không thể hoàn tác!",
@@ -122,7 +133,7 @@ const Products = () => {
       showCancelButton: true,
       confirmButtonColor: "#d33",
       cancelButtonColor: "#3085d6",
-      confirmButtonText: "OK",
+      confirmButtonText: "Xóa",
       cancelButtonText: "Hủy",
     });
 
@@ -450,6 +461,7 @@ const ProductForm = ({
         ingredient: item.ingredient,
         categoryId: item.categoryId,
         skinTypeId: item.skinTypeId,
+        productsImages: item.productsImages,
       });
     } else {
       // Reset form when no item is provided (for add mode)
