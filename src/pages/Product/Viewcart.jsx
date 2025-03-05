@@ -6,14 +6,8 @@ import productApi from "../../services/product";
 import orderApi from "../../services/order";
 import Navbar from "../../components/Navbar/Navbar";
 import Footer from "../../components/Footer/Footer";
-import { motion } from "framer-motion";
-import {
-  FaTrash,
-  FaPlus,
-  FaMinus,
-  FaArrowRight,
-  FaShoppingCart,
-} from "react-icons/fa";
+import { useAuth } from "../../context/AuthContext";
+import { FaArrowRight, FaShoppingCart } from "react-icons/fa";
 import { CreditCardIcon, BanknotesIcon } from "@heroicons/react/24/solid";
 import { formatCurrency } from "../../utils/formatCurrency";
 
@@ -25,6 +19,8 @@ const initialPromotions = [
 ];
 
 const Viewcart = () => {
+  const { user } = useAuth(); // Kiểm tra user đã đăng nhập chưa
+  const isLoggedIn = !!user; // Chuyển user thành boolean
   const navigate = useNavigate();
   const {
     cartItems,
@@ -196,59 +192,100 @@ const Viewcart = () => {
                     Thông tin thanh toán
                   </h2>
                   <div className="space-y-4">
-                    <div>
-                      <label className="block text-gray-700 mb-1">
-                        Họ và tên
-                      </label>
-                      <input
-                        type="text"
-                        name="name"
-                        placeholder="Họ và tên"
-                        required
-                        className="p-3 border rounded-lg w-full focus:ring-2 focus:ring-blue-500"
-                        value={formData.name}
-                        onChange={handleInputChange}
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-gray-700 mb-1">Email</label>
-                      <input
-                        type="email"
-                        name="email"
-                        placeholder="Địa chỉ Email"
-                        required
-                        className="p-3 border rounded-lg w-full focus:ring-2 focus:ring-blue-500"
-                        value={formData.email}
-                        onChange={handleInputChange}
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-gray-700 mb-1">
-                        Số điện thoại
-                      </label>
-                      <input
-                        type="tel"
-                        name="phone"
-                        placeholder="Số điện thoại"
-                        required
-                        className="p-3 border rounded-lg w-full focus:ring-2 focus:ring-blue-500"
-                        value={formData.phone}
-                        onChange={handleInputChange}
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-gray-700 mb-1">
-                        Địa chỉ giao hàng
-                      </label>
-                      <textarea
-                        name="address"
-                        placeholder="Địa chỉ giao hàng"
-                        required
-                        className="p-3 border rounded-lg w-full focus:ring-2 focus:ring-blue-500 min-h-20"
-                        value={formData.address}
-                        onChange={handleInputChange}
-                      />
-                    </div>
+                    {isLoggedIn ? (
+                      <>
+                        <div>
+                          <label className="block text-gray-700 mb-1">
+                            Họ và tên
+                          </label>
+                          <p className="p-3 border rounded-lg w-full bg-gray-100">
+                            {user.name}
+                          </p>
+                        </div>
+                        <div>
+                          <label className="block text-gray-700 mb-1">
+                            Email
+                          </label>
+                          <p className="p-3 border rounded-lg w-full bg-gray-100">
+                            {user.email}
+                          </p>
+                        </div>
+                        <div>
+                          <label className="block text-gray-700 mb-1">
+                            Số điện thoại
+                          </label>
+                          <p className="p-3 border rounded-lg w-full bg-gray-100">
+                            {user.phone}
+                          </p>
+                        </div>
+                        <div>
+                          <label className="block text-gray-700 mb-1">
+                            Địa chỉ giao hàng
+                          </label>
+                          <p className="p-3 border rounded-lg w-full bg-gray-100">
+                            {user.address || "Chưa có địa chỉ"}
+                          </p>
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <div>
+                          <label className="block text-gray-700 mb-1">
+                            Họ và tên
+                          </label>
+                          <input
+                            type="text"
+                            name="name"
+                            placeholder="Họ và tên"
+                            required
+                            className="p-3 border rounded-lg w-full focus:ring-2 focus:ring-blue-500"
+                            value={formData.name}
+                            onChange={handleInputChange}
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-gray-700 mb-1">
+                            Email
+                          </label>
+                          <input
+                            type="email"
+                            name="email"
+                            placeholder="Địa chỉ Email"
+                            required
+                            className="p-3 border rounded-lg w-full focus:ring-2 focus:ring-blue-500"
+                            value={formData.email}
+                            onChange={handleInputChange}
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-gray-700 mb-1">
+                            Số điện thoại
+                          </label>
+                          <input
+                            type="tel"
+                            name="phone"
+                            placeholder="Số điện thoại"
+                            required
+                            className="p-3 border rounded-lg w-full focus:ring-2 focus:ring-blue-500"
+                            value={formData.phone}
+                            onChange={handleInputChange}
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-gray-700 mb-1">
+                            Địa chỉ giao hàng
+                          </label>
+                          <textarea
+                            name="address"
+                            placeholder="Địa chỉ giao hàng"
+                            required
+                            className="p-3 border rounded-lg w-full focus:ring-2 focus:ring-blue-500 min-h-20"
+                            value={formData.address}
+                            onChange={handleInputChange}
+                          />
+                        </div>
+                      </>
+                    )}
                   </div>
 
                   {/* Voucher Selection */}

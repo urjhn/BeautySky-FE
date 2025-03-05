@@ -1,6 +1,7 @@
 import { createContext, useState, useEffect, useContext } from "react";
 import authAPI from "../services/auth";
 import { useNavigate } from "react-router-dom";
+import { jwtDecode } from "jwt-decode"; // Import jwt-decode
 
 const AuthContext = createContext();
 
@@ -12,7 +13,22 @@ export const AuthProvider = ({ children }) => {
     const token = localStorage.getItem("token");
     const roleId = localStorage.getItem("roleId");
     if (token && roleId) {
-      setUser({ token, roleId: parseInt(roleId, 10) });
+      try {
+        const decoded = jwtDecode(token); // Giải mã token
+        setUser({
+          userId: decoded.userId,
+          name: decoded.name,
+          email: decoded.email,
+          role: decoded.role,
+          token: token, // Giữ token để gọi API
+          roleId: parseInt(roleId, 10),
+          phone: decoded.phone,
+          address: decoded.address,
+        });
+      } catch (err) {
+        console.error("Invalid token:", err);
+        logout(); // Xóa token nếu lỗi
+      }
     }
   }, []);
 
@@ -21,7 +37,17 @@ export const AuthProvider = ({ children }) => {
       const data = await authAPI.login(userData, navigate);
       const roleId = parseInt(data.roleId, 10);
 
-      setUser({ token: data.token, roleId });
+      const decoded = jwtDecode(data.token);
+      setUser({
+        userId: decoded.userId,
+        name: decoded.name,
+        email: decoded.email,
+        role: decoded.role,
+        token: data.token,
+        roleId: roleId,
+        phone: decoded.phone,
+        address: decoded.address,
+      });
       localStorage.setItem("token", data.token);
       localStorage.setItem("roleId", roleId);
     } catch (err) {
