@@ -82,8 +82,15 @@ export const AuthProvider = ({ children }) => {
     navigate("/login");
   };
 
+  // Cập nhật profile
+  const updateAuthUser = (userData) => {
+    setUser((prevUser) => ({ ...prevUser, ...userData }));
+  };
+
   return (
-    <AuthContext.Provider value={{ user, login, register, logout }}>
+    <AuthContext.Provider
+      value={{ user, login, register, logout, updateAuthUser }}
+    >
       {children}
     </AuthContext.Provider>
   );
