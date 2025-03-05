@@ -160,11 +160,11 @@ const QuizPage = () => {
             <div>
               {/* Thêm bảng ô đếm số câu hỏi đã trả lời */}
               {renderProgressTracker()}
-              
+
               <div className="mt-4 mb-6 text-sm text-gray-500">
                 Đã trả lời: {answers.length}/{questions.length} câu hỏi
               </div>
-              
+
               <h2 className="text-2xl font-semibold text-blue-600">
                 {questions[currentQuestion].question}
               </h2>

@@ -4,22 +4,22 @@ const endPoint = "/Categories";
 const categoryApi = {
   getAll: async () => {
     const response = await axiosInstance.get(endPoint);
-    return response.data;
+    return response;
   },
   createCategory: async (payload) => {
     const response = await axiosInstance.post(endPoint, payload);
-    return response.data;
+    return response;
   },
   deleteCategory: async (id) => {
     await axiosInstance.delete(`${endPoint}/${id}`);
   },
   editCategory: async (id, payload) => {
     const response = await axiosInstance.put(`${endPoint}/${id}`, payload);
-    return response.data;
+    return response;
   },
   searchCategory: async (id) => {
     const response = await axiosInstance.get(`${endPoint}/${id}`);
-    return response.data;
+    return response;
   },
 };
 
