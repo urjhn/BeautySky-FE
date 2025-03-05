@@ -55,6 +55,18 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  // Cập nhật lại PROFILE nhưng không bị đăng xuất ra ngoài
+  const AuthProvider = ({ children }) => {
+    const [user, setUser] = useState(null);
+
+    // Make sure setUser is included in the context value
+    return (
+      <AuthContext.Provider value={{ user, setUser, login, logout }}>
+        {children}
+      </AuthContext.Provider>
+    );
+  };
+
   const register = async (userData) => {
     try {
       await authAPI.register(userData, navigate);

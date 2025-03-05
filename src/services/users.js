@@ -14,8 +14,9 @@ const usersAPI = {
     }
     return response;
   },
-  editUser: async (id, payload) => {
-    return await axiosInstance.put(`${endPoint}/${id}`, payload);
+  editUser: async (id, userData) => {
+    console.log(`Making PUT request to ${endPoint}/${id} with:`, userData);
+    return await axiosInstance.put(`${endPoint}/${id}`, userData);
   },
   deleteUser: async (id) => {
     // Remove payload parameter as DELETE requests typically don't need a body
