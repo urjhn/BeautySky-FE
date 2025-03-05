@@ -1,27 +1,60 @@
 import React, { useState, useEffect } from "react";
-import { Form, Input, Button, Typography, Card } from "antd";
+import { Form, Input, Button, Typography, Card, message } from "antd";
 import { useAuth } from "../../context/AuthContext";
 import { useUsersContext } from "../../context/UserContext";
 
 const { Title } = Typography;
 
-const ProfileForm = ({ onFinish }) => {
-  const { user: authUser } = useAuth(); // Lấy thông tin user đăng nhập
-  const { users, fetchUsers } = useUsersContext(); // Lấy danh sách users từ API
+const ProfileForm = () => {
+  const { user: authUser, setUser } = useAuth(); // Get logged in user and setUser function from auth context
+  const { users, fetchUsers, updateUser } = useUsersContext();
   const [currentUser, setCurrentUser] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
   const [form] = Form.useForm();
+  const [isLoading, setIsLoading] = useState(true); // Add loading state
 
+  // Debug authentication data
   useEffect(() => {
-    fetchUsers(); // Gọi API để cập nhật danh sách users
+    console.log("Auth user data:", authUser);
+  }, [authUser]);
+
+  // Debug users data
+  useEffect(() => {
+    console.log("Users array:", users);
+  }, [users]);
+
+  // Fetch users when component mounts
+  useEffect(() => {
+    const loadUsers = async () => {
+      setIsLoading(true);
+      await fetchUsers();
+      setIsLoading(false);
+    };
+    loadUsers();
   }, []);
 
+  // Find the current user when auth or users data changes
   useEffect(() => {
-    if (authUser && users.length > 0) {
-      const foundUser = users.find((u) => u.email === authUser.email); // Tìm user dựa trên email
-      setCurrentUser(foundUser || null);
+    if (authUser && users && users.length > 0) {
+      // Case-insensitive email matching for more robust comparison
+      const foundUser = users.find(
+        (u) => u.email && u.email.toLowerCase() === authUser.email?.toLowerCase()
+      );
+      
+      console.log("Found user by email match:", foundUser);
+      
+      if (foundUser) {
+        setCurrentUser(foundUser);
+        // Also update form with current values if we're in edit mode
+        if (isEditing) {
+          form.setFieldsValue(foundUser);
+        }
+      } else {
+        console.error("User not found in users list. Auth email:", authUser.email);
+        message.error("Không tìm thấy thông tin người dùng");
+      }
     }
-  }, [authUser, users]);
+  }, [authUser, users, form, isEditing]);
 
   const handleEditClick = () => setIsEditing(true);
   const handleCancelClick = () => {
@@ -29,8 +62,89 @@ const ProfileForm = ({ onFinish }) => {
     form.resetFields();
   };
 
+  useEffect(() => {
+    if (currentUser) {
+      console.log("Current user object:", currentUser);
+      console.log("User ID type:", typeof currentUser.id);
+      console.log("User ID value:", currentUser.id);
+    }
+  }, [currentUser]);
+
+  const handleFormSubmit = async (values) => {
+    try {
+      // Check if currentUser and ID exist
+      if (!currentUser || !currentUser.userId) { // CHANGED: id → userId
+        console.error("Error: User ID is missing", currentUser);
+        return; // Exit early to avoid the API call
+      }
+    
+      console.log("Form values being submitted:", values);
+      console.log("Current user ID:", currentUser.userId); // CHANGED: id → userId
+      
+      // Ensure the ID is properly formatted
+      const userId = currentUser.userId; // CHANGED: id → userId
+      
+      // Create a properly structured payload
+      const payload = {
+        ...values,
+        isActive: currentUser.isActive,
+        roleId: currentUser.roleId,
+        userId: userId // CHANGED: id → userId (if backend expects userId)
+        // or
+        // id: userId // if backend still expects id in the payload
+      };
+      
+      console.log("Structured payload being sent:", payload);
+      
+      const result = await updateUser(userId, payload);
+      console.log("Update result:", result);
+      
+      if (result && result.success) {
+        // 1. Update local component state
+        setCurrentUser({...currentUser, ...values});
+        
+        // 2. Update the auth context with new user data
+        // This keeps the user logged in but with updated info
+        setUser({
+          ...authUser,
+          ...values  // Apply the changed fields to the auth user
+        });
+        
+        // 3. Show success message
+        message.success("Thông tin đã được cập nhật thành công!");
+        
+        // 4. Exit edit mode
+        setIsEditing(false);
+      } else {
+        message.error("Cập nhật thông tin thất bại. Vui lòng thử lại.");
+      }
+    } catch (error) {
+      console.error("Error in form submission:", error);
+      if (error.response) {
+        console.error("Response data:", error.response.data);
+        console.error("Response status:", error.response.status);
+      }
+    }
+  };
+
+  // Updated loading display
+  if (isLoading) {
+    return <p className="text-center text-gray-500">Đang tải thông tin người dùng...</p>;
+  }
+
   if (!currentUser) {
-    return <p className="text-center text-gray-500">Đang tải thông tin...</p>;
+    return (
+      <div className="text-center text-gray-500">
+        <p>Không thể tải thông tin người dùng. Vui lòng thử lại sau.</p>
+        <Button 
+          type="primary" 
+          onClick={fetchUsers}
+          className="mt-4"
+        >
+          Tải lại
+        </Button>
+      </div>
+    );
   }
 
   return (
@@ -84,7 +198,7 @@ const ProfileForm = ({ onFinish }) => {
             form={form}
             layout="vertical"
             initialValues={currentUser}
-            onFinish={onFinish}
+            onFinish={handleFormSubmit}
             className="bg-white p-6 rounded-lg shadow-md space-y-4"
           >
             <div className="grid grid-cols-2 gap-6">

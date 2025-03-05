@@ -335,7 +335,7 @@ const Viewcart = () => {
                           checked={paymentMethod === "CreditCard"}
                           onChange={() => setPaymentMethod("CreditCard")}
                         />
-                        <span className="text-gray-800">Thẻ tín dụng</span>
+                        <span className="text-gray-800">Shipcode</span>
                       </label>
                     </div>
                   </div>
