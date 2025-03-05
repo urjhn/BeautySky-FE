@@ -1,7 +1,6 @@
 import { createRoot } from "react-dom/client";
 import { BrowserRouter as Router } from "react-router-dom"; // Vẫn giữ Router ở đây
 import { CartProvider } from "./context/CartContext.jsx";
-import { AuthProvider } from "./context/AuthContext";
 import "./index.css";
 import App from "./App.jsx";
 import { DataProvider } from "./context/DataContext.jsx";
@@ -11,6 +10,7 @@ import { UsersProvider } from "./context/UserContext.jsx";
 import { OrdersProvider } from "./context/OrdersContext.jsx";
 import { ThemeProvider } from "./pages/DashBoard/context/ThemeContext.jsx";
 import { BlogsProvider } from "./context/BlogsContext.jsx";
+import { AuthProvider } from "./context/AuthContext.jsx";
 
 const root = createRoot(document.getElementById("root"));
 
