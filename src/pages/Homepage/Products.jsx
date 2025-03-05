@@ -31,10 +31,10 @@ const Products = () => {
     dots: true,
     arrows: true,
     infinite: true,
-    speed: 500,
+    speed: 100,
     slidesToScroll: 1,
     autoplay: true,
-    autoplaySpeed: 3000,
+    autoplaySpeed: 4000,
     cssEase: "linear",
     pauseOnHover: true,
     pauseOnFocus: true,
@@ -87,6 +87,9 @@ const Products = () => {
           >
             Dòng sản phẩm
           </h1>
+          <p data-aos="fade-up" className="text-xs text-gray-400 py-4">
+            Hãy chăm sóc da cùng Sky Beauty®
+          </p>
         </div>
 
         {/* Slider Section */}
