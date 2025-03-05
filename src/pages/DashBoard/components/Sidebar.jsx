@@ -28,7 +28,7 @@ const Sidebar = () => {
           />
           <NavItem
             icon={<FaChartBar />}
-            title="Dashboard"
+            title="Doanh thu"
             to="/dashboardlayout/dashboard"
           />
           <NavItem icon={<FaHome />} title="Cửa hàng" to="/" />
