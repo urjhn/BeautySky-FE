@@ -218,7 +218,62 @@ const Viewcart = () => {
                     </div>
                   </div>
 
-                 
+                  {/* Voucher Selection */}
+                  <div className="mt-6">
+                    <h2 className="text-xl font-semibold text-gray-700 mb-4">
+                      Chọn voucher
+                    </h2>
+                    <select
+                      className="p-3 border rounded-lg w-full bg-white shadow-sm cursor-pointer"
+                      onChange={(e) => {
+                        const voucher = initialPromotions.find(
+                          (v) => v.id === parseInt(e.target.value)
+                        );
+                        setSelectedVoucher(voucher);
+                      }}
+                    >
+                      <option value="">Không áp dụng</option>
+                      {initialPromotions.map((promo) => (
+                        <option key={promo.id} value={promo.id}>
+                          {promo.name} - Giảm {promo.discount}%
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Payment Method Selection */}
+                  <div className="mt-6">
+                    <h2 className="text-xl font-semibold text-gray-700 mb-4">
+                      Phương thức thanh toán
+                    </h2>
+                    <div className="grid grid-cols-2 gap-4">
+                      <label className="flex items-center space-x-2 p-4 border rounded-lg cursor-pointer bg-gray-100 hover:bg-blue-100 transition shadow-md">
+                        <BanknotesIcon className="h-6 w-6 text-green-500" />
+                        <input
+                          type="radio"
+                          value="VNPay"
+                          checked={paymentMethod === "VNPay"}
+                          onChange={() => setPaymentMethod("VNPay")}
+                        />
+                        <span className="text-gray-800">VNPay</span>
+                      </label>
+                      <label className="flex items-center space-x-2 p-4 border rounded-lg cursor-pointer bg-gray-100 hover:bg-blue-100 transition shadow-md">
+                        <CreditCardIcon className="h-6 w-6 text-blue-500" />
+                        <input
+                          type="radio"
+                          value="CreditCard"
+                          checked={paymentMethod === "CreditCard"}
+                          onChange={() => setPaymentMethod("CreditCard")}
+                        />
+                        <span className="text-gray-800">Thẻ tín dụng</span>
+                      </label>
+                    </div>
+                  </div>
+
+                  {/* Points Display */}
+                  <div className="mt-6 p-4 bg-yellow-500 text-white text-center rounded-lg shadow-md">
+                    Bạn có {points} điểm tích lũy!
+                  </div>
                 </div>
 
                 {/* Order summary */}
