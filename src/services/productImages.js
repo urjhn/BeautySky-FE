@@ -7,7 +7,7 @@ const productImagesAPI = {
     const response = await axiosInstance.get(endPoint);
     return response;
   },
-  getImageByProductId: async (payload) => {
+  getImageByProductId: async (id, payload) => {
     const response = await axiosInstance.get(`${endPoint}/${id}`, payload);
     if (response.status >= 200 && response.status < 300) {
       return response;
@@ -22,8 +22,8 @@ const productImagesAPI = {
   },
   uploadproductImages: async (file) => {
     const formData = new FormData();
-    formData.append("file", file); // Gửi file lên API
-
+    formData.append("file", file);
+  
     try {
       const response = await axiosInstance.post(
         `${endPoint}/UploadFile`,
@@ -34,17 +34,13 @@ const productImagesAPI = {
           },
         }
       );
-
-      if (response.status >= 200 && response.status < 300) {
-        return response.data.imageUrl; // Trả về đường dẫn ảnh từ response
-      }
-
-      return null; // Nếu upload thất bại
+      
+      return response.data.imageUrl;
     } catch (error) {
-      console.error("Error uploading image:", error);
-      return null;
+      console.error("Error uploading image:", error.response?.data || error.message);
+      throw error; // Ném lại để cho phép người gọi xử lý
     }
-  },
+  }
 };
 
 export default productImagesAPI;

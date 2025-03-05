@@ -45,11 +45,19 @@ const Products = () => {
   });
 
   const handleImageUpload = async (file, fileList, setFieldValue) => {
-    const isImage = file.type.startsWith("image/");
-    if (!isImage) {
-      message.error("Chỉ cho phép tải lên hình ảnh");
+    const maxSize = 5 * 1024 * 1024; // 5MB
+    if (file.size > maxSize) {
+      message.error("Kích thước file không được vượt quá 5MB");
       return false;
     }
+  
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif'];
+    if (!allowedTypes.includes(file.type)) {
+      message.error("Chỉ cho phép tải lên file ảnh JPG, PNG, GIF");
+      return false;
+    }
+
+
 
     const newImage = file.originFileObj;
     const reader = new FileReader();
@@ -65,18 +73,24 @@ const Products = () => {
       ]);
 
       // Upload ảnh lên backend và lấy URL từ Amazon S3
-      const uploadedImageUrl = await productImagesAPI.uploadproductImages(
-        newImage
-      );
-
-      if (uploadedImageUrl) {
-        // Cập nhật lại state với URL thực tế từ backend
-        setFieldValue("productsImages", [
-          ...(fileList || []),
-          { imageUrl: uploadedImageUrl }, // URL thực từ S3
-        ]);
-      } else {
-        message.error("Tải ảnh lên thất bại!");
+      try {
+        const uploadedImageUrl = await productImagesAPI.uploadproductImages(
+          newImage
+        );
+    
+        if (uploadedImageUrl) {
+          // Cập nhật UI
+          setFieldValue("productsImages", [
+            ...(fileList || []),
+            { imageUrl: uploadedImageUrl }
+          ]);
+        } else {
+          message.error("Tải ảnh lên thất bại. Vui lòng thử lại.");
+          return false;
+        }
+      } catch (error) {
+        message.error(`Lỗi tải ảnh: ${error.message}`);
+        return false;
       }
     };
 
@@ -432,6 +446,16 @@ const Products = () => {
           skinTypes={skinTypes}
           categories={categories}
           loading={loading}
+            rules={[
+              { 
+                required: true, 
+                message: "Vui lòng nhập tên sản phẩm!" 
+              },
+              {
+                max: 100, 
+                message: "Tên sản phẩm không được vượt quá 100 ký tự"
+              }
+            ]}
         />
       </Modal>
     </div>
@@ -558,17 +582,72 @@ const ProductForm = ({
 
       {/* Image Upload Field */}
       <Form.Item label="Hình ảnh">
-        <Upload
-          beforeUpload={(file, fileList) =>
-            handleImageUpload(file, fileList, form.setFieldsValue)
-          }
-          fileList={form.getFieldValue("productsImages")}
-          showUploadList={false}
+            <Upload
+          name="productsImages"
+          listType="picture-card"
+          className="image-uploader"
+          showUploadList={true}
+          beforeUpload={(file) => {
+            const maxSize = 5 * 1024 * 1024; // 5MB
+            const isImage = ['image/jpeg', 'image/png', 'image/gif'].includes(file.type);
+            
+            if (!isImage) {
+              message.error('Bạn chỉ được tải lên file ảnh JPG/PNG/GIF!');
+              return false;
+            }
+            
+            if (file.size > maxSize) {
+              message.error('Kích thước file không được vượt quá 5MB!');
+              return false;
+            }
+            
+            return true;
+          }}
+          customRequest={async ({ file, onSuccess, onError }) => {
+            try {
+              const uploadedImageUrl = await productImagesAPI.uploadproductImages(file);
+              
+              if (uploadedImageUrl) {
+                onSuccess({ url: uploadedImageUrl });
+              } else {
+                onError(new Error('Upload failed'));
+              }
+            } catch (error) {
+              onError(error);
+            }
+          }}
+          onChange={(info) => {
+            const { status } = info.file;
+            
+            if (status === 'done') {
+              message.success(`Tải ảnh ${info.file.name} thành công`);
+              // Cập nhật form values
+              form.setFieldsValue({
+                productsImages: info.fileList.map(file => ({
+                  imageUrl: file.response?.url || file.url
+                }))
+              });
+            } else if (status === 'error') {
+              message.error(`Tải ảnh ${info.file.name} thất bại`);
+            }
+          }}
         >
-          <Button icon={<PlusOutlined />} disabled={loading}>
-            Tải lên hình ảnh
-          </Button>
+          <div>
+            <PlusOutlined />
+            <div style={{ marginTop: 8 }}>Tải ảnh lên</div>
+          </div>
         </Upload>
+
+        <Form.Item label="Hình ảnh đã tải lên">
+  {form.getFieldValue('productsImages')?.map((image, index) => (
+    <img 
+      key={index} 
+      src={image.imageUrl} 
+      alt={`Product ${index + 1}`} 
+      style={{ width: '100px', height: '100px', objectFit: 'cover', margin: '0 10px 10px 0' }} 
+    />
+  ))}
+</Form.Item>
       </Form.Item>
 
       <Form.Item style={{ textAlign: "right" }}>

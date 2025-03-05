@@ -74,6 +74,8 @@ const DashboardEvents = () => {
           ? prev.map((item) => (item.id === form.id ? response.data : item))
           : [...prev, response.data]
       );
+             
+   
 
       // Reset form sau khi lưu thành công
       setForm({
@@ -88,6 +90,44 @@ const DashboardEvents = () => {
     } catch (error) {
       console.error("Lỗi khi lưu sự kiện:", error);
       Swal.fire("Lỗi!", "Không thể lưu sự kiện. Vui lòng thử lại!", "error");
+    }
+  };
+
+
+  const handleEditEvents = async (eventId) => {
+    try {
+      // Đảm bảo eventId hợp lệ
+      if (!eventId) {
+        throw new Error("Missing event ID");
+      }
+      
+      // Lấy thông tin sự kiện cần sửa
+      const eventToEdit = news.find(e => e.id === eventId);
+      if (!eventToEdit) {
+        throw new Error("Event not found");
+      }
+      
+      // Format the dates to remove the time portion
+    setForm({
+      id: eventToEdit.id,
+      title: eventToEdit.title,
+      content: eventToEdit.content,
+      imageUrl: eventToEdit.imageUrl,
+      createDate: eventToEdit.createDate,
+      startDate: eventToEdit.startDate ? eventToEdit.startDate.split('T')[0] : "",
+      endDate: eventToEdit.endDate ? eventToEdit.endDate.split('T')[0] : "",
+    });
+      
+      // Không cần gọi API ở đây vì form sẽ được hiển thị với dữ liệu sự kiện
+      // và khi người dùng nhấn nút "Cập nhật sự kiện", handleSubmit sẽ được gọi
+      
+    } catch (error) {
+      console.error("Error preparing event edit:", error);
+      Swal.fire({
+        icon: "error",
+        title: "Lỗi!",
+        text: "Không thể tải thông tin sự kiện, vui lòng thử lại",
+      });
     }
   };
 
@@ -193,7 +233,7 @@ const DashboardEvents = () => {
                 </td>
                 <td className="p-3 space-x-2">
                   <button
-                    onClick={() => setForm(event)}
+                    onClick={() => handleEditEvents(event.id)}
                     className="text-yellow-600 hover:text-yellow-700"
                   >
                     ✏️ Sửa
