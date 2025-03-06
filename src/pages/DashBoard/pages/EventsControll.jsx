@@ -44,22 +44,30 @@ const DashboardEvents = () => {
       Swal.fire("Lỗi!", "Vui lòng điền đầy đủ thông tin sự kiện.", "error");
       return;
     }
-    
+
     try {
       let response;
       if (form.id) {
         // Update existing event
-        response = await newsAPI.editNews(form.id, { /* data */ });
+        response = await newsAPI.editNews(form.id, {
+          /* data */
+        });
       } else {
         // Create new event
-        response = await newsAPI.createNews({ /* data */ });
+        response = await newsAPI.createNews({
+          /* data */
+        });
       }
       console.log(response);
     } catch (error) {
       console.error("Lỗi khi lưu sự kiện:", error);
       if (error.response) {
         console.log("Lỗi từ server:", error.response.data);
-        Swal.fire("Lỗi!", `Không thể lưu sự kiện: ${error.response.data.message}`, "error");
+        Swal.fire(
+          "Lỗi!",
+          `Không thể lưu sự kiện: ${error.response.data.message}`,
+          "error"
+        );
       } else if (error.request) {
         Swal.fire("Lỗi!", "Không nhận được phản hồi từ máy chủ.", "error");
       } else {
@@ -73,22 +81,23 @@ const DashboardEvents = () => {
       if (!eventId) {
         throw new Error("Missing event ID");
       }
-      
-      const eventToEdit = news.find(e => e.id === eventId);
+
+      const eventToEdit = news.find((e) => e.id === eventId);
       if (!eventToEdit) {
         throw new Error("Event not found");
       }
-      
+
       setForm({
         id: eventToEdit.id,
         title: eventToEdit.title,
         content: eventToEdit.content,
         imageUrl: eventToEdit.imageUrl,
         createDate: eventToEdit.createDate,
-        startDate: eventToEdit.startDate ? eventToEdit.startDate.split('T')[0] : "",
-        endDate: eventToEdit.endDate ? eventToEdit.endDate.split('T')[0] : "",
+        startDate: eventToEdit.startDate
+          ? eventToEdit.startDate.split("T")[0]
+          : "",
+        endDate: eventToEdit.endDate ? eventToEdit.endDate.split("T")[0] : "",
       });
-      
     } catch (error) {
       console.error("Error preparing event edit:", error);
       Swal.fire({
@@ -151,11 +160,15 @@ const DashboardEvents = () => {
 
       {/* Form section */}
       <div className="bg-gray-50 p-6 rounded-xl border border-gray-200 mb-8 shadow-md">
-        <h3 className="text-xl font-semibold mb-4 text-gray-700">{form.id ? "Cập nhật sự kiện" : "Thêm sự kiện mới"}</h3>
-        
+        <h3 className="text-xl font-semibold mb-4 text-gray-700">
+          {form.id ? "Cập nhật sự kiện" : "Thêm sự kiện mới"}
+        </h3>
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="space-y-1">
-            <label className="text-sm font-medium text-gray-700">Tiêu đề sự kiện</label>
+            <label className="text-sm font-medium text-gray-700">
+              Tiêu đề sự kiện
+            </label>
             <input
               type="text"
               placeholder="✏️ Nhập tiêu đề"
@@ -164,9 +177,11 @@ const DashboardEvents = () => {
               className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
             />
           </div>
-          
+
           <div className="space-y-1">
-            <label className="text-sm font-medium text-gray-700">Nội dung sự kiện</label>
+            <label className="text-sm font-medium text-gray-700">
+              Nội dung sự kiện
+            </label>
             <input
               type="text"
               placeholder="📄 Nhập nội dung"
@@ -175,9 +190,11 @@ const DashboardEvents = () => {
               className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
             />
           </div>
-          
+
           <div className="space-y-1">
-            <label className="text-sm font-medium text-gray-700">Ngày tạo</label>
+            <label className="text-sm font-medium text-gray-700">
+              Ngày tạo
+            </label>
             <input
               type="date"
               value={form.createDate}
@@ -185,9 +202,11 @@ const DashboardEvents = () => {
               className="w-full p-3 border border-gray-200 rounded-lg bg-gray-100 text-gray-600"
             />
           </div>
-          
+
           <div className="space-y-1">
-            <label className="text-sm font-medium text-gray-700">Ngày bắt đầu</label>
+            <label className="text-sm font-medium text-gray-700">
+              Ngày bắt đầu
+            </label>
             <input
               type="date"
               value={form.startDate}
@@ -197,7 +216,9 @@ const DashboardEvents = () => {
           </div>
 
           <div className="space-y-1">
-            <label className="text-sm font-medium text-gray-700">Ngày kết thúc</label>
+            <label className="text-sm font-medium text-gray-700">
+              Ngày kết thúc
+            </label>
             <input
               type="date"
               value={form.endDate}
@@ -205,9 +226,11 @@ const DashboardEvents = () => {
               className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
             />
           </div>
-          
+
           <div className="space-y-1">
-            <label className="text-sm font-medium text-gray-700">Hình ảnh sự kiện</label>
+            <label className="text-sm font-medium text-gray-700">
+              Hình ảnh sự kiện
+            </label>
             <input
               type="file"
               accept="image/*"
@@ -216,23 +239,25 @@ const DashboardEvents = () => {
             />
           </div>
         </div>
-        
+
         {form.imageUrl && (
           <div className="mt-6 flex flex-col items-center">
             <p className="mb-2 text-gray-700 font-medium">Ảnh xem trước:</p>
             <div className="relative group">
-              <img 
-                src={form.imageUrl} 
-                alt="Preview" 
-                className="w-48 h-48 object-cover rounded-lg shadow-lg border-2 border-blue-100" 
+              <img
+                src={form.imageUrl}
+                alt="Preview"
+                className="w-48 h-48 object-cover rounded-lg shadow-lg border-2 border-blue-100"
               />
               <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all duration-300 rounded-lg flex items-center justify-center">
-                <span className="text-white opacity-0 group-hover:opacity-100 font-medium">Xem trước</span>
+                <span className="text-white opacity-0 group-hover:opacity-100 font-medium">
+                  Xem trước
+                </span>
               </div>
             </div>
           </div>
         )}
-        
+
         <div className="mt-6 flex space-x-3">
           <button
             onClick={handleSubmit}
@@ -241,7 +266,7 @@ const DashboardEvents = () => {
             <span className="mr-2">{form.id ? "🔄" : "➕"}</span>
             {form.id ? "Cập nhật sự kiện" : "Thêm sự kiện"}
           </button>
-          
+
           {form.id && (
             <button
               onClick={resetForm}
@@ -256,9 +281,11 @@ const DashboardEvents = () => {
       {/* Table section */}
       <div className="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden">
         <div className="p-4 bg-gradient-to-r from-blue-50 to-blue-100 border-b border-blue-200">
-          <h3 className="text-xl font-semibold text-gray-800">Danh sách sự kiện</h3>
+          <h3 className="text-xl font-semibold text-gray-800">
+            Danh sách sự kiện
+          </h3>
         </div>
-        
+
         <div className="overflow-x-auto">
           <table className="w-full border-collapse">
             <thead>
@@ -273,13 +300,19 @@ const DashboardEvents = () => {
             <tbody>
               {currentEvents.length > 0 ? (
                 currentEvents.map((event, index) => (
-                  <tr 
-                    key={event.id} 
-                    className={`border-b hover:bg-blue-50 transition-colors duration-150 ${index % 2 === 0 ? 'bg-gray-50' : 'bg-white'}`}
+                  <tr
+                    key={event.id}
+                    className={`border-b hover:bg-blue-50 transition-colors duration-150 ${
+                      index % 2 === 0 ? "bg-gray-50" : "bg-white"
+                    }`}
                   >
-                    <td className="p-4 font-medium text-gray-800">{event.title}</td>
+                    <td className="p-4 font-medium text-gray-800">
+                      {event.title}
+                    </td>
                     <td className="p-4 text-gray-600">{event.content}</td>
-                    <td className="p-4 text-center text-gray-600">{event.createDate}</td>
+                    <td className="p-4 text-center text-gray-600">
+                      {event.createDate}
+                    </td>
                     <td className="p-4 flex justify-center">
                       <div className="relative group">
                         <img
@@ -308,13 +341,15 @@ const DashboardEvents = () => {
                 ))
               ) : (
                 <tr>
-                  <td colSpan="5" className="p-4 text-center text-gray-500">Chưa có sự kiện nào</td>
+                  <td colSpan="5" className="p-4 text-center text-gray-500">
+                    Chưa có sự kiện nào
+                  </td>
                 </tr>
               )}
             </tbody>
           </table>
         </div>
-        
+
         {totalPages > 1 && (
           <div className="flex justify-between items-center p-4 bg-gray-50 border-t border-gray-200">
             <div className="text-sm text-gray-600">
@@ -324,14 +359,22 @@ const DashboardEvents = () => {
               <button
                 onClick={() => handlePageChange(currentPage - 1)}
                 disabled={currentPage === 1}
-                className={`px-3 py-1 rounded ${currentPage === 1 ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-blue-100 text-blue-700 hover:bg-blue-200'}`}
+                className={`px-3 py-1 rounded ${
+                  currentPage === 1
+                    ? "bg-gray-200 text-gray-400 cursor-not-allowed"
+                    : "bg-blue-100 text-blue-700 hover:bg-blue-200"
+                }`}
               >
                 &laquo; Trước
               </button>
               <button
                 onClick={() => handlePageChange(currentPage + 1)}
                 disabled={currentPage === totalPages}
-                className={`px-3 py-1 rounded ${currentPage === totalPages ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-blue-100 text-blue-700 hover:bg-blue-200'}`}
+                className={`px-3 py-1 rounded ${
+                  currentPage === totalPages
+                    ? "bg-gray-200 text-gray-400 cursor-not-allowed"
+                    : "bg-blue-100 text-blue-700 hover:bg-blue-200"
+                }`}
               >
                 Sau &raquo;
               </button>

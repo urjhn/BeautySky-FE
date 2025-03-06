@@ -1,15 +1,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import {
-  CheckCircleIcon,
-  TruckIcon,
-  EyeIcon,
-  CreditCardIcon,
-  XCircleIcon,
-} from "@heroicons/react/24/solid";
+import { EyeIcon, CreditCardIcon } from "@heroicons/react/24/solid";
 import { useNavigate } from "react-router-dom";
-import Navbar from "../../components/Navbar/Navbar";
-import Footer from "../../components/Footer/Footer";
 import { formatCurrency } from "../../utils/formatCurrency";
 
 const OrderHistory = () => {
@@ -66,104 +58,100 @@ const OrderHistory = () => {
 
   return (
     <>
-      <Navbar />
-      <div className="min-h-screen bg-gradient-to-r from-blue-100 to-purple-200 py-10">
-        <div className="max-w-5xl mx-auto bg-white shadow-xl rounded-xl p-8">
-          <h1 className="text-3xl font-bold text-gray-800 text-center mb-6">
-            🛒 Lịch sử đơn hàng
-          </h1>
+      <div className="max-w-5xl mx-auto bg-white shadow-xl rounded-xl p-8">
+        <h1 className="text-3xl font-bold text-gray-800 text-center mb-6">
+          🛒 Lịch sử đơn hàng
+        </h1>
 
-          <div className="flex justify-center gap-4 mb-6">
-            {["Đã giao hàng", "Đang giao hàng", "Đã hủy"].map((tab) => (
+        <div className="flex justify-center gap-4 mb-6">
+          {["Đã giao hàng", "Đang giao hàng", "Đã hủy"].map((tab) => (
+            <button
+              key={tab}
+              onClick={() => {
+                setSelectedTab(tab);
+                setCurrentPage(1);
+              }}
+              className={`px-4 py-2 rounded-lg font-medium transition ${
+                selectedTab === tab
+                  ? "bg-blue-500 text-white"
+                  : "bg-gray-200 text-gray-700"
+              }`}
+            >
+              {tab}
+            </button>
+          ))}
+        </div>
+
+        <div className="overflow-x-auto">
+          <table className="w-full border-collapse border border-gray-300 rounded-lg overflow-hidden">
+            <thead>
+              <tr className="bg-blue-500 text-white">
+                <th className="p-3 text-left">Mã đơn hàng</th>
+                <th className="p-3 text-left">Ngày đặt</th>
+                <th className="p-3 text-left">Sản phẩm</th>
+                <th className="p-3 text-left">Thanh toán</th>
+                <th className="p-3 text-left">Mã vận chuyển</th>
+                <th className="p-3 text-right">Tổng tiền</th>
+                <th className="p-3 text-center">Hành động</th>
+              </tr>
+            </thead>
+            <tbody>
+              {paginatedOrders.map((order, index) => (
+                <motion.tr
+                  key={index}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4, delay: index * 0.1 }}
+                  className="border-t border-gray-300 hover:bg-gray-50 transition"
+                >
+                  <td className="p-4 font-semibold">{order.orderId}</td>
+                  <td className="p-4">{order.date}</td>
+                  <td className="p-4 text-sm">{order.items.join(", ")}</td>
+                  <td className="p-4 flex items-center">
+                    <CreditCardIcon className="w-5 h-5 text-indigo-500 mr-2" />
+                    {order.payment}
+                  </td>
+                  <td className="p-4 text-gray-600">{order.trackingId}</td>
+                  <td className="p-4 text-right font-semibold">
+                    {formatCurrency(order.total)}
+                  </td>
+                  <td className="p-4 text-center">
+                    <button
+                      onClick={() =>
+                        navigate(
+                          `/orderdetail/${order.orderId.replace("#", "")}`
+                        )
+                      }
+                      className="px-4 py-2 bg-blue-500 text-white rounded-lg shadow hover:bg-blue-600 transition flex items-center"
+                    >
+                      <EyeIcon className="w-5 h-5 mr-1" /> Xem
+                    </button>
+                  </td>
+                </motion.tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="flex justify-center mt-6 gap-2">
+            {[...Array(totalPages)].map((_, i) => (
               <button
-                key={tab}
-                onClick={() => {
-                  setSelectedTab(tab);
-                  setCurrentPage(1);
-                }}
-                className={`px-4 py-2 rounded-lg font-medium transition ${
-                  selectedTab === tab
+                key={i}
+                onClick={() => setCurrentPage(i + 1)}
+                className={`px-3 py-1 rounded-lg ${
+                  currentPage === i + 1
                     ? "bg-blue-500 text-white"
                     : "bg-gray-200 text-gray-700"
                 }`}
               >
-                {tab}
+                {i + 1}
               </button>
             ))}
           </div>
-
-          <div className="overflow-x-auto">
-            <table className="w-full border-collapse border border-gray-300 rounded-lg overflow-hidden">
-              <thead>
-                <tr className="bg-blue-500 text-white">
-                  <th className="p-3 text-left">Mã đơn hàng</th>
-                  <th className="p-3 text-left">Ngày đặt</th>
-                  <th className="p-3 text-left">Sản phẩm</th>
-                  <th className="p-3 text-left">Thanh toán</th>
-                  <th className="p-3 text-left">Mã vận chuyển</th>
-                  <th className="p-3 text-right">Tổng tiền</th>
-                  <th className="p-3 text-center">Hành động</th>
-                </tr>
-              </thead>
-              <tbody>
-                {paginatedOrders.map((order, index) => (
-                  <motion.tr
-                    key={index}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.4, delay: index * 0.1 }}
-                    className="border-t border-gray-300 hover:bg-gray-50 transition"
-                  >
-                    <td className="p-4 font-semibold">{order.orderId}</td>
-                    <td className="p-4">{order.date}</td>
-                    <td className="p-4 text-sm">{order.items.join(", ")}</td>
-                    <td className="p-4 flex items-center">
-                      <CreditCardIcon className="w-5 h-5 text-indigo-500 mr-2" />
-                      {order.payment}
-                    </td>
-                    <td className="p-4 text-gray-600">{order.trackingId}</td>
-                    <td className="p-4 text-right font-semibold">
-                      {formatCurrency(order.total)}
-                    </td>
-                    <td className="p-4 text-center">
-                      <button
-                        onClick={() =>
-                          navigate(
-                            `/orderdetail/${order.orderId.replace("#", "")}`
-                          )
-                        }
-                        className="px-4 py-2 bg-blue-500 text-white rounded-lg shadow hover:bg-blue-600 transition flex items-center"
-                      >
-                        <EyeIcon className="w-5 h-5 mr-1" /> Xem
-                      </button>
-                    </td>
-                  </motion.tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-
-          {/* Pagination */}
-          {totalPages > 1 && (
-            <div className="flex justify-center mt-6 gap-2">
-              {[...Array(totalPages)].map((_, i) => (
-                <button
-                  key={i}
-                  onClick={() => setCurrentPage(i + 1)}
-                  className={`px-3 py-1 rounded-lg ${
-                    currentPage === i + 1
-                      ? "bg-blue-500 text-white"
-                      : "bg-gray-200 text-gray-700"
-                  }`}
-                >
-                  {i + 1}
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
+        )}
       </div>
-      <Footer />
     </>
   );
 };
