@@ -2,8 +2,8 @@ import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useCart } from "../../context/CartContext";
 import { useOrdersContext } from "../../context/OrdersContext";
-import productApi from "../../services/product";
-import orderApi from "../../services/order";
+import productAPI from "../../services/product";
+import orderAPI from "../../services/order";
 import Navbar from "../../components/Navbar/Navbar";
 import Footer from "../../components/Footer/Footer";
 import { useAuth } from "../../context/AuthContext";
@@ -32,8 +32,7 @@ const Viewcart = () => {
   const { orders, fetchOrders } = useOrdersContext();
   const [products, setProducts] = useState([]);
   const [errorMessage, setErrorMessage] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [showCheckout, setShowCheckout] = useState(false);
+  const [showCheckout] = useState(false);
   const [selectedVoucher, setSelectedVoucher] = useState(null);
   const [paymentMethod, setPaymentMethod] = useState("VNPay");
   const [points, setPoints] = useState(0);
@@ -63,56 +62,72 @@ const Viewcart = () => {
   useEffect(() => {
     const fetchCartData = async () => {
       try {
-        const response = await productApi.getAll();
+        const response = await productAPI.getAll();
         setProducts(response.data);
 
-        // Fetch pending order
-        await fetchOrders();
-        const pendingOrder = orders.find((order) => order.status === "Pending");
-        if (pendingOrder) {
-          setCartItems(pendingOrder.items || []);
+        if (user) {
+          await fetchOrders();
+          const pendingOrder = orders.find(
+            (order) =>
+              order.userId === user.userId && order.status === "Pending"
+          );
+
+          if (pendingOrder) {
+            const mappedCart = pendingOrder.orderProducts.map((item) => ({
+              id: item.productId,
+              quantity: item.quantity,
+              price: item.unitPrice,
+            }));
+            setCartItems(mappedCart);
+          } else {
+            // Load from localStorage if no pending order
+            const savedCart =
+              JSON.parse(localStorage.getItem("cartItems")) || [];
+            setCartItems(savedCart);
+          }
+        } else {
+          setCartItems([]);
+          localStorage.removeItem("cartItems");
         }
       } catch (error) {
-        console.error("Lỗi khi lấy dữ liệu:", error);
+        console.error("🚨 Error fetching cart data:", error);
       }
     };
-    fetchCartData();
-  }, [fetchOrders, setCartItems, orders]);
 
-  // Update order in API when cart changes
+    fetchCartData();
+  }, [fetchOrders, setCartItems, orders, user]);
+
+  // 🌍 Sync cart with API when cartItems change
   useEffect(() => {
     const updateOrder = async () => {
-      if (cartItems.length > 0) {
-        try {
-          const pendingOrder = orders.find(
-            (order) => order.status === "Pending"
-          );
-          if (pendingOrder) {
-            await orderApi.editOrder(pendingOrder.orderId, {
-              items: cartItems,
-            });
-          }
-        } catch (error) {
-          console.error("Lỗi khi cập nhật giỏ hàng:", error);
+      if (!user || cartItems.length === 0) return;
+
+      try {
+        const pendingOrder = orders.find(
+          (order) => order.userId === user.userId && order.status === "Pending"
+        );
+
+        if (pendingOrder) {
+          await orderAPI.editOrder(pendingOrder.orderId, {
+            orderProducts: cartItems.map((item) => ({
+              productId: item.id,
+              quantity: item.quantity,
+              unitPrice: item.price,
+              totalPrice: item.price * item.quantity,
+            })),
+          });
         }
+      } catch (error) {
+        console.error("🚨 Error updating cart in API:", error);
       }
     };
+
     updateOrder();
-  }, [cartItems, orders]);
+  }, [cartItems, orders, user]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const handleCheckoutClick = () => {
-    if (cartItems.length === 0) {
-      setErrorMessage("❌ Không có sản phẩm để thanh toán.");
-      setTimeout(() => setErrorMessage(""), 3000);
-      return;
-    }
-    setShowCheckout(true);
-    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const handleProceedToPayment = () => {
@@ -144,10 +159,7 @@ const Viewcart = () => {
     ? totalPrice - (totalPrice * selectedVoucher.discount) / 100
     : totalPrice;
 
-  const cartTotal = cartItems
-    .reduce((acc, item) => acc + item.price * item.quantity, 0)
-    .toFixed(2);
-
+  const cartTotal = totalPrice.toFixed(2);
   return (
     <>
       <Navbar cartCount={cartItems.length} />

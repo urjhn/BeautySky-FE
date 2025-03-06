@@ -2,7 +2,7 @@ import axiosInstance from "../../config/axios/axiosInstance";
 
 const endPoint = "/TestSkinType/SubmitQuiz";
 
-const QuizAPI = {
+const resultAPI = {
   createQuiz: async (payload) => {
     const response = await axiosInstance.post(endPoint, payload);
     if (response.status >= 200 && response.status < 300) {
@@ -12,4 +12,4 @@ const QuizAPI = {
   },
 };
 
-export default QuizAPI;
+export default resultAPI;
