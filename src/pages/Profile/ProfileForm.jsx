@@ -1,12 +1,15 @@
+// src/components/ProfileForm.js
+
 import React, { useState, useEffect } from "react";
 import { Form, Input, Button, Typography, Card, message } from "antd";
 import { useAuth } from "../../context/AuthContext";
 import { useUsersContext } from "../../context/UserContext";
+import Swal from "sweetalert2"; // Import SweetAlert
 
 const { Title } = Typography;
 
 const ProfileForm = () => {
-  const { user: authUser, setUser } = useAuth(); // Get logged in user and setUser function from auth context
+  const { user: authUser, setUser, updateAuthUser } = useAuth(); // Get updateAuthUser from auth context
   const { users, fetchUsers, updateUser } = useUsersContext();
   const [currentUser, setCurrentUser] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
@@ -40,9 +43,9 @@ const ProfileForm = () => {
       const foundUser = users.find(
         (u) => u.email && u.email.toLowerCase() === authUser.email?.toLowerCase()
       );
-      
+
       console.log("Found user by email match:", foundUser);
-      
+
       if (foundUser) {
         setCurrentUser(foundUser);
         // Also update form with current values if we're in edit mode
@@ -50,7 +53,10 @@ const ProfileForm = () => {
           form.setFieldsValue(foundUser);
         }
       } else {
-        console.error("User not found in users list. Auth email:", authUser.email);
+        console.error(
+          "User not found in users list. Auth email:",
+          authUser.email
+        );
         message.error("Không tìm thấy thông tin người dùng");
       }
     }
@@ -71,76 +77,108 @@ const ProfileForm = () => {
   }, [currentUser]);
 
   const handleFormSubmit = async (values) => {
-    try {
-      // Check if currentUser and ID exist
-      if (!currentUser || !currentUser.userId) { // CHANGED: id → userId
-        console.error("Error: User ID is missing", currentUser);
-        return; // Exit early to avoid the API call
+    // SweetAlert confirmation
+    Swal.fire({
+      title: "Xác nhận thay đổi?",
+      text: "Bạn có chắc chắn muốn cập nhật thông tin cá nhân?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Đồng ý",
+      cancelButtonText: "Hủy",
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        try {
+          // Check if currentUser and ID exist
+          if (!currentUser || !currentUser.userId) {
+            // CHANGED: id → userId
+            console.error("Error: User ID is missing", currentUser);
+            return; // Exit early to avoid the API call
+          }
+
+          console.log("Form values being submitted:", values);
+          console.log("Current user ID:", currentUser.userId); // CHANGED: id → userId
+
+          // Ensure the ID is properly formatted
+          const userId = currentUser.userId; // CHANGED: id → userId
+
+          // Create a properly structured payload
+          const payload = {
+            ...values,
+            isActive: currentUser.isActive,
+            roleId: currentUser.roleId,
+            userId: userId, // CHANGED: id → userId (if backend expects userId)
+            // or
+            // id: userId // if backend still expects id in the payload
+          };
+
+          console.log("Structured payload being sent:", payload);
+
+          const apiResult = await updateUser(userId, payload); // Gọi API
+
+          if (apiResult && apiResult.success) {
+            const updatedUser = apiResult.data;
+
+            // Update AuthContext
+            updateAuthUser(updatedUser);
+
+            // 1. Update local component state
+            setCurrentUser({ ...currentUser, ...updatedUser });
+
+            // 2. Show success message
+            message.success("Thông tin đã được cập nhật thành công!");
+
+            // 3. Exit edit mode
+            setIsEditing(false);
+
+            // Reload trang sau khi cập nhật thành công
+            window.location.reload(); // Thêm dòng này để reload trang
+
+            // Swal.fire(
+            //   "Cập nhật thành công!",
+            //   "Thông tin cá nhân của bạn đã được cập nhật.",
+            //   "success"
+            // );
+          } else {
+            message.error(
+              "Cập nhật thông tin thất bại. Vui lòng thử lại."
+            );
+            if (apiResult.error) {
+              console.error("Update failed:", apiResult.error);
+              // Hiển thị chi tiết lỗi từ server (nếu có)
+              Swal.fire(
+                "Lỗi!",
+                apiResult.error.message || "Đã có lỗi xảy ra.",
+                "error"
+              );
+            }
+          }
+        } catch (error) {
+          console.error("Error in form submission:", error);
+          if (error.response) {
+            console.error("Response data:", error.response.data);
+            console.error("Response status:", error.response.status);
+          }
+        }
       }
-    
-      console.log("Form values being submitted:", values);
-      console.log("Current user ID:", currentUser.userId); // CHANGED: id → userId
-      
-      // Ensure the ID is properly formatted
-      const userId = currentUser.userId; // CHANGED: id → userId
-      
-      // Create a properly structured payload
-      const payload = {
-        ...values,
-        isActive: currentUser.isActive,
-        roleId: currentUser.roleId,
-        userId: userId // CHANGED: id → userId (if backend expects userId)
-        // or
-        // id: userId // if backend still expects id in the payload
-      };
-      
-      console.log("Structured payload being sent:", payload);
-      
-      const result = await updateUser(userId, payload);
-      console.log("Update result:", result);
-      
-      if (result && result.success) {
-        // 1. Update local component state
-        setCurrentUser({...currentUser, ...values});
-        
-        // 2. Update the auth context with new user data
-        // This keeps the user logged in but with updated info
-        setUser({
-          ...authUser,
-          ...values  // Apply the changed fields to the auth user
-        });
-        
-        // 3. Show success message
-        message.success("Thông tin đã được cập nhật thành công!");
-        
-        // 4. Exit edit mode
-        setIsEditing(false);
-      } else {
-        message.error("Cập nhật thông tin thất bại. Vui lòng thử lại.");
-      }
-    } catch (error) {
-      console.error("Error in form submission:", error);
-      if (error.response) {
-        console.error("Response data:", error.response.data);
-        console.error("Response status:", error.response.status);
-      }
-    }
+    });
   };
 
   // Updated loading display
   if (isLoading) {
-    return <p className="text-center text-gray-500">Đang tải thông tin người dùng...</p>;
+    return (
+      <p className="text-center text-gray-500">
+        Đang tải thông tin người dùng...
+      </p>
+    );
   }
 
   if (!currentUser) {
     return (
       <div className="text-center text-gray-500">
         <p>Không thể tải thông tin người dùng. Vui lòng thử lại sau.</p>
-        <Button 
-          type="primary" 
-          onClick={fetchUsers}
-          className="mt-4"
-        >
+        <Button type="primary" onClick={fetchUsers} className="mt-4">
           Tải lại
         </Button>
       </div>
