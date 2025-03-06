@@ -108,7 +108,20 @@ const Customers = () => {
     });
     setShowAddUserModal(true);
   };
+
+
   const handleDeleteUser = async (userId) => {
+    console.log("Đang xóa người dùng với ID:", userId);
+  
+    if (!userId) {
+      Swal.fire({
+        title: "Lỗi!",
+        text: "Không tìm thấy ID người dùng",
+        icon: "error"
+      });
+      return;
+    }
+  
     try {
       const result = await Swal.fire({
         title: "Bạn có chắc chắn?",
@@ -123,29 +136,35 @@ const Customers = () => {
   
       if (result.isConfirmed) {
         try {
+          // Chi tiết hóa lỗi từ phản hồi
           const response = await usersAPI.deleteUser(userId);
-          
-          if (response && response.status === 200) {
-            await fetchUsers(); // Refresh user list after successful deletion
-            Swal.fire({
-              title: "Đã xóa!",
-              text: "Người dùng đã được xóa thành công.",
-              icon: "success"
-            });
-          } else {
-            throw new Error("Delete failed");
-          }
+          console.log("Phản hồi xóa người dùng:", response);
+  
+          await fetchUsers(); // Tải lại danh sách người dùng
+          Swal.fire({
+            title: "Đã xóa!",
+            text: "Người dùng đã được xóa thành công.",
+            icon: "success"
+          });
         } catch (error) {
-          console.error("Error deleting user:", error);
+          // Chi tiết hóa thông báo lỗi
+          console.error("Chi tiết lỗi:", error.response);
+          
+          const errorMessage = 
+            error.response?.data?.message || 
+            error.response?.data?.title || 
+            "Không thể xóa người dùng. Vui lòng thử lại sau.";
+  
           Swal.fire({
             title: "Lỗi!",
-            text: "Không thể xóa người dùng. Vui lòng thử lại sau.",
-            icon: "error"
+            text: errorMessage,
+            icon: "error",
+            footer: `Mã lỗi: ${error.response?.status || 'Không xác định'}`
           });
         }
       }
     } catch (error) {
-      console.error("Error in delete operation:", error);
+      console.error("Lỗi không mong muốn:", error);
       Swal.fire({
         title: "Lỗi!",
         text: "Đã xảy ra lỗi không mong muốn.",
@@ -153,7 +172,6 @@ const Customers = () => {
       });
     }
   };
-
 
   const handleUpdateUser = async () => {
     if (!editingUser) return;
@@ -428,7 +446,8 @@ const Customers = () => {
                 </tr>
               </thead>
               <tbody>
-                {currentCustomers.map((customer) => {
+              {currentCustomers.map((customer) => {
+                  console.log("Thông tin người dùng:", customer); // Thêm dòng này
                   const { name, color } = getRoleName(customer.roleId);
                   return (
                     <tr key={customer.id} className="border-t">
@@ -463,7 +482,8 @@ const Customers = () => {
                         </button>
                         <button
                           className="text-red-500"
-                          onClick={() => handleDeleteUser(customer.id)}
+                          // Thay đổi từ customer.id sang customer.userId
+                          onClick={() => handleDeleteUser(customer.userId || customer.id)}
                         >
                           <FaTrash />
                         </button>
