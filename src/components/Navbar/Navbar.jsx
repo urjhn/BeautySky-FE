@@ -66,7 +66,7 @@ const Navbar = () => {
         </Menu.Item>
       ) : null}
       <Menu.Item key="profile">
-        <Link to="/profile">Tài khoản của bạn</Link>
+        <Link to="/profilelayout">Tài khoản của bạn</Link>
       </Menu.Item>
       <Menu.Item key="orders">
         <Link to="/historyorder">Quản lý đơn hàng</Link>

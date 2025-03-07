@@ -13,7 +13,7 @@ import Viewcart from "./pages/Product/Viewcart.jsx";
 import Quizz from "./features/quiz/QuizPage.jsx";
 import Error from "./pages/Errors/NotFoundPage.jsx";
 import Blog from "./pages/Blogs/BlogPage.jsx";
-import UserProfile from "./pages/Profile/pages/UserProfilePage.jsx";
+import UserProfile from "./pages/Profile/pages/ProfileForm.jsx";
 import Contact from "./pages/Contact/Contact.jsx";
 import DashboardLayout from "./pages/DashBoard/DashboardLayout.jsx";
 import Dashboard from "./pages/DashBoard/pages/DashBoard.jsx";
@@ -27,10 +27,11 @@ import Promotion from "./pages/DashBoard/pages/Promotion.jsx";
 import RoutineBuilderPage from "./features/skincare-routine/RoutineBuilderPage.jsx";
 import AboutUs from "./pages/AboutUs/AboutUs.jsx";
 import Events from "./pages/DashBoard/pages/EventsControll.jsx";
-import HistoryOrder from "./pages/Profile/pages/OrderPage.jsx";
+import HistoryOrder from "./pages/Orders/ViewHistoryOrder.jsx";
 import OrderDetail from "./pages/Orders/OrderDetail.jsx";
 import ProtectedRoute from "./context/ProtectedRoute.jsx";
 import ProfileAdmin from "./pages/DashBoard/pages/ProfileAdmin.jsx";
+import ProfileLayout from "./pages/Profile/ProfileLayout.jsx";
 
 import Unauthorized from "./pages/Unauthorized/unauthorized.jsx";
 
@@ -52,14 +53,12 @@ const App = () => (
     <Route path="/checkoutprocess" element={<CheckoutProcess />} />
     <Route path="/paymentsuccess" element={<PaymentSuccess />} />
     <Route path="/vieworder" element={<ViewOrder />} />
-    <Route path="/historyorder" element={<HistoryOrder />} />
     <Route path="/orderdetail/:orderId:" element={<OrderDetail />} />
     <Route path="/viewcart" element={<Viewcart />} />
     <Route path="/contact" element={<Contact />} />
     <Route path="/quizz" element={<Quizz />} />
     <Route path="/blog" element={<Blog />} />
     <Route path="*" element={<Error />} />
-    <Route path="/profile" element={<UserProfile />} />
     <Route path="/routine-builder" element={<RoutineBuilderPage />} />
     <Route path="/unauthorized" element={<Unauthorized />} />
     {/* Dashboard Routes (Chỉ Manager và Staff mới truy cập) */}
@@ -91,6 +90,11 @@ const App = () => (
       <Route path="events" element={<Events />} />
       <Route path="settings" element={<Setting />} />
       <Route path="profileadmin" element={<ProfileAdmin />} />
+    </Route>
+    {/*Layout ProfileProfile */}
+    <Route path="/profilelayout" element={<ProfileLayout />}>
+      <Route index element={<UserProfile />} />
+      <Route path="historyorder" element={<HistoryOrder />} />
     </Route>
   </Routes>
 );

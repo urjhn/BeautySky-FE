@@ -32,19 +32,17 @@ const ProfileForm = () => {
 
       if (foundUser) {
         setCurrentUser(foundUser);
-        if (isEditing) {
-          form.setFieldsValue(foundUser);
-        }
+        form.setFieldsValue(foundUser);
       } else {
         message.error("Không tìm thấy thông tin người dùng.");
       }
     }
-  }, [authUser, users, form, isEditing]);
+  }, [authUser, users, form]);
 
   const handleEditClick = () => setIsEditing(true);
   const handleCancelClick = () => {
     setIsEditing(false);
-    form.resetFields();
+    form.setFieldsValue(currentUser);
   };
 
   const handleFormSubmit = async (values) => {
@@ -66,25 +64,18 @@ const ProfileForm = () => {
           }
 
           const userId = currentUser.userId;
-
-          const payload = {
-            ...values,
-            isActive: currentUser.isActive,
-            roleId: currentUser.roleId,
-            userId: userId,
-          };
+          const payload = { ...values, userId };
 
           const apiResult = await updateUser(userId, payload);
 
           if (apiResult && apiResult.success) {
             const updatedUser = apiResult.data;
             updateAuthUser(updatedUser);
-            setCurrentUser({ ...currentUser, ...updatedUser });
-
+            setCurrentUser(updatedUser);
             message.success("Thông tin đã được cập nhật thành công!");
             setIsEditing(false);
           } else {
-            message.error("Cập nhật thông tin thất bại. Vui lòng thử lại.");
+            message.error("Cập nhật thất bại. Vui lòng thử lại.");
           }
         } catch (error) {
           console.error("Error in form submission:", error);
@@ -114,60 +105,21 @@ const ProfileForm = () => {
   }
 
   return (
-    <div className="max-w-3xl mx-auto mt-8">
-      <Title level={3} className="text-center text-[#0272cd] font-semibold">
+    <div className="max-w-4xl mx-auto mt-10">
+      <Title level={3} className="text-center text-[#0272cd] font-bold">
         Thông Tin Cá Nhân
       </Title>
-      <Card className="shadow-lg rounded-xl p-8 border border-gray-200 bg-gradient-to-r from-blue-50 to-white">
-        {!isEditing ? (
-          <div className="text-gray-700 space-y-4 p-6 bg-white rounded-lg shadow-md border border-gray-300">
-            <p className="text-lg font-medium">
-              <strong className="text-[#0272cd]">Tên tài khoản: </strong>
-              {currentUser.userName}
-            </p>
-            <p className="text-lg font-medium">
-              <strong className="text-[#0272cd]">Tên người dùng:</strong>{" "}
-              {currentUser.fullName}
-            </p>
-            <p className="text-lg font-medium">
-              <strong className="text-[#0272cd]">Email:</strong>{" "}
-              {currentUser.email}
-            </p>
-            <p className="text-lg font-medium">
-              <strong className="text-[#0272cd]">Địa chỉ:</strong>{" "}
-              {currentUser.address}
-            </p>
-            <p className="text-lg font-medium">
-              <strong className="text-[#0272cd]">Số điện thoại:</strong>{" "}
-              {currentUser.phone}
-            </p>
-            <p className="text-lg font-medium">
-              <strong className="text-[#0272cd]">Trạng thái:</strong>
-              <span
-                className={`ml-2 font-semibold ${
-                  currentUser.isActive ? "text-green-600" : "text-red-600"
-                }`}
-              >
-                {currentUser.isActive ? "Hoạt động" : "Không hoạt động"}
-              </span>
-            </p>
-            <Button
-              type="primary"
-              onClick={handleEditClick}
-              icon={<EditOutlined />}
-              className="bg-[#6BBCFE] hover:bg-[#0272cd] transition-all text-lg font-semibold px-10 py-5 rounded-lg mt-4 shadow-md"
-            >
-              Chỉnh sửa
-            </Button>
-          </div>
-        ) : (
-          <Form
-            form={form}
-            layout="vertical"
-            initialValues={currentUser}
-            onFinish={handleFormSubmit}
-            className="bg-white p-6 rounded-lg shadow-md space-y-4"
-          >
+
+      <Card className="shadow-lg shadow-blue-300 rounded-3xl p-8 border border-gray-200 bg-white">
+        <Form
+          form={form}
+          layout="vertical"
+          initialValues={currentUser}
+          onFinish={handleFormSubmit}
+          className="bg-white p-10 rounded-lg shadow-md shadow-gray-400  space-y-6"
+        >
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Tên tài khoản */}
             <Form.Item
               label="Tên tài khoản"
               name="userName"
@@ -175,9 +127,10 @@ const ProfileForm = () => {
                 { required: true, message: "Vui lòng nhập tên tài khoản!" },
               ]}
             >
-              <Input />
+              <Input disabled={!isEditing} />
             </Form.Item>
 
+            {/* Tên người dùng */}
             <Form.Item
               label="Tên người dùng"
               name="fullName"
@@ -185,9 +138,10 @@ const ProfileForm = () => {
                 { required: true, message: "Vui lòng nhập tên người dùng!" },
               ]}
             >
-              <Input />
+              <Input disabled={!isEditing} />
             </Form.Item>
 
+            {/* Email */}
             <Form.Item
               label="Email"
               name="email"
@@ -199,13 +153,10 @@ const ProfileForm = () => {
                 },
               ]}
             >
-              <Input />
+              <Input disabled={!isEditing} />
             </Form.Item>
 
-            <Form.Item label="Địa chỉ" name="address">
-              <Input />
-            </Form.Item>
-
+            {/* Số điện thoại */}
             <Form.Item
               label="Số điện thoại"
               name="phone"
@@ -213,28 +164,58 @@ const ProfileForm = () => {
                 { required: true, message: "Vui lòng nhập số điện thoại!" },
               ]}
             >
-              <Input />
+              <Input disabled={!isEditing} />
             </Form.Item>
 
-            <div className="flex justify-end gap-4 mt-6">
-              <Button
-                onClick={handleCancelClick}
-                icon={<CloseOutlined />}
-                className="border-gray-400 px-6 py-2 text-gray-600 hover:bg-gray-200 transition-all rounded-lg"
-              >
-                Hủy
-              </Button>
+            {/* Địa chỉ */}
+            <Form.Item label="Địa chỉ" name="address">
+              <Input disabled={!isEditing} />
+            </Form.Item>
+
+            {/* Trạng thái */}
+            <Form.Item label="Trạng thái">
+              <Input
+                disabled
+                value={currentUser.isActive ? "Hoạt động" : "Không hoạt động"}
+                className={
+                  currentUser.isActive ? "text-green-600" : "text-red-600"
+                }
+              />
+            </Form.Item>
+          </div>
+
+          {/* Buttons */}
+          <div className="flex justify-end gap-4">
+            {!isEditing ? (
               <Button
                 type="primary"
-                htmlType="submit"
-                icon={<SaveOutlined />}
-                className="bg-[#6BBCFE] hover:bg-[#0272cd] text-white px-6 py-2 font-semibold rounded-lg transition-all shadow-md"
+                onClick={handleEditClick}
+                icon={<EditOutlined />}
+                className="bg-[#6BBCFE] hover:bg-[#0272cd] transition-all text-lg font-semibold px-6 py-5 rounded-lg shadow-md"
               >
-                Lưu thay đổi
+                Chỉnh sửa
               </Button>
-            </div>
-          </Form>
-        )}
+            ) : (
+              <>
+                <Button
+                  onClick={handleCancelClick}
+                  icon={<CloseOutlined />}
+                  className="border-gray-400 px-6 py-3 text-gray-600 hover:bg-gray-200 transition-all rounded-lg"
+                >
+                  Hủy
+                </Button>
+                <Button
+                  type="primary"
+                  htmlType="submit"
+                  icon={<SaveOutlined />}
+                  className="bg-[#6BBCFE] hover:bg-[#0272cd] text-white px-6 py-3 font-semibold rounded-lg transition-all shadow-md"
+                >
+                  Lưu thay đổi
+                </Button>
+              </>
+            )}
+          </div>
+        </Form>
       </Card>
     </div>
   );
