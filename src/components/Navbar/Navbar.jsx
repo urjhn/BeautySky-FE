@@ -68,8 +68,8 @@ const Navbar = () => {
       <Menu.Item key="profile">
         <Link to="/profilelayout">Tài khoản của bạn</Link>
       </Menu.Item>
-      <Menu.Item key="orders">
-        <Link to="/historyorder">Quản lý đơn hàng</Link>
+      <Menu.Item key="Quizz">
+        <Link to="/quizz">Kiểm tra loại da</Link>
       </Menu.Item>
       <Menu.Divider />
       <Menu.Item key="logout" onClick={handleLogout}>
