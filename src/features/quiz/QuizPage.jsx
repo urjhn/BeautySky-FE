@@ -1,138 +1,92 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
 import Navbar from "../../components/Navbar/Navbar";
 import Footer from "../../components/Footer/Footer";
-
-const questions = [
-  {
-    question: "Sau khi rửa mặt 30 phút, da bạn cảm thấy thế nào?",
-    options: [
-      { text: "Bóng dầu ở toàn bộ mặt", type: "oily" },
-      { text: "Chỉ dầu vùng chữ T, khô ở má", type: "combination" },
-      { text: "Bình thường, không khô không dầu", type: "normal" },
-      { text: "Khô, căng, có thể bong tróc", type: "dry" },
-      { text: "Dễ đỏ, kích ứng hoặc ngứa", type: "sensitive" },
-    ],
-  },
-  {
-    question: "Bạn có thường xuyên bị mụn không?",
-    options: [
-      { text: "Rất dễ bị mụn đầu đen, đầu trắng", type: "oily" },
-      { text: "Chỉ mụn ở vùng chữ T", type: "combination" },
-      { text: "Thỉnh thoảng bị mụn", type: "normal" },
-      { text: "Hiếm khi bị mụn", type: "dry" },
-      { text: "Hay nổi mẩn đỏ, kích ứng", type: "sensitive" },
-    ],
-  },
-  {
-    question: "Da bạn phản ứng thế nào với mỹ phẩm mới?",
-    options: [
-      { text: "Dễ bị mụn hoặc bít tắc lỗ chân lông", type: "oily" },
-      { text: "Không phản ứng nhiều", type: "normal" },
-      { text: "Có thể khô, căng hơn", type: "dry" },
-      { text: "Dễ đỏ hoặc ngứa khi đổi sản phẩm", type: "sensitive" },
-    ],
-  },
-  {
-    question: "Lỗ chân lông của bạn trông thế nào?",
-    options: [
-      { text: "To, dễ thấy trên toàn bộ mặt", type: "oily" },
-      { text: "Nhỏ ở má, to hơn ở vùng chữ T", type: "combination" },
-      { text: "Nhỏ, khó thấy", type: "dry" },
-      { text: "Không quá lớn cũng không quá nhỏ", type: "normal" },
-    ],
-  },
-];
-
-const skinTypeDescriptions = {
-  oily: {
-    name: "Da Dầu",
-    description:
-      "Da bạn tiết nhiều dầu, dễ bị mụn. Hãy chọn sản phẩm kiềm dầu và cấp ẩm nhẹ.",
-  },
-  combination: {
-    name: "Da Hỗn Hợp",
-    description:
-      "Da bạn dầu vùng chữ T, khô vùng má. Cần cân bằng dầu và độ ẩm.",
-  },
-  normal: {
-    name: "Da Thường",
-    description:
-      "Da bạn cân bằng, ít gặp vấn đề. Bạn có thể dùng nhiều loại sản phẩm.",
-  },
-  dry: {
-    name: "Da Khô",
-    description:
-      "Da bạn thiếu nước, dễ bong tróc. Hãy chọn sản phẩm dưỡng ẩm sâu.",
-  },
-  sensitive: {
-    name: "Da Nhạy Cảm",
-    description:
-      "Da bạn dễ kích ứng. Hãy chọn sản phẩm dịu nhẹ, không chứa hương liệu.",
-  },
-};
+import { useNavigate } from "react-router-dom";
+import questionsAPI from "../services/questions";
+import answersAPI from "../services/answers";
+import resultAPI from "../services/result";
 
 const QuizPage = () => {
-  const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [answers, setAnswers] = useState([]);
-  const [selectedOption, setSelectedOption] = useState(null);
+  const [questions, setQuestions] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedAnswers, setSelectedAnswers] = useState({});
   const [result, setResult] = useState(null);
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const navigate = useNavigate();
 
-  const handleOptionClick = (option) => {
-    setSelectedOption(option);
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [questionsRes, answersRes] = await Promise.all([
+          questionsAPI.getAll(),
+          answersAPI.getAll(),
+        ]);
+
+        if (Array.isArray(questionsRes.data) && questionsRes.data.length > 0) {
+          const formattedQuestions = questionsRes.data.map((q) => ({
+            id: q.questionId,
+            quizId: q.quizId,
+            question: q.questionText,
+            order: q.orderNumber,
+            options: answersRes.data
+              .filter((a) => a.questionId === q.questionId)
+              .map((a) => ({
+                id: a.answerId,
+                text: a.answerText,
+                skinTypeId: a.skinTypeId,
+                point: a.point,
+              })),
+          }));
+
+          setQuestions(formattedQuestions);
+        } else {
+          setQuestions([]);
+        }
+      } catch (error) {
+        console.error("Error fetching data:", error);
+        setQuestions([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  const handleSelectAnswer = (questionId, answerId) => {
+    setSelectedAnswers((prev) => ({
+      ...prev,
+      [questionId]: answerId,
+    }));
   };
 
-  const handleNext = () => {
-    if (selectedOption) {
-      const updatedAnswers = [...answers, selectedOption.type];
-      setAnswers(updatedAnswers);
-      setSelectedOption(null);
-
-      if (currentQuestion < questions.length - 1) {
-        setCurrentQuestion(currentQuestion + 1);
-      } else {
-        determineSkinType(updatedAnswers);
-      }
+  const handleNextQuestion = () => {
+    if (currentQuestionIndex < questions.length - 1) {
+      setCurrentQuestionIndex((prev) => prev + 1);
     }
   };
 
-  const determineSkinType = (answers) => {
-    const typeCount = answers.reduce((acc, type) => {
-      acc[type] = (acc[type] || 0) + 1;
-      return acc;
-    }, {});
+  const handleSubmitQuiz = async () => {
+    if (Object.keys(selectedAnswers).length !== questions.length) {
+      alert("❗Vui lòng trả lời tất cả câu hỏi!");
+      return;
+    }
 
-    const mostCommonType = Object.keys(typeCount).reduce((a, b) =>
-      typeCount[a] > typeCount[b] ? a : b
-    );
+    try {
+      const payload = Object.entries(selectedAnswers).map(
+        ([questionId, answerId]) => ({
+          questionId: parseInt(questionId),
+          answerId: answerId,
+        })
+      );
 
-    setResult(skinTypeDescriptions[mostCommonType]);
-  };
-
-  // Hàm để tạo bảng ô đếm số câu hỏi đã trả lời
-  const renderProgressTracker = () => {
-    return (
-      <div className="flex justify-center items-center my-4 space-x-2">
-        {questions.map((_, index) => (
-          <div
-            key={index}
-            className={`w-8 h-8 flex items-center justify-center rounded-full text-sm font-medium border-2 
-              ${
-                index < answers.length
-                  ? "bg-blue-500 text-white border-blue-600"
-                  : index === currentQuestion
-                  ? "bg-blue-100 border-blue-400"
-                  : "bg-gray-100 border-gray-300"
-              }
-              ${index === currentQuestion ? "ring-2 ring-blue-300" : ""}
-            `}
-          >
-            {index + 1}
-          </div>
-        ))}
-      </div>
-    );
+      const response = await resultAPI.createQuiz(payload);
+      if (response.data) {
+        setResult(response.data);
+      }
+    } catch (error) {
+      console.error("Error submitting quiz:", error);
+    }
   };
 
   return (
@@ -143,71 +97,127 @@ const QuizPage = () => {
           🔍 Kiểm tra loại da của bạn
         </h1>
         <div className="bg-white shadow-xl p-10 rounded-2xl w-full max-w-2xl text-center">
-          {result ? (
-            <div>
-              <h2 className="text-3xl font-bold text-blue-600 animate-bounce">
-                Kết quả: {result.name}
+          {loading ? (
+            <p>Đang tải câu hỏi...</p>
+          ) : result ? (
+            <div className="text-center">
+              <h2 className="text-4xl font-bold text-green-600">
+                🎉 Kết quả của bạn
               </h2>
-              <p className="text-lg text-gray-700 my-6">{result.description}</p>
-              <button
-                className="mt-6 bg-gradient-to-r from-blue-400 to-blue-600 text-white py-3 px-8 rounded-xl font-semibold shadow-xl hover:scale-105 transition"
-                onClick={() => navigate(`/routine-builder?type=${result.name}`)}
-              >
-                Xem lộ trình chăm sóc
-              </button>
-            </div>
-          ) : (
-            <div>
-              {/* Thêm bảng ô đếm số câu hỏi đã trả lời */}
-              {renderProgressTracker()}
-
-              <div className="mt-4 mb-6 text-sm text-gray-500">
-                Đã trả lời: {answers.length}/{questions.length} câu hỏi
+              <p className="text-2xl mt-4 font-semibold">
+                Loại da của bạn:{" "}
+                <span className="text-blue-500">
+                  {result.bestSkinType.skinTypeName}
+                </span>
+              </p>
+              <div className="mt-6 flex flex-col sm:flex-row justify-center items-center gap-4">
+                <button
+                  className="bg-gray-400 text-white py-3 px-8 rounded-xl font-semibold shadow-md hover:bg-gray-500 transition-all w-full sm:w-auto"
+                  onClick={() => {
+                    setResult(null);
+                    setSelectedAnswers({});
+                    setCurrentQuestionIndex(0);
+                  }}
+                >
+                  🔄 Làm lại bài kiểm tra
+                </button>
+                <button
+                  className="bg-blue-400 text-white py-3 px-8 rounded-xl font-semibold shadow-md hover:bg-blue-500 transition-all w-full sm:w-auto"
+                  onClick={() => navigate("/routine-builder")}
+                >
+                  📍 Xem lộ trình
+                </button>
               </div>
-
-              <h2 className="text-2xl font-semibold text-blue-600">
-                {questions[currentQuestion].question}
-              </h2>
-              <div className="mt-6 space-y-4">
-                {questions[currentQuestion].options.map((option, index) => (
-                  <label
+            </div>
+          ) : questions.length > 0 ? (
+            <div>
+              {/* Hiển thị tiến trình câu hỏi */}
+              <div className="flex justify-center items-center my-4 space-x-2">
+                {questions.map((_, index) => (
+                  <div
                     key={index}
-                    className={`flex items-center justify-start space-x-4 cursor-pointer rounded-xl p-4 shadow-md transition ${
-                      selectedOption?.text === option.text
-                        ? "bg-[#6BBCFE] text-white scale-105"
-                        : "bg-gray-100 hover:bg-blue-200"
+                    className={`w-8 h-8 flex items-center justify-center rounded-full text-sm font-medium border-2 ${
+                      index === currentQuestionIndex
+                        ? "bg-blue-500 text-white border-blue-500"
+                        : "bg-gray-100 border-gray-300"
                     }`}
                   >
-                    <input
-                      type="radio"
-                      name="quiz"
-                      value={option.text}
-                      className="hidden"
-                      onChange={() => handleOptionClick(option)}
-                    />
+                    {index + 1}
+                  </div>
+                ))}
+              </div>
+              <div className="mt-4 mb-6 text-sm text-gray-500">
+                Đã trả lời: {Object.keys(selectedAnswers).length}/
+                {questions.length} câu hỏi
+              </div>
+
+              {/* Hiển thị câu hỏi */}
+              <h2 className="text-2xl font-semibold text-blue-600">
+                {questions[currentQuestionIndex].question}
+              </h2>
+              <div className="mt-6 space-y-4">
+                {questions[currentQuestionIndex].options.map((option) => (
+                  <label
+                    key={option.id}
+                    className={`flex items-center justify-start space-x-4 cursor-pointer rounded-xl p-4 shadow-md bg-gray-100 hover:bg-blue-200 ${
+                      selectedAnswers[questions[currentQuestionIndex].id] ===
+                      option.id
+                        ? "bg-blue-300"
+                        : ""
+                    }`}
+                    onClick={() =>
+                      handleSelectAnswer(
+                        questions[currentQuestionIndex].id,
+                        option.id
+                      )
+                    }
+                  >
                     <div className="w-6 h-6 flex items-center justify-center border-2 border-blue-500 rounded-full">
-                      {selectedOption?.text === option.text && (
-                        <div className="w-4 h-4 bg-blue-500 rounded-full"></div>
-                      )}
+                      {selectedAnswers[questions[currentQuestionIndex].id] ===
+                        option.id && "✔"}
                     </div>
                     <span className="text-lg">{option.text}</span>
                   </label>
                 ))}
               </div>
-              <button
-                className={`mt-6 bg-gradient-to-r from-blue-400 to-blue-600 text-white py-3 px-8 rounded-xl font-semibold shadow-xl transition ${
-                  selectedOption
-                    ? "hover:scale-105"
-                    : "opacity-50 cursor-not-allowed"
-                }`}
-                onClick={handleNext}
-                disabled={!selectedOption}
-              >
-                {currentQuestion < questions.length - 1
-                  ? "Tiếp theo"
-                  : "Xem kết quả"}
-              </button>
+
+              {/* Nút điều hướng */}
+              <div className="mt-6 flex justify-between items-center w-full">
+                {/* Nút Quay Lại */}
+                {currentQuestionIndex > 0 && (
+                  <button
+                    className="bg-gradient-to-r from-gray-400 to-gray-600 text-white py-3 px-6 rounded-xl font-semibold shadow-md hover:from-gray-500 hover:to-gray-700 transition-all"
+                    onClick={() => setCurrentQuestionIndex((prev) => prev - 1)}
+                  >
+                    ⬅️ Quay lại
+                  </button>
+                )}
+
+                {/* Nút Tiếp Theo hoặc Hoàn Thành */}
+                <button
+                  className={`py-3 px-8 rounded-xl font-semibold shadow-xl transition-all ${
+                    currentQuestionIndex < questions.length - 1
+                      ? "bg-gradient-to-r from-blue-400 to-blue-600 text-white hover:from-blue-500 hover:to-blue-700 disabled:opacity-50"
+                      : "bg-gradient-to-r from-green-400 to-green-600 text-white hover:from-green-500 hover:to-green-700"
+                  }`}
+                  onClick={
+                    currentQuestionIndex < questions.length - 1
+                      ? handleNextQuestion
+                      : handleSubmitQuiz
+                  }
+                  disabled={
+                    currentQuestionIndex < questions.length - 1 &&
+                    !selectedAnswers[questions[currentQuestionIndex].id]
+                  }
+                >
+                  {currentQuestionIndex < questions.length - 1
+                    ? "Tiếp theo ➡️"
+                    : "Hoàn thành bài kiểm tra ✅"}
+                </button>
+              </div>
             </div>
+          ) : (
+            <p>Không có câu hỏi nào!</p>
           )}
         </div>
       </div>
