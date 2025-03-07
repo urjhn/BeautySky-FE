@@ -13,12 +13,12 @@ import {
 } from "react-icons/fa";
 import { useUsersContext } from "../../../context/UserContext";
 import { useDataContext } from "../../../context/DataContext";
-import { useOrdersContext } from "../../../context/OrdersContext";
+import orderAPI from "../../../services/order";
 
 const Dashboard = () => {
   const { users } = useUsersContext();
   const { products } = useDataContext();
-  const { orders } = useOrdersContext();
+  const [orders, setOrders] = useState([]);
   const [revenue, setRevenue] = useState(0);
   const [revenueGrowth, setRevenueGrowth] = useState([]);
   const [customerGrowth, setCustomerGrowth] = useState([]);
@@ -27,60 +27,64 @@ const Dashboard = () => {
   const [conversionRate, setConversionRate] = useState(0);
 
   useEffect(() => {
-    if (orders.length > 0) {
-      const totalRevenue = orders
-        .filter((order) => order.status === "Completed") // Chỉ tính đơn đã hoàn thành
-        .reduce((sum, order) => sum + order.totalAmount, 0);
+    const fetchOrders = async () => {
+      try {
+        const data = await orderAPI.getAll(); // Gọi API lấy tất cả đơn hàng
+        setOrders(data);
+      } catch (error) {
+        console.error("Error fetching orders:", error);
+      }
+    };
 
-      setRevenue(totalRevenue);
+    fetchOrders();
+  }, []);
 
-      // Tính doanh thu theo tháng
-      const monthlyRevenue = {};
-      orders
-        .filter((order) => order.status === "Completed")
-        .forEach((order) => {
-          const orderDate = new Date(order.orderDate);
-          const month = `${orderDate.getFullYear()}-${
-            orderDate.getMonth() + 1
-          }`; // YYYY-MM
+  useEffect(() => {
+    if (!orders || orders.length === 0) return;
 
-          if (!monthlyRevenue[month]) {
-            monthlyRevenue[month] = 0;
-          }
-          monthlyRevenue[month] += order.totalAmount;
-        });
+    // Tính tổng doanh thu từ các đơn hoàn thành
+    const totalRevenue = orders
+      .filter((order) => order.status === "Completed")
+      .reduce((sum, order) => sum + order.totalAmount, 0);
+    setRevenue(totalRevenue);
 
-      // Chuyển object thành mảng dữ liệu
-      const revenueData = Object.keys(monthlyRevenue).map((month) => ({
+    // Tính doanh thu theo tháng
+    const monthlyRevenue = {};
+    const monthlySales = {};
+
+    orders.forEach((order) => {
+      if (order.status === "Completed") {
+        const orderDate = new Date(order.orderDate);
+        const month = `${orderDate.getFullYear()}-${orderDate.getMonth() + 1}`; // YYYY-MM
+
+        // Doanh thu theo tháng
+        if (!monthlyRevenue[month]) {
+          monthlyRevenue[month] = 0;
+        }
+        monthlyRevenue[month] += order.totalAmount;
+
+        // Số đơn hàng theo tháng
+        if (!monthlySales[month]) {
+          monthlySales[month] = 0;
+        }
+        monthlySales[month] += 1;
+      }
+    });
+
+    // Convert object thành mảng để hiển thị trên biểu đồ
+    setRevenueGrowth(
+      Object.keys(monthlyRevenue).map((month) => ({
         month,
         revenue: monthlyRevenue[month],
-      }));
+      }))
+    );
 
-      setRevenueGrowth(revenueData);
-      const monthlySales = {};
-
-      orders.forEach((order) => {
-        if (order.status === "Completed") {
-          // Chỉ tính đơn hoàn thành
-          const orderDate = new Date(order.orderDate);
-          const month = `${orderDate.getFullYear()}-${
-            orderDate.getMonth() + 1
-          }`; // YYYY-MM
-
-          if (!monthlySales[month]) {
-            monthlySales[month] = 0;
-          }
-          monthlySales[month] += 1; // Mỗi đơn hàng = 1 sale
-        }
-      });
-
-      const salesDataFormatted = Object.keys(monthlySales).map((month) => ({
+    setSalesData(
+      Object.keys(monthlySales).map((month) => ({
         month,
         sales: monthlySales[month],
-      }));
-
-      setSalesData(salesDataFormatted);
-    }
+      }))
+    );
   }, [orders]);
 
   useEffect(() => {
@@ -152,7 +156,7 @@ const Dashboard = () => {
           <StatCard
             icon={<FaShoppingCart />}
             title="Orders"
-            value={orders.length}
+            value={orders ? orders.length : 0} // Đảm bảo không lỗi nếu orders chưa có dữ liệu
             subtitle="Fetched from API"
           />
           <StatCard

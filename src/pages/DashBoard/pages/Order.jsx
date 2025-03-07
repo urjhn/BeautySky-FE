@@ -12,48 +12,58 @@ import orderAPI from "../../../services/order";
 import Swal from "sweetalert2";
 
 const Order = () => {
-  const { orders, setOrders, fetchOrders } = useOrdersContext();
-  const { users, fetchUsers } = useUsersContext();
+  const { orders = [], setOrders } = useOrdersContext();
+  const { users = [], fetchUsers } = useUsersContext();
   const [currentPage, setCurrentPage] = useState(1);
-  const ordersPerPage = 5;
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState("All");
+  const ordersPerPage = 5;
 
   useEffect(() => {
-    fetchOrders();
+    const fetchOrdersData = async () => {
+      try {
+        const data = await orderAPI.getAll();
+        setOrders(data);
+      } catch (error) {
+        console.error("Error fetching orders:", error);
+      }
+    };
+
+    fetchOrdersData();
     fetchUsers();
   }, []);
 
-  // Get user's full name based on userId
   const getUserFullName = (userId) => {
-    const user = users.find((u) => u.userId === userId);
-    return user ? user.fullName : "Unknown User";
+    return (
+      users.find((user) => user.userId === userId)?.fullName ||
+      "Không tìm thấy người dùng"
+    );
   };
 
   const handleApproveOrder = async (orderId) => {
     try {
-      await orderAPI.editOrder(orderId, { status: "Completed" });
+      const response = await orderAPI.createOrderCompleted(orderId);
 
-      setOrders((prevOrders) =>
-        prevOrders.map((order) =>
-          order.orderId === orderId ? { ...order, status: "Completed" } : order
-        )
-      );
+      if (response?.success) {
+        setOrders((prevOrders) =>
+          prevOrders.map((order) =>
+            order.orderId === orderId
+              ? { ...order, status: "Completed" }
+              : order
+          )
+        );
 
-      Swal.fire({
-        icon: "success",
-        title: "Duyệt đơn hàng thành công!",
-        text: `Đơn hàng ${orderId} đã được hoàn tất.`,
-        confirmButtonColor: "#3085d6",
-      });
+        Swal.fire(
+          "Success",
+          `Đơn hàng ${orderId} được duyệt thành công!`,
+          "success"
+        );
+      } else {
+        throw new Error("API không phản hồi thành công");
+      }
     } catch (error) {
-      console.error(`Lỗi khi cập nhật đơn hàng ${orderId}:`, error);
-      Swal.fire({
-        icon: "error",
-        title: "Lỗi!",
-        text: "Đã xảy ra lỗi khi duyệt đơn hàng.",
-        confirmButtonColor: "#d33",
-      });
+      console.error("Lỗi duyệt đơn hàng:", error);
+      Swal.fire("Error", "Lỗi duyệt đơn hàng.", "error");
     }
   };
 
@@ -64,83 +74,72 @@ const Order = () => {
       );
 
       if (pendingOrders.length === 0) {
-        Swal.fire({
-          icon: "info",
-          title: "Không có đơn hàng cần duyệt!",
-          text: "Tất cả đơn hàng đã được xử lý.",
-        });
+        Swal.fire("Info", "Không có đơn hàng nào đang chờ xử lý.", "info");
         return;
       }
 
-      await Promise.all(
+      // Gửi yêu cầu cập nhật tất cả đơn hàng
+      const updateResults = await Promise.allSettled(
         pendingOrders.map((order) =>
-          orderAPI.editOrder(order.orderId, { status: "Completed" })
+          orderAPI.createOrderCompleted(order.orderId)
         )
       );
 
-      setOrders((prevOrders) =>
-        prevOrders.map((order) =>
-          order.status === "Pending" ? { ...order, status: "Completed" } : order
-        )
+      // Kiểm tra nếu tất cả đơn hàng đều duyệt thành công
+      const successOrders = updateResults.filter(
+        (res) => res.status === "fulfilled"
       );
 
-      Swal.fire({
-        icon: "success",
-        title: "Duyệt tất cả thành công!",
-        text: "Tất cả đơn hàng đang chờ đã được hoàn tất.",
-        confirmButtonColor: "#3085d6",
-      });
+      if (successOrders.length > 0) {
+        setOrders((prevOrders) =>
+          prevOrders.map((order) =>
+            order.status === "Pending"
+              ? { ...order, status: "Completed" }
+              : order
+          )
+        );
+
+        Swal.fire(
+          "Success",
+          `${successOrders.length} đơn hàng đã được duyệt`,
+          "success"
+        );
+      } else {
+        throw new Error("Không có đơn hàng nào được duyệt thành công");
+      }
     } catch (error) {
-      console.error("Lỗi khi duyệt tất cả đơn hàng:", error);
-      Swal.fire({
-        icon: "error",
-        title: "Lỗi!",
-        text: "Đã xảy ra lỗi khi duyệt tất cả đơn hàng.",
-        confirmButtonColor: "#d33",
-      });
+      console.error("Lỗi duyệt tất cả đơn hàng:", error);
+      Swal.fire("Error", "Lỗi duyệt tất cả đơn hàng", "error");
     }
   };
 
-  // Filter orders based on search term
   const filteredOrders = orders.filter((order) => {
-    const orderId = order.orderId?.toString().toLowerCase() || "";
-    const userId = order.userId?.toString().toLowerCase() || "";
-    const fullName = getUserFullName(order.userId)?.toLowerCase() || "";
-    const totalAmount = order.finalAmount?.toString().toLowerCase() || "";
-    const orderDate =
-      new Date(order.orderDate).toLocaleDateString().toLowerCase() || "";
-    const status = order.status?.toLowerCase() || "";
-
-    const matchesSearch =
-      orderId.includes(searchTerm.toLowerCase()) ||
-      userId.includes(searchTerm.toLowerCase()) ||
-      fullName.includes(searchTerm.toLowerCase()) ||
-      totalAmount.includes(searchTerm.toLowerCase()) ||
-      orderDate.includes(searchTerm.toLowerCase()) ||
-      status.includes(searchTerm.toLowerCase());
-
-    const matchesFilter =
-      filterStatus === "All" || order.status === filterStatus;
-
-    return matchesSearch && matchesFilter;
+    const search = searchTerm.toLowerCase();
+    return (
+      [
+        order.orderId,
+        order.userId,
+        getUserFullName(order.userId),
+        order.finalAmount,
+        order.orderDate,
+        order.status,
+      ]
+        .map((value) => String(value || "").toLowerCase())
+        .some((field) => field.includes(search)) &&
+      (filterStatus === "All" || order.status === filterStatus)
+    );
   });
 
-  // Pagination calculation
-  const indexOfLastOrder = currentPage * ordersPerPage;
-  const indexOfFirstOrder = indexOfLastOrder - ordersPerPage;
-  const currentOrders = filteredOrders.slice(
-    indexOfFirstOrder,
-    indexOfLastOrder
-  );
-
-  // Total pages
   const totalPages = Math.ceil(filteredOrders.length / ordersPerPage);
+  const currentOrders = filteredOrders.slice(
+    (currentPage - 1) * ordersPerPage,
+    currentPage * ordersPerPage
+  );
 
   return (
     <div className="p-6 bg-gray-100 min-h-screen">
       <h1 className="text-3xl font-bold mb-6">Orders</h1>
       <div className="bg-white p-4 rounded-lg shadow-md">
-        {/* Search bar */}
         <div className="flex justify-between items-center mb-4">
           <div className="relative">
             <FaSearch className="absolute left-3 top-2.5 text-gray-500" />
@@ -152,34 +151,32 @@ const Order = () => {
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
-          <div className="flex gap-4 items-center">
-            <select
-              value={filterStatus}
-              onChange={(e) => setFilterStatus(e.target.value)}
-              className="px-3 py-2 border rounded-md"
-            >
-              <option value="All">Tất cả</option>
-              <option value="Pending">Chờ xử lý</option>
-              <option value="Completed">Đã hoàn thành</option>
-              <option value="Cancelled">Đã hủy</option>
-            </select>
-          </div>
+          <select
+            value={filterStatus}
+            onChange={(e) => setFilterStatus(e.target.value)}
+            className="px-3 py-2 border rounded-md"
+          >
+            <option value="All">All</option>
+            <option value="Pending">Đang xử lý</option>
+            <option value="Completed">Đã hoàn thành</option>
+            <option value="Cancelled">Đã hủy</option>
+          </select>
           <button
             onClick={handleApproveAllOrders}
             className="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600"
           >
-            Duyệt Tất Cả
+            Duyệt tất cả
           </button>
         </div>
         <table className="w-full border-collapse">
           <thead>
             <tr className="bg-gray-200">
-              <th className="p-3 text-left">Order ID</th>
-              <th className="p-3 text-left">Customer Name</th>
-              <th className="p-3 text-left">Total Amount</th>
-              <th className="p-3 text-left">Order Date</th>
-              <th className="p-3 text-left">Status</th>
-              <th className="p-3 text-left">Actions</th>
+              <th className="p-3 text-left">Mã đơn hàng</th>
+              <th className="p-3 text-left">Tên khách hàng</th>
+              <th className="p-3 text-left">Tổng tiền</th>
+              <th className="p-3 text-left">Ngày đặt hàng</th>
+              <th className="p-3 text-left">Tình trạng</th>
+              <th className="p-3 text-left">Thao tác</th>
             </tr>
           </thead>
           <tbody>
@@ -210,15 +207,13 @@ const Order = () => {
                       Duyệt
                     </button>
                   ) : (
-                    <span className="text-green-600">Completed</span>
+                    <span className="text-green-600">Đã hoàn thành</span>
                   )}
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
-
-        {/* Pagination */}
         <div className="flex justify-center mt-4 gap-2">
           {Array.from({ length: totalPages }, (_, index) => (
             <button

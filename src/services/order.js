@@ -49,16 +49,16 @@ const orderAPI = {
   },
   createOrderCompleted: async (orderId) => {
     try {
-      const response = await axiosInstance.post(
-        `${endPoint}/complete-order`,
-        null,
-        {
-          params: { orderId }, // Truyền orderId qua query parameters
-        }
-      );
+      const response = await axiosInstance.patch(`${endPoint}/complete-order`, {
+        orderId, // Sending orderId in the request body
+      });
+
       return response.data;
     } catch (error) {
-      console.error(`Error completing order ${orderId}:`, error);
+      console.error(
+        `Error completing order ${orderId}:`,
+        error.response?.data || error.message
+      );
       throw error;
     }
   },

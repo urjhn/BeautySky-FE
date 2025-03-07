@@ -1,35 +1,67 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { FaPlus, FaEdit, FaTrash } from "react-icons/fa";
+import promotionsAPI from "../../../services/promotions"; // Import API
+import Swal from "sweetalert2";
 
-const initialPromotions = [
-  { id: 1, name: "Summer Sale", discount: "20%", expiry: "2025-07-30" },
-  { id: 2, name: "Black Friday", discount: "50%", expiry: "2025-11-29" },
-  { id: 3, name: "Christmas Sale", discount: "30%", expiry: "2025-12-25" },
-  { id: 4, name: "New Year Offer", discount: "25%", expiry: "2026-01-01" },
-];
-
-const PAGE_SIZE = 4;
+const PAGE_SIZE = 6;
 
 const PromotionManagement = () => {
-  const [promotions, setPromotions] = useState(initialPromotions);
+  const [promotions, setPromotions] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
+  const [loading, setLoading] = useState(true);
   const [form, setForm] = useState({
     id: null,
     name: "",
     discount: "",
-    expiry: "",
+    startDate: "",
+    endDate: "",
   });
   const [showModal, setShowModal] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
 
-  const filteredPromotions = promotions.filter((promo) => {
-    const searchLower = searchTerm.toLowerCase();
-    return (
-      promo.name.toLowerCase().includes(searchLower) ||
-      promo.discount.toLowerCase().includes(searchLower) ||
-      promo.expiry.includes(searchLower) // Ngày không cần .toLowerCase() vì toàn số
-    );
-  });
+  // 🟢 Lấy danh sách khuyến mãi từ API khi component được render
+  useEffect(() => {
+    const fetchPromotions = async () => {
+      try {
+        setLoading(true);
+        const response = await promotionsAPI.getAll();
+        if (response?.data) {
+          setPromotions(
+            response.data.map((promo) => ({
+              id: promo.promotionId,
+              name: promo.promotionName,
+              discount: `${promo.discountPercentage}%`,
+              startDate: promo.startDate.split("T")[0],
+              endDate: promo.endDate.split("T")[0], // Lấy phần yyyy-MM-dd
+            }))
+          );
+        }
+      } catch (error) {
+        console.error("Lỗi khi tải danh sách khuyến mãi:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPromotions();
+  }, []);
+
+  const handleEditClick = (promo) => {
+    setForm({ ...promo, discount: promo.discount.replace("%", "") });
+    setIsEditing(true);
+    setShowModal(true);
+  };
+
+  const handleAddClick = () => {
+    setForm({ id: null, name: "", discount: "", startDate: "", endDate: "" });
+    setIsEditing(false);
+    setShowModal(true);
+  };
+
+  const filteredPromotions = promotions.filter((promo) =>
+    promo.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   const totalPages = Math.ceil(filteredPromotions.length / PAGE_SIZE);
   const paginatedPromotions = filteredPromotions.slice(
@@ -37,23 +69,123 @@ const PromotionManagement = () => {
     currentPage * PAGE_SIZE
   );
 
-  const handleAddOrEditPromotion = () => {
-    if (form.id) {
-      setPromotions(promotions.map((p) => (p.id === form.id ? form : p)));
-    } else {
-      setPromotions([...promotions, { ...form, id: promotions.length + 1 }]);
+  // 🟢 Thêm hoặc sửa khuyến mãi
+  const handleAddOrEditPromotion = async () => {
+    try {
+      if (!form.name || !form.discount || !form.startDate || !form.endDate) {
+        Swal.fire({
+          icon: "warning",
+          title: "Lỗi!",
+          text: "Vui lòng nhập đầy đủ thông tin!",
+        });
+        return;
+      }
+
+      const payload = {
+        promotionName: form.name,
+        discountPercentage: isNaN(parseInt(form.discount))
+          ? 0
+          : parseInt(form.discount),
+        startDate: form.startDate,
+        endDate: form.endDate,
+        isActive: true,
+      };
+
+      if (isEditing) {
+        const response = await promotionsAPI.editPromotions(form.id, payload);
+        if (response?.data) {
+          setPromotions((prev) =>
+            prev.map((p) =>
+              p.id === form.id
+                ? {
+                    id: response.data.promotionId,
+                    name: response.data.promotionName,
+                    discount: `${response.data.discountPercentage}%`,
+                    startDate: response.data.startDate.split("T")[0],
+                    endDate: response.data.endDate.split("T")[0],
+                  }
+                : p
+            )
+          );
+
+          Swal.fire({
+            icon: "success",
+            title: "Cập nhật thành công!",
+            text: "Khuyến mãi đã được cập nhật.",
+            timer: 2000,
+            showConfirmButton: false,
+          });
+        }
+      } else {
+        const response = await promotionsAPI.createPromotions(payload);
+        if (response?.data) {
+          setPromotions([
+            ...promotions,
+            {
+              id: response.data.promotionId,
+              name: response.data.promotionName,
+              discount: `${response.data.discountPercentage}%`,
+              startDate: response.data.startDate.split("T")[0],
+              endDate: response.data.endDate.split("T")[0],
+            },
+          ]);
+        }
+
+        Swal.fire({
+          icon: "success",
+          title: "Thêm thành công!",
+          text: "Khuyến mãi mới đã được thêm.",
+          timer: 2000,
+          showConfirmButton: false,
+        });
+      }
+
+      setShowModal(false);
+      setForm({ id: null, name: "", discount: "", startDate: "", endDate: "" });
+    } catch (error) {
+      console.error("Lỗi khi thêm/chỉnh sửa khuyến mãi:", error);
+      Swal.fire({
+        icon: "error",
+        title: "Lỗi!",
+        text: "Có lỗi xảy ra, vui lòng thử lại sau.",
+      });
     }
-    setShowModal(false);
-    setForm({ id: null, name: "", discount: "", expiry: "" });
   };
 
-  const handleDeletePromotion = (id) => {
-    setPromotions(promotions.filter((p) => p.id !== id));
-  };
+  // 🟢 Xóa khuyến mãi với xác nhận
+  const handleDeletePromotion = async (id) => {
+    const confirmDelete = await Swal.fire({
+      title: "Bạn có chắc chắn?",
+      text: "Hành động này không thể hoàn tác!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "Xóa",
+      cancelButtonText: "Hủy",
+    });
 
-  const handleEditClick = (promo) => {
-    setForm(promo);
-    setShowModal(true);
+    if (confirmDelete.isConfirmed) {
+      try {
+        await promotionsAPI.deletePromotions(id);
+        setPromotions(promotions.filter((p) => p.id !== id));
+
+        Swal.fire({
+          icon: "success",
+          title: "Đã xóa!",
+          text: "Khuyến mãi đã bị xóa thành công.",
+          timer: 2000,
+          showConfirmButton: false,
+        });
+      } catch (error) {
+        console.error("Lỗi khi xóa khuyến mãi:", error);
+        Swal.fire({
+          icon: "error",
+          title: "Lỗi!",
+          text: "Không thể xóa khuyến mãi, vui lòng thử lại.",
+        });
+      }
+    }
   };
 
   return (
@@ -73,118 +205,139 @@ const PromotionManagement = () => {
 
       {/* Add Promotion Button */}
       <button
-        onClick={() => setShowModal(true)}
+        onClick={handleAddClick}
         className="bg-blue-500 text-white px-4 py-2 rounded-md mb-4 hover:bg-blue-600 flex items-center"
       >
         <FaPlus className="mr-2" /> Thêm khuyến mãi
       </button>
 
-      {/* Promotions Table */}
-      <table className="w-full bg-white border border-gray-200 rounded-lg overflow-hidden">
-        <thead className="bg-gray-100">
-          <tr>
-            <th className="py-3 px-4 border">Tên</th>
-            <th className="py-3 px-4 border">Giảm giá</th>
-            <th className="py-3 px-4 border">Ngày hết hạn</th>
-            <th className="py-3 px-4 border">Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {paginatedPromotions.map((promo) => (
-            <tr key={promo.id} className="text-center border">
-              <td className="py-3 px-4">{promo.name}</td>
-              <td className="py-3 px-4">{promo.discount}</td>
-              <td className="py-3 px-4">{promo.expiry}</td>
-              <td className="py-3 px-4 flex justify-center space-x-2">
-                <button
-                  onClick={() => handleEditClick(promo)}
-                  className="text-yellow-500 hover:text-yellow-700"
-                >
-                  <FaEdit />
-                </button>
-                <button
-                  onClick={() => handleDeletePromotion(promo.id)}
-                  className="text-red-500 hover:text-red-700"
-                >
-                  <FaTrash />
-                </button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      {/* Loading State */}
+      {loading ? (
+        <p className="text-center">Đang tải danh sách khuyến mãi...</p>
+      ) : (
+        <>
+          {/* Promotions Table */}
+          <table className="w-full bg-white border border-gray-200 rounded-lg overflow-hidden">
+            <thead className="bg-gray-100">
+              <tr>
+                <th className="py-3 px-4 border">Tên</th>
+                <th className="py-3 px-4 border">Giảm giá</th>
+                <th className="py-3 px-4 border">Ngày bắt đầu</th>
+                <th className="py-3 px-4 border">Ngày hết hạn</th>
+                <th className="py-3 px-4 border">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {paginatedPromotions.map((promo) => (
+                <tr key={promo.id} className="text-center border">
+                  <td className="py-3 px-4">{promo.name}</td>
+                  <td className="py-3 px-4">{promo.discount}</td>
+                  <td className="py-3 px-4">{promo.startDate}</td>
+                  <td className="py-3 px-4">{promo.endDate}</td>
+                  <td className="py-3 px-4 flex justify-center space-x-2">
+                    <button
+                      onClick={() => handleEditClick(promo)}
+                      className="text-yellow-500 hover:text-yellow-700"
+                    >
+                      <FaEdit />
+                    </button>
+                    <button
+                      onClick={() => handleDeletePromotion(promo.id)}
+                      className="text-red-500 hover:text-red-700"
+                    >
+                      <FaTrash />
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
 
-      {/* Pagination Controls */}
-      <div className="flex justify-center mt-4 space-x-2">
-        <button
-          onClick={() => setCurrentPage(Math.max(currentPage - 1, 1))}
-          disabled={currentPage === 1}
-          className="px-3 py-1 rounded-md bg-gray-300"
-        >
-          Trước
-        </button>
-        {Array.from({ length: totalPages }, (_, i) => (
-          <button
-            key={i}
-            onClick={() => setCurrentPage(i + 1)}
-            className={`px-3 py-1 rounded-md ${
-              currentPage === i + 1 ? "bg-blue-600 text-white" : "bg-gray-200"
-            }`}
-          >
-            {i + 1}
-          </button>
-        ))}
-        <button
-          onClick={() => setCurrentPage(Math.min(currentPage + 1, totalPages))}
-          disabled={currentPage === totalPages}
-          className="px-3 py-1 rounded-md bg-gray-300"
-        >
-          Tiếp
-        </button>
-      </div>
+          {/* Pagination Controls */}
+          <div className="flex justify-center mt-4 space-x-2">
+            <button
+              onClick={() => setCurrentPage(Math.max(currentPage - 1, 1))}
+              disabled={currentPage === 1}
+              className="px-3 py-1 rounded-md bg-gray-300"
+            >
+              Trước
+            </button>
+            {Array.from({ length: totalPages }, (_, i) => (
+              <button
+                key={i}
+                onClick={() => setCurrentPage(i + 1)}
+                className={`px-3 py-1 rounded-md ${
+                  currentPage === i + 1
+                    ? "bg-blue-600 text-white"
+                    : "bg-gray-200"
+                }`}
+              >
+                {i + 1}
+              </button>
+            ))}
+            <button
+              onClick={() =>
+                setCurrentPage(Math.min(currentPage + 1, totalPages))
+              }
+              disabled={currentPage === totalPages}
+              className="px-3 py-1 rounded-md bg-gray-300"
+            >
+              Tiếp
+            </button>
+          </div>
+        </>
+      )}
 
       {/* Modal for Adding/Editing Promotion */}
       {showModal && (
         <div className="fixed inset-0 bg-gray-500 bg-opacity-50 flex justify-center items-center z-50">
           <div className="bg-white p-6 rounded-lg shadow-lg w-1/3">
             <h3 className="text-xl font-semibold mb-4">
-              {form.id ? "Chỉnh sửa khuyến mãi" : "Thêm khuyến mãi"}
+              {isEditing ? "Chỉnh sửa khuyến mãi" : "Thêm khuyến mãi"}
             </h3>
             <input
               type="text"
-              name="name"
+              placeholder="Tên khuyến mãi"
               value={form.name}
               onChange={(e) => setForm({ ...form, name: e.target.value })}
-              placeholder="Tên khuyến mãi"
-              className="w-full p-2 border border-gray-300 rounded-md mb-4"
+              className="w-full p-2 border mb-2"
             />
             <input
-              type="text"
-              name="discount"
+              type="number"
+              placeholder="Giảm giá (%)"
               value={form.discount}
-              onChange={(e) => setForm({ ...form, discount: e.target.value })}
-              placeholder="Giảm giá"
-              className="w-full p-2 border border-gray-300 rounded-md mb-4"
+              onChange={(e) =>
+                setForm({
+                  ...form,
+                  discount: e.target.value.replace(/\D/g, ""),
+                })
+              }
+              className="w-full p-2 border mb-2"
             />
             <input
               type="date"
-              name="expiry"
-              value={form.expiry}
-              onChange={(e) => setForm({ ...form, expiry: e.target.value })}
-              className="w-full p-2 border border-gray-300 rounded-md mb-4"
+              value={form.startDate}
+              onChange={(e) => setForm({ ...form, startDate: e.target.value })}
+              className="w-full p-2 border mb-2"
+            />
+            <input
+              type="date"
+              value={form.endDate}
+              onChange={(e) => setForm({ ...form, endDate: e.target.value })}
+              className="w-full p-2 border mb-4"
             />
             <div className="flex justify-between">
               <button
+                className="bg-gray-400 text-white px-4 py-2 rounded-md hover:bg-gray-500 w-1/2 mr-2"
                 onClick={() => setShowModal(false)}
-                className="bg-gray-300 px-4 py-2 rounded-md hover:bg-gray-400"
               >
                 Hủy
               </button>
               <button
                 onClick={handleAddOrEditPromotion}
-                className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600"
+                className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 w-1/2"
               >
-                Lưu
+                {isEditing ? "Lưu" : "Thêm"}
               </button>
             </div>
           </div>

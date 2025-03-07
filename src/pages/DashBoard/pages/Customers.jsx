@@ -14,7 +14,7 @@ import { Plus } from "lucide-react";
 
 const Customers = () => {
   const { users, fetchUsers } = useUsersContext();
-  const { orders, fetchOrders } = useOrdersContext();
+  const { orders, setOrders } = useOrdersContext();
   const [currentPage, setCurrentPage] = useState(1);
   const customersPerPage = 9;
   const [searchTerm, setSearchTerm] = useState("");
@@ -36,7 +36,16 @@ const Customers = () => {
 
   useEffect(() => {
     fetchUsers();
-    fetchOrders();
+    const fetchOrdersData = async () => {
+      try {
+        const data = await orderAPI.getAll();
+        setOrders(data);
+      } catch (error) {
+        console.error("Error fetching orders:", error);
+      }
+    };
+
+    fetchOrdersData();
   }, []);
 
   useEffect(() => {
@@ -109,19 +118,18 @@ const Customers = () => {
     setShowAddUserModal(true);
   };
 
-
   const handleDeleteUser = async (userId) => {
     console.log("Đang xóa người dùng với ID:", userId);
-  
+
     if (!userId) {
       Swal.fire({
         title: "Lỗi!",
         text: "Không tìm thấy ID người dùng",
-        icon: "error"
+        icon: "error",
       });
       return;
     }
-  
+
     try {
       const result = await Swal.fire({
         title: "Bạn có chắc chắn?",
@@ -133,33 +141,33 @@ const Customers = () => {
         confirmButtonText: "Xóa",
         cancelButtonText: "Hủy",
       });
-  
+
       if (result.isConfirmed) {
         try {
           // Chi tiết hóa lỗi từ phản hồi
           const response = await usersAPI.deleteUser(userId);
           console.log("Phản hồi xóa người dùng:", response);
-  
+
           await fetchUsers(); // Tải lại danh sách người dùng
           Swal.fire({
             title: "Đã xóa!",
             text: "Người dùng đã được xóa thành công.",
-            icon: "success"
+            icon: "success",
           });
         } catch (error) {
           // Chi tiết hóa thông báo lỗi
           console.error("Chi tiết lỗi:", error.response);
-          
-          const errorMessage = 
-            error.response?.data?.message || 
-            error.response?.data?.title || 
+
+          const errorMessage =
+            error.response?.data?.message ||
+            error.response?.data?.title ||
             "Không thể xóa người dùng. Vui lòng thử lại sau.";
-  
+
           Swal.fire({
             title: "Lỗi!",
             text: errorMessage,
             icon: "error",
-            footer: `Mã lỗi: ${error.response?.status || 'Không xác định'}`
+            footer: `Mã lỗi: ${error.response?.status || "Không xác định"}`,
           });
         }
       }
@@ -168,19 +176,19 @@ const Customers = () => {
       Swal.fire({
         title: "Lỗi!",
         text: "Đã xảy ra lỗi không mong muốn.",
-        icon: "error"
+        icon: "error",
       });
     }
   };
 
   const handleUpdateUser = async () => {
     if (!editingUser) return;
-    
+
     if (!newUser.fullName || !newUser.email) {
       Swal.fire("Lỗi", "Vui lòng điền đầy đủ thông tin.", "error");
       return;
     }
-    
+
     try {
       // Chuẩn bị dữ liệu để gửi lên server
       const userPayload = {
@@ -191,26 +199,30 @@ const Customers = () => {
         address: newUser.address,
         roleId: newUser.roleId,
       };
-      
+
       // Chỉ gửi password nếu người dùng đã nhập
       if (newUser.password && newUser.password === newUser.confirmPassword) {
         userPayload.password = newUser.password;
-      } else if (newUser.password && newUser.password !== newUser.confirmPassword) {
+      } else if (
+        newUser.password &&
+        newUser.password !== newUser.confirmPassword
+      ) {
         Swal.fire("Lỗi", "Mật khẩu xác nhận không khớp.", "error");
         return;
       }
-      
+
       // Thêm console.log ở đây để debug
       console.log("Editing user:", editingUser);
       console.log("User ID:", editingUser.id);
       console.log("Payload:", userPayload);
-      
-    
-      
+
       // Chỉ gửi password nếu người dùng đã nhập
       if (newUser.password && newUser.password === newUser.confirmPassword) {
         userPayload.password = newUser.password;
-      } else if (newUser.password && newUser.password !== newUser.confirmPassword) {
+      } else if (
+        newUser.password &&
+        newUser.password !== newUser.confirmPassword
+      ) {
         Swal.fire("Lỗi", "Mật khẩu xác nhận không khớp.", "error");
         return;
       }
@@ -219,11 +231,14 @@ const Customers = () => {
       console.log("User ID:", editingUser.id);
       console.log("Payload:", userPayload);
 
-      
       const response = await usersAPI.editUser(editingUser.userId, userPayload);
-      
+
       if (response.status >= 200 && response.status < 300) {
-        Swal.fire("Thành công!", "Thông tin thành viên đã được cập nhật.", "success");
+        Swal.fire(
+          "Thành công!",
+          "Thông tin thành viên đã được cập nhật.",
+          "success"
+        );
         fetchUsers();
         setShowAddUserModal(false);
         setEditingUser(null);
@@ -246,12 +261,12 @@ const Customers = () => {
     }
   };
 
+  const getOrderCount = (customerId) => {
+    if (!orders || !Array.isArray(orders)) {
+      return 0;
+    }
 
-
-
-
-  const getOrderCount = (userId) => {
-    return orders.filter((order) => order.userId === userId).length;
+    return orders.filter((order) => order.customerId === customerId).length;
   };
 
   const handleAddUser = async () => {
@@ -281,7 +296,6 @@ const Customers = () => {
       console.error("Error adding user:", error);
     }
   };
-  
 
   return (
     <div className="p-6 bg-gray-100 min-h-screen">
@@ -336,9 +350,9 @@ const Customers = () => {
         {showAddUserModal && (
           <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex justify-center items-center">
             <div className="bg-white p-6 rounded-lg shadow-lg w-96">
-            <h2 className="text-2xl font-bold mb-4">
-              {editingUser ? "Cập nhật thành viên" : "Thêm thành viên"}
-            </h2>         
+              <h2 className="text-2xl font-bold mb-4">
+                {editingUser ? "Cập nhật thành viên" : "Thêm thành viên"}
+              </h2>
               <input
                 type="text"
                 placeholder="Tên tài khoản"
@@ -446,7 +460,7 @@ const Customers = () => {
                 </tr>
               </thead>
               <tbody>
-              {currentCustomers.map((customer) => {
+                {currentCustomers.map((customer) => {
                   console.log("Thông tin người dùng:", customer); // Thêm dòng này
                   const { name, color } = getRoleName(customer.roleId);
                   return (
@@ -483,7 +497,9 @@ const Customers = () => {
                         <button
                           className="text-red-500"
                           // Thay đổi từ customer.id sang customer.userId
-                          onClick={() => handleDeleteUser(customer.userId || customer.id)}
+                          onClick={() =>
+                            handleDeleteUser(customer.userId || customer.id)
+                          }
                         >
                           <FaTrash />
                         </button>
