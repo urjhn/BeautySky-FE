@@ -18,7 +18,7 @@ const Sidebar = () => {
   const { user: authUser, logout } = useAuth();
   const { users, fetchUsers } = useUsersContext();
   const [currentUser, setCurrentUser] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -103,12 +103,12 @@ const NavItem = ({ icon, title, to }) => (
     <NavLink
       to={to}
       className={({ isActive }) =>
-        `flex items-center space-x-3 px-4 py-3 rounded-lg cursor-pointer transition-all duration-300 
-            ${
-              isActive
-                ? "bg-blue-300 text-black shadow-md"
-                : "text-black hover:bg-blue-500 hover:scale-105"
-            }`
+        `flex items-center space-x-3 px-4 py-3 rounded-lg cursor-pointer transition-all duration-300
+              ${
+                isActive
+                  ? "bg-blue-300 text-black shadow-md"
+                  : "text-black hover:bg-blue-500 hover:scale-105"
+              }`
       }
     >
       <div className="text-2xl">{icon}</div>

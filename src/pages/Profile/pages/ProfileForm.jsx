@@ -17,27 +17,29 @@ const ProfileForm = () => {
 
   useEffect(() => {
     const loadUsers = async () => {
-      setIsLoading(true);
-      await fetchUsers();
-      setIsLoading(false);
+      // Chỉ fetch khi chưa có users
+      if (users.length === 0) {
+        setIsLoading(true);
+        await fetchUsers();
+        setIsLoading(false);
+      }
     };
     loadUsers();
-  }, []);
+  }, [fetchUsers, users.length]);
 
   useEffect(() => {
     if (authUser && users.length > 0) {
       const foundUser = users.find(
         (u) => u.email?.toLowerCase() === authUser.email?.toLowerCase()
       );
-
-      if (foundUser) {
+      
+      // Cập nhật form chỉ khi có thay đổi user
+      if (foundUser && JSON.stringify(foundUser) !== JSON.stringify(currentUser)) {
         setCurrentUser(foundUser);
         form.setFieldsValue(foundUser);
-      } else {
-        message.error("Không tìm thấy thông tin người dùng.");
       }
     }
-  }, [authUser, users, form]);
+  }, [authUser, users, form, currentUser]);
 
   const handleEditClick = () => setIsEditing(true);
   const handleCancelClick = () => {
@@ -46,43 +48,78 @@ const ProfileForm = () => {
   };
 
   const handleFormSubmit = async (values) => {
-    Swal.fire({
-      title: "Xác nhận thay đổi?",
-      text: "Bạn có chắc chắn muốn cập nhật thông tin cá nhân?",
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonColor: "#3085d6",
-      cancelButtonColor: "#d33",
-      confirmButtonText: "Đồng ý",
-      cancelButtonText: "Hủy",
-    }).then(async (result) => {
-      if (result.isConfirmed) {
-        try {
-          if (!currentUser || !currentUser.userId) {
-            console.error("Error: User ID is missing", currentUser);
-            return;
-          }
-
-          const userId = currentUser.userId;
-          const payload = { ...values, userId };
-
-          const apiResult = await updateUser(userId, payload);
-
-          if (apiResult && apiResult.success) {
-            const updatedUser = apiResult.data;
-            updateAuthUser(updatedUser);
-            setCurrentUser(updatedUser);
-            message.success("Thông tin đã được cập nhật thành công!");
-            setIsEditing(false);
-          } else {
-            message.error("Cập nhật thất bại. Vui lòng thử lại.");
-          }
-        } catch (error) {
-          console.error("Error in form submission:", error);
-          message.error("Đã xảy ra lỗi, vui lòng thử lại.");
+    try {
+      // Hiển thị hộp thoại xác nhận
+      const confirmResult = await Swal.fire({
+        title: "Xác nhận thay đổi?",
+        text: "Bạn có chắc chắn muốn cập nhật thông tin cá nhân?",
+        icon: "question",
+        showCancelButton: true,
+        confirmButtonColor: "#3085d6",
+        cancelButtonColor: "#d33",
+        confirmButtonText: "Đồng ý",
+        cancelButtonText: "Hủy",
+        reverseButtons: true,
+      });
+  
+      if (confirmResult.isConfirmed) {
+        // Hiển thị loading khi đang xử lý
+        Swal.fire({
+          title: "Vui lòng chờ...",
+          html: "Đang cập nhật thông tin",
+          allowOutsideClick: false,
+          didOpen: () => {
+            Swal.showLoading();
+          },
+        });
+  
+        const payload = {
+          userName: values.userName,
+          fullName: values.fullName,
+          email: values.email,
+          phone: values.phone,
+          address: values.address,
+        };
+  
+        const apiResult = await updateUser(currentUser.userId, payload);
+  
+        if (apiResult?.success) {
+          // Đóng loading
+          Swal.close();
+          
+          // Thông báo thành công
+          await Swal.fire({
+            title: "Thành công!",
+            text: "Thông tin đã được cập nhật",
+            icon: "success",
+            confirmButtonColor: "#3085d6",
+          });
+  
+          setCurrentUser((prev) => ({ ...prev, ...payload }));
+          updateAuthUser({ ...authUser, ...payload });
+          setIsEditing(false);
+        } else {
+          Swal.close();
+          // Thông báo lỗi từ server
+          await Swal.fire({
+            title: "Lỗi!",
+            text: apiResult?.error?.message || "Cập nhật thất bại",
+            icon: "error",
+            confirmButtonColor: "#d33",
+          });
         }
       }
-    });
+    } catch (error) {
+      Swal.close();
+      console.error("Error:", error);
+      // Thông báo lỗi không xác định
+      await Swal.fire({
+        title: "Lỗi hệ thống!",
+        text: "Đã xảy ra lỗi không mong muốn",
+        icon: "error",
+        confirmButtonColor: "#d33",
+      });
+    }
   };
 
   if (isLoading) {
@@ -114,7 +151,7 @@ const ProfileForm = () => {
         <Form
           form={form}
           layout="vertical"
-          initialValues={currentUser}
+          // initialValues={currentUser} // Do not use initialValues here
           onFinish={handleFormSubmit}
           className="bg-white p-10 rounded-lg shadow-md shadow-gray-400  space-y-6"
         >
