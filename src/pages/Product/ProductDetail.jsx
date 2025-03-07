@@ -2,28 +2,26 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useState, useEffect, useCallback } from "react";
 import { useCart } from "../../context/CartContext";
 import { useDataContext } from "../../context/DataContext";
+import { useReviewContext } from "../../context/ReviewContext";
+import { useUsersContext } from "../../context/UserContext";
+import { useAuth } from "../../context/AuthContext";
 import Navbar from "../../components/Navbar/Navbar";
 import Footer from "../../components/Footer/Footer";
 import { formatCurrency } from "../../utils/formatCurrency";
-import {
-  FaArrowLeft,
-  FaShoppingCart,
-  FaStar,
-  FaRegStar,
-  FaHeart,
-  FaShareAlt,
-} from "react-icons/fa";
+import { FaArrowLeft, FaShoppingCart } from "react-icons/fa";
 import Swal from "sweetalert2";
 import { Rating, Chip, Dialog, DialogContent, IconButton } from "@mui/material";
+import reviewsAPI from "../../services/reviews";
 
 const ProductDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { addToCart } = useCart();
+  const { users } = useUsersContext();
   const { products, fetchProduct } = useDataContext();
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [reviews, setReviews] = useState([]);
+  const { reviews, fetchReviews, setReviews } = useReviewContext();
   const [newRating, setNewRating] = useState(0);
   const [newComment, setNewComment] = useState("");
   const [selectedImage, setSelectedImage] = useState(null);
@@ -31,6 +29,8 @@ const ProductDetail = () => {
   const [activeImage, setActiveImage] = useState(0);
   const [openDialog, setOpenDialog] = useState(false);
   const [tabValue, setTabValue] = useState(0);
+  const [previewImage, setPreviewImage] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Sử dụng useCallback để tránh re-render không cần thiết
   const fetchData = useCallback(async () => {
@@ -46,6 +46,7 @@ const ProductDetail = () => {
       if (foundProduct) {
         setProduct(foundProduct);
         setReviews(foundProduct.reviews || []);
+        fetchReviews();
       } else {
         console.log("Không tìm thấy sản phẩm với ID:", id);
       }
@@ -63,11 +64,19 @@ const ProductDetail = () => {
 
   // Loading và Error handling
   if (loading) {
-    return <div className="text-center text-gray-500 text-lg mt-20">Đang tải sản phẩm...</div>;
+    return (
+      <div className="text-center text-gray-500 text-lg mt-20">
+        Đang tải sản phẩm...
+      </div>
+    );
   }
 
   if (!product) {
-    return <div className="text-center text-gray-500 text-lg mt-20">Sản phẩm không tìm thấy</div>;
+    return (
+      <div className="text-center text-gray-500 text-lg mt-20">
+        Sản phẩm không tìm thấy
+      </div>
+    );
   }
 
   const handleQuantityChange = (value) => {
@@ -93,62 +102,109 @@ const ProductDetail = () => {
     setActiveImage((prev) => (prev === images.length - 1 ? 0 : prev + 1));
   };
 
-
-
   const handleAddToCart = () => {
     if (!product || product.quantity === 0) {
       Swal.fire({
         icon: "error",
-        title: "Hết hàng!",
-        text: "Sản phẩm này đã hết hàng, vui lòng chọn sản phẩm khác.",
-        confirmButtonColor: "#d33",
+        title: "Out of stock!",
+        text: "This product is out of stock.",
       });
       return;
     }
-
-    const cartItem = {
+    addToCart({
       id: product.productId,
       name: product.productName,
       price: product.price,
-      image:
-        product.productsImages?.[0]?.imageUrl ||
-        product.image ||
-        "https://via.placeholder.com/150",
-      quantity: quantity,
-    };
-
-    addToCart(cartItem);
-
+      image: images[0],
+      quantity,
+    });
     Swal.fire({
       icon: "success",
       title: "Đã thêm vào giỏ hàng!",
       text: `${product.productName} đã được thêm vào giỏ hàng.`,
-      confirmButtonColor: "#3085d6",
     });
   };
 
-  const handleReviewSubmit = () => {
-    if (!newComment.trim()) return;
-
-    const newReview = {
-      id: reviews.length + 1,
-      rating: newRating,
-      comment: newComment,
-      image: selectedImage ? URL.createObjectURL(selectedImage) : null,
-    };
-
-    setReviews([newReview, ...reviews]);
-    setNewRating(0);
-    setNewComment("");
-    setSelectedImage(null);
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setSelectedImage(file);
+      setPreviewImage(URL.createObjectURL(file)); // Xem trước ảnh
+    }
   };
 
-  const images = product.productsImages?.map(img => img.imageUrl) || [product.image];
+  const handleReviewSubmit = async () => {
+    if (isSubmitting) return; // Tránh gửi nhiều lần
+    setIsSubmitting(true); // Bật trạng thái gửi
+
+    const { currentUser } = useAuth();
+
+    if (!currentUser) {
+      Swal.fire("Lỗi", "Bạn cần đăng nhập để gửi đánh giá!", "warning");
+      setIsSubmitting(false);
+      return;
+    }
+
+    if (!newComment.trim()) {
+      Swal.fire("Lỗi", "Vui lòng nhập nội dung đánh giá!", "warning");
+      setIsSubmitting(false);
+      return;
+    }
+
+    if (newRating === 0) {
+      Swal.fire("Lỗi", "Vui lòng chọn số sao!", "warning");
+      setIsSubmitting(false);
+      return;
+    }
+
+    try {
+      const formData = new FormData();
+      formData.append("productId", product.productId);
+      formData.append("userId", currentUser.id);
+      formData.append("rating", newRating);
+      formData.append("comment", newComment);
+      if (selectedImage) {
+        formData.append("image", selectedImage);
+      }
+
+      const response = await reviewsAPI.createReviews(formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+
+      setReviews([response.data, ...reviews]);
+      setNewRating(0);
+      setNewComment("");
+      setSelectedImage(null);
+      setPreviewImage(null);
+
+      Swal.fire("Thành công!", "Đánh giá của bạn đã được gửi!", "success");
+    } catch (error) {
+      console.error("Lỗi gửi đánh giá:", error);
+      Swal.fire(
+        "Lỗi!",
+        error.response?.data?.message || "Có lỗi xảy ra khi gửi đánh giá.",
+        "error"
+      );
+    } finally {
+      setIsSubmitting(false); // Tắt trạng thái gửi sau khi hoàn tất
+    }
+  };
+
+  const images = product.productsImages?.map((img) => img.imageUrl) || [
+    product.image,
+  ];
+
+  const productReviews = reviews.filter(
+    (review) => review.productId.toString() === id
+  );
 
   return (
     <>
       <Navbar />
-      <div className="min-h-screen flex flex-col items-center py-12 px-6" style={{ backgroundColor: '#e9f3fc' }}>
+      <div
+        className="min-h-screen flex flex-col items-center py-12 px-6"
+        style={{ backgroundColor: "#e9f3fc" }}
+      >
         <div className="bg-white rounded-none shadow-xl p-10 flex flex-col md:flex-row w-full max-w-6xl animate-fadeIn gap-8 border">
           <div className="w-full md:w-1/2">
             <img
@@ -163,7 +219,9 @@ const ProductDetail = () => {
                 <div
                   key={index}
                   className={`min-w-[80px] h-20 border-2 rounded cursor-pointer ${
-                    activeImage === index ? "border-blue-500" : "border-gray-200"
+                    activeImage === index
+                      ? "border-blue-500"
+                      : "border-gray-200"
                   }`}
                   onClick={() => setActiveImage(index)}
                 >
@@ -183,13 +241,9 @@ const ProductDetail = () => {
             </h1>
 
             <div className="flex items-center">
-              <Rating
-                value={product.rating || 0}
-                readOnly
-                precision={0.5}
-              />
+              <Rating value={product.rating || 0} readOnly precision={0.5} />
               <span className="ml-2 text-gray-600">
-                ({reviews.length} đánh giá)
+                ({productReviews.length} đánh giá)
               </span>
             </div>
 
@@ -201,7 +255,9 @@ const ProductDetail = () => {
               </p>
               {product.discountPrice && (
                 <Chip
-                  label={`-${Math.round((1 - product.discountPrice / product.price) * 100)}%`}
+                  label={`-${Math.round(
+                    (1 - product.discountPrice / product.price) * 100
+                  )}%`}
                   color="secondary"
                   size="small"
                 />
@@ -228,7 +284,9 @@ const ProductDetail = () => {
                 <input
                   type="number"
                   value={quantity}
-                  onChange={(e) => handleQuantityChange(Number(e.target.value) || 1)}
+                  onChange={(e) =>
+                    handleQuantityChange(Number(e.target.value) || 1)
+                  }
                   className="w-16 text-center"
                   min="1"
                 />
@@ -261,27 +319,28 @@ const ProductDetail = () => {
                 <FaArrowLeft /> Quay lại
               </button>
             </div>
-            <div className="flex space-x-2">
-            </div>
+            <div className="flex space-x-2"></div>
           </div>
         </div>
 
         {/* Phần Feedback */}
         <div className="w-full max-w-6xl mt-10 bg-white p-6 rounded-none shadow-lg border">
           <div className="flex mb-4">
-            {["Mô tả", "Thành phần", `Đánh giá (${reviews.length})`].map((tab, index) => (
-              <button
-                key={tab}
-                className={`px-4 py-2 mr-2 ${
-                  tabValue === index
-                    ? "bg-blue-500 text-white"
-                    : "bg-gray-200 text-gray-700"
-                } rounded-none`}
-                onClick={() => setTabValue(index)}
-              >
-                {tab}
-              </button>
-            ))}
+            {["Mô tả", "Thành phần", `Đánh giá (${productReviews.length})`].map(
+              (tab, index) => (
+                <button
+                  key={tab}
+                  className={`px-4 py-2 mr-2 ${
+                    tabValue === index
+                      ? "bg-blue-500 text-white"
+                      : "bg-gray-200 text-gray-700"
+                  } rounded-none`}
+                  onClick={() => setTabValue(index)}
+                >
+                  {tab}
+                </button>
+              )
+            )}
           </div>
 
           <div className="mt-4">
@@ -289,39 +348,64 @@ const ProductDetail = () => {
               <div dangerouslySetInnerHTML={{ __html: product.description }} />
             )}
             {tabValue === 1 && (
-              <div dangerouslySetInnerHTML={{ __html: product.ingredient || "Không có thông tin thành phần" }} />
+              <div
+                dangerouslySetInnerHTML={{
+                  __html: product.ingredient || "Không có thông tin thành phần",
+                }}
+              />
             )}
             {tabValue === 2 && (
               <div>
                 {/* Hiển thị đánh giá */}
-                {reviews.length === 0 ? (
-                  <p className="text-gray-500">Chưa có đánh giá nào</p>
-                ) : (
+                <p className="text-gray-600 font-semibold">
+                  {productReviews.length} đánh giá
+                </p>
+                {productReviews.length > 0 ? (
                   <div className="space-y-4">
-                    {reviews.map((review) => (
-                      <div
-                        key={review.id}
-                        className="border p-4 rounded-lg shadow-sm"
-                      >
-                        <div className="flex items-center gap-2">
-                          <Rating value={review.rating} readOnly size="small" />
+                    {productReviews.map((review) => {
+                      const user =
+                        users?.find((u) => u.userId === review.userId) || {};
+
+                      return (
+                        <div
+                          key={review.id}
+                          className="border p-4 rounded-lg shadow-sm"
+                        >
+                          {/* Avatar & Tên người dùng */}
+                          <div className="flex items-center gap-3">
+                            <img
+                              src={user.avatar || "/default-avatar.png"}
+                              alt={user.fullName || "Người dùng ẩn danh"}
+                              className="w-10 h-10 rounded-full object-cover border"
+                            />
+                            <div>
+                              <p className="text-lg font-semibold">
+                                {user.userName || "Người dùng ẩn danh"}
+                              </p>
+                              <Rating
+                                value={review.rating}
+                                readOnly
+                                size="small"
+                              />
+                            </div>
+                          </div>
+                          {/* Nội dung đánh giá */}
+                          <p className="mt-2 text-gray-700">{review.comment}</p>
                         </div>
-                        <p className="mt-2 text-gray-700">{review.comment}</p>
-                        {review.image && (
-                          <img
-                            src={review.image}
-                            alt="Review"
-                            className="mt-2 w-32 h-32 object-cover rounded-lg"
-                          />
-                        )}
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
+                ) : (
+                  <p className="text-gray-500">Chưa có đánh giá nào</p>
                 )}
 
                 {/* Form đánh giá */}
                 <div className="mt-6">
-                  <h3 className="text-xl font-semibold">Viết đánh giá của bạn</h3>
+                  <h3 className="text-xl font-semibold">
+                    Viết đánh giá của bạn
+                  </h3>
+
+                  {/* Chọn số sao */}
                   <div className="flex items-center gap-2 mt-2">
                     <Rating
                       value={newRating}
@@ -329,22 +413,44 @@ const ProductDetail = () => {
                       precision={1}
                     />
                   </div>
+
+                  {/* Nhập nội dung đánh giá */}
                   <textarea
                     className="w-full p-3 mt-2 border rounded-lg"
                     placeholder="Nhập đánh giá của bạn..."
                     value={newComment}
                     onChange={(e) => setNewComment(e.target.value)}
                   />
+
+                  {/* Chọn ảnh */}
                   <input
                     type="file"
                     className="mt-2"
-                    onChange={(e) => setSelectedImage(e.target.files[0])}
+                    onChange={handleImageChange}
                   />
+
+                  {/* Hiển thị ảnh xem trước nếu có */}
+                  {previewImage && (
+                    <div className="mt-2">
+                      <img
+                        src={previewImage}
+                        alt="Ảnh xem trước"
+                        className="w-32 h-32 object-cover rounded-lg border"
+                      />
+                    </div>
+                  )}
+
+                  {/* Nút gửi đánh giá */}
                   <button
-                    className="mt-4 bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600"
+                    className={`mt-4 px-6 py-2 rounded-lg text-white transition ${
+                      isSubmitting
+                        ? "bg-gray-400 cursor-not-allowed"
+                        : "bg-blue-500 hover:bg-blue-600"
+                    }`}
                     onClick={handleReviewSubmit}
+                    disabled={isSubmitting}
                   >
-                    Gửi đánh giá
+                    {isSubmitting ? "Đang gửi..." : "Gửi đánh giá"}
                   </button>
                 </div>
               </div>
@@ -354,7 +460,12 @@ const ProductDetail = () => {
       </div>
 
       {/* Dialog xem ảnh lớn */}
-      <Dialog open={openDialog} onClose={handleCloseDialog} maxWidth="lg" fullWidth>
+      <Dialog
+        open={openDialog}
+        onClose={handleCloseDialog}
+        maxWidth="lg"
+        fullWidth
+      >
         <DialogContent className="relative p-0">
           <IconButton
             onClick={handleCloseDialog}
@@ -367,22 +478,19 @@ const ProductDetail = () => {
           <div className="relative">
             <img
               src={images[activeImage]}
-              alt={product.productName} className="w-full h-auto"
+              alt={product.productName}
+              className="w-full h-auto"
             />
 
             <button
               onClick={handlePrevImage}
               className="absolute top-1/2 left-2 transform -translate-y-1/2 bg-white rounded-full p-2 shadow-md"
-            >
-              
-            </button>
+            ></button>
 
             <button
               onClick={handleNextImage}
               className="absolute top-1/2 right-2 transform -translate-y-1/2 bg-white rounded-full p-2 shadow-md"
-            >
-              
-            </button>
+            ></button>
           </div>
         </DialogContent>
       </Dialog>
