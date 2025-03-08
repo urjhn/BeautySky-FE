@@ -1,110 +1,137 @@
-import React from "react";
-import { Bar, Line, Pie } from "react-chartjs-2";
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  LineElement,
-  PointElement,
-  ArcElement,
-  Title,
-  Tooltip,
-  Legend,
-} from "chart.js";
+import React, { useEffect, useState } from "react";
+import reviewsAPI from "../../../services/reviews";
+import Swal from "sweetalert2";
+import "sweetalert2/dist/sweetalert2.min.css";
+import ReactPaginate from "react-paginate";
+import "tailwindcss/tailwind.css";
 
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  LineElement,
-  PointElement,
-  ArcElement,
-  Title,
-  Tooltip,
-  Legend
-);
+const ProductReviews = () => {
+  const [reviews, setReviews] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [currentPage, setCurrentPage] = useState(0);
+  const reviewsPerPage = 5;
 
-const ProductFeedback = () => {
-  const positiveFeedbackData = {
-    labels: ["Tháng 1", "Tháng 2", "Tháng 3", "Tháng 4", "Tháng 5", "Tháng 6"],
-    datasets: [
-      {
-        label: "Phản hồi tích cực",
-        data: [80, 100, 120, 140, 160, 180],
-        backgroundColor: "rgba(54, 162, 235, 0.5)",
-        borderColor: "rgba(54, 162, 235, 1)",
-        borderWidth: 1,
-      },
-    ],
+  useEffect(() => {
+    fetchReviews();
+  }, []);
+
+  const fetchReviews = async () => {
+    try {
+      const response = await reviewsAPI.getAll();
+      setReviews(response.data);
+    } catch (error) {
+      Swal.fire("Error", "Failed to fetch reviews", "error");
+    }
   };
 
-  const negativeFeedbackData = {
-    labels: ["Tháng 1", "Tháng 2", "Tháng 3", "Tháng 4", "Tháng 5", "Tháng 6"],
-    datasets: [
-      {
-        label: "Phản hồi tiêu cực",
-        data: [20, 30, 40, 35, 45, 50],
-        backgroundColor: "rgba(255, 99, 132, 0.5)",
-        borderColor: "rgba(255, 99, 132, 1)",
-        borderWidth: 2,
-      },
-    ],
+  const handleDeleteReview = async (review) => {
+    Swal.fire({
+      title: "Bạn có chắc chắn?",
+      text: `Bạn sắp xóa đánh giá cho sản phẩm ${review.productName}`,
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "Vâng, xóa ngay!",
+      cancelButtonText: "Hủy",
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        try {
+          const response = await reviewsAPI.deleteReviews(review.reviewId);
+
+          if (response.status === 200) {
+            setReviews(reviews.filter((r) => r.reviewId !== review.reviewId));
+            Swal.fire("Deleted!", "Bài đánh giá đã được xóa", "success");
+          } else {
+            throw new Error("Lỗi không xác định khi xóa");
+          }
+        } catch (error) {
+          if (error.response?.status === 404) {
+            Swal.fire("Lỗi", "Không tìm thấy bài đánh giá", "error");
+          } else {
+            Swal.fire("Lỗi", "Lỗi xóa đánh giá", "error");
+          }
+        }
+      }
+    });
   };
 
-  const feedbackCategoryData = {
-    labels: [
-      "Tuyệt vời",
-      "Hài lòng",
-      "Bình thường",
-      "Không hài lòng",
-      "Rất tệ",
-    ],
-    datasets: [
-      {
-        label: "Mức độ phản hồi",
-        data: [50, 30, 10, 5, 5],
-        backgroundColor: [
-          "#36A2EB",
-          "#4BC0C0",
-          "#FFCE56",
-          "#FF9F40",
-          "#FF6384",
-        ],
-      },
-    ],
-  };
+  const filteredReviews = reviews.filter((review) =>
+    Object.values(review).some((value) =>
+      value.toString().toLowerCase().includes(searchTerm.toLowerCase())
+    )
+  );
+
+  const pageCount = Math.ceil(filteredReviews.length / reviewsPerPage);
+  const offset = currentPage * reviewsPerPage;
+  const currentReviews = filteredReviews.slice(offset, offset + reviewsPerPage);
 
   return (
-    <div className="p-6 bg-gray-100 min-h-screen">
-      <h1 className="text-3xl font-bold mb-6 text-gray-800">
-        Báo Cáo & Phân Tích Phản Hồi Khách Hàng
-      </h1>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="bg-white p-6 rounded-lg shadow">
-          <h2 className="text-xl font-semibold mb-4 text-gray-800">
-            Phản hồi tích cực theo tháng
-          </h2>
-          <Bar data={positiveFeedbackData} />
-        </div>
-
-        <div className="bg-white p-6 rounded-lg shadow">
-          <h2 className="text-xl font-semibold mb-4 text-gray-800">
-            Phản hồi tiêu cực theo tháng
-          </h2>
-          <Line data={negativeFeedbackData} />
-        </div>
+    <div className="w-full mx-auto bg-white shadow-lg rounded-lg p-8">
+      <h2 className="text-3xl font-extrabold text-gray-800 text-center mb-6">
+        Product Reviews
+      </h2>
+      <input
+        type="text"
+        placeholder="Tìm kiếm..."
+        value={searchTerm}
+        onChange={(e) => setSearchTerm(e.target.value)}
+        className="w-52 p-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-indigo-400 mb-4"
+      />
+      <div className="overflow-x-auto rounded-lg">
+        <table className="w-full border-collapse bg-white shadow-md rounded-lg">
+          <thead>
+            <tr className="bg-blue-500 text-white">
+              <th className="p-3 text-left">ID</th>
+              <th className="p-3 text-left">Tên sản phẩm</th>
+              <th className="p-3 text-left">Người dùng</th>
+              <th className="p-3 text-left">Đánh giá</th>
+              <th className="p-3 text-left">Bình luận</th>
+              <th className="p-3 text-left">Ngày tạo</th>
+              <th className="p-3 text-center">Thao tác</th>
+            </tr>
+          </thead>
+          <tbody>
+            {currentReviews.map((review) => (
+              <tr
+                key={review.id}
+                className="border-b hover:bg-gray-100 transition"
+              >
+                <td className="p-3">{review.reviewId}</td>
+                <td className="p-3">{review.productName}</td>
+                <td className="p-3">{review.userName}</td>
+                <td className="p-3 text-yellow-500">{review.rating} ⭐</td>
+                <td className="p-3">{review.comment}</td>
+                <td className="p-3">
+                  {new Date(review.reviewDate).toLocaleDateString()}
+                </td>
+                <td className="p-3 text-center">
+                  <button
+                    className="bg-red-500 text-white px-4 py-2 rounded-lg shadow hover:bg-red-600 transition"
+                    onClick={() => handleDeleteReview(review)}
+                  >
+                    Delete
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
-
-      <div className="bg-white p-6 rounded-lg shadow mt-6 w-full max-w-md mx-auto">
-        <h2 className="text-xl font-semibold mb-4 text-gray-800">
-          Tỷ lệ mức độ phản hồi
-        </h2>
-        <Pie data={feedbackCategoryData} />
-      </div>
+      <ReactPaginate
+        previousLabel={"←"}
+        nextLabel={"→"}
+        pageCount={pageCount}
+        onPageChange={({ selected }) => setCurrentPage(selected)}
+        containerClassName="flex justify-center space-x-2 mt-4"
+        pageClassName="px-3 py-1 border rounded-lg cursor-pointer hover:bg-blue-500 hover:text-white"
+        activeClassName="bg-blue-500 text-white"
+        previousClassName="px-3 py-1 border rounded-lg cursor-pointer hover:bg-gray-300"
+        nextClassName="px-3 py-1 border rounded-lg cursor-pointer hover:bg-gray-300"
+        disabledClassName="opacity-50 cursor-not-allowed"
+      />
     </div>
   );
 };
 
-export default ProductFeedback;
+export default ProductReviews;

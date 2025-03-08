@@ -26,20 +26,31 @@ const DashboardEvents = () => {
   const indexOfFirstEvent = indexOfLastEvent - eventsPerPage;
   const currentEvents = news.slice(indexOfFirstEvent, indexOfLastEvent);
 
-  const handleImageUpload = (e) => {
+  const handleImageUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
 
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      setForm((prev) => ({ ...prev, imageUrl: reader.result }));
-    };
-    reader.readAsDataURL(file);
+    const formData = new FormData();
+    formData.append("image", file);
+
+    try {
+      const response = await fetch("API_UPLOAD_ENDPOINT", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error("Upload failed");
+      }
+
+      const data = await response.json();
+      setForm((prev) => ({ ...prev, imageUrl: data.imageUrl })); // Lưu URL ảnh từ API
+    } catch (error) {
+      console.error("Error uploading image:", error);
+    }
   };
 
   const handleSubmit = async () => {
-    console.log(form.startDate, form.endDate);
-
     if (!form.title || !form.content || !form.startDate || !form.endDate) {
       Swal.fire("Lỗi!", "Vui lòng điền đầy đủ thông tin sự kiện.", "error");
       return;
@@ -47,22 +58,28 @@ const DashboardEvents = () => {
 
     try {
       let response;
+      const requestData = {
+        title: form.title,
+        content: form.content,
+        imageUrl: form.imageUrl,
+        createDate: form.createDate,
+        startDate: form.startDate,
+        endDate: form.endDate,
+      };
+
       if (form.id) {
-        // Update existing event
-        response = await newsAPI.editNews(form.id, {
-          /* data */
-        });
+        response = await newsAPI.editNews(form.id, requestData);
+        Swal.fire("Thành công!", "Sự kiện đã được cập nhật.", "success");
       } else {
-        // Create new event
-        response = await newsAPI.createNews({
-          /* data */
-        });
+        response = await newsAPI.createNews(requestData);
+        Swal.fire("Thành công!", "Sự kiện mới đã được thêm.", "success");
       }
-      console.log(response);
+
+      resetForm();
+      fetchNews();
     } catch (error) {
       console.error("Lỗi khi lưu sự kiện:", error);
       if (error.response) {
-        console.log("Lỗi từ server:", error.response.data);
         Swal.fire(
           "Lỗi!",
           `Không thể lưu sự kiện: ${error.response.data.message}`,
@@ -78,11 +95,9 @@ const DashboardEvents = () => {
 
   const handleEditEvents = async (eventId) => {
     try {
-      if (!eventId) {
-        throw new Error("Missing event ID");
-      }
+      const response = await newsAPI.getNewsById(eventId);
+      const eventToEdit = response.data;
 
-      const eventToEdit = news.find((e) => e.id === eventId);
       if (!eventToEdit) {
         throw new Error("Event not found");
       }
@@ -92,23 +107,21 @@ const DashboardEvents = () => {
         title: eventToEdit.title,
         content: eventToEdit.content,
         imageUrl: eventToEdit.imageUrl,
-        createDate: eventToEdit.createDate,
-        startDate: eventToEdit.startDate
-          ? eventToEdit.startDate.split("T")[0]
-          : "",
-        endDate: eventToEdit.endDate ? eventToEdit.endDate.split("T")[0] : "",
+        createDate: eventToEdit.createDate.split("T")[0],
+        startDate: eventToEdit.startDate.split("T")[0],
+        endDate: eventToEdit.endDate.split("T")[0],
       });
     } catch (error) {
-      console.error("Error preparing event edit:", error);
+      console.error("Lỗi khi tải sự kiện:", error);
       Swal.fire({
         icon: "error",
         title: "Lỗi!",
-        text: "Không thể tải thông tin sự kiện, vui lòng thử lại",
+        text: "Không thể tải thông tin sự kiện, vui lòng thử lại.",
       });
     }
   };
 
-  const handleDelete = async (id) => {
+  const handleDelete = async (eventId) => {
     Swal.fire({
       title: "Bạn có chắc chắn muốn xóa?",
       text: "Hành động này không thể hoàn tác!",
@@ -121,7 +134,7 @@ const DashboardEvents = () => {
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {
-          await newsAPI.deleteNews(id);
+          await newsAPI.deleteNewsById(eventId);
           fetchNews();
           Swal.fire("Đã xóa!", "Sự kiện đã được xóa thành công.", "success");
         } catch (error) {

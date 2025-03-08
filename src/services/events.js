@@ -17,17 +17,27 @@ const newsAPI = {
   editNews: async (id, payload) => {
     try {
       const response = await axiosInstance.put(`${endPoint}/${id}`, payload);
-      if (response.status >= 200 && response.status < 300) {
-        return response;
-      }
-      throw new Error(`Trạng thái phản hồi không mong muốn: ${response.status}`);
+      return response.data;
     } catch (error) {
-      console.error("Lỗi khi cập nhật tin tức:", error);
-      throw error; // Propagate lỗi lên để xử lý sau
+      console.error("Error updating news:", error);
+      throw error;
     }
   },
-  deleteNews: async (id) => {
-    return await axiosInstance.delete(`${endPoint}/${id}`);
+  deleteNewsById: async (id) => {
+    try {
+      const response = await axiosInstance.delete(`${endPoint}/${id}`);
+      return response.data;
+    } catch (error) {
+      console.error("Error deleting news:", error);
+      throw error;
+    }
+  },
+  getNewsById: async (id, payload) => {
+    const response = await axiosInstance.get(`${endPoint}/${id}`, payload);
+    if (response.status >= 200 && response.status < 300) {
+      return response;
+    }
+    return response;
   },
 };
 
