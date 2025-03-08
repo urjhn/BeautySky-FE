@@ -92,62 +92,83 @@ const PromotionManagement = () => {
       };
 
       if (isEditing) {
-        const response = await promotionsAPI.editPromotions(form.id, payload);
-        if (response?.data) {
-          setPromotions((prev) =>
-            prev.map((p) =>
-              p.id === form.id
-                ? {
-                    id: response.data.promotionId,
-                    name: response.data.promotionName,
-                    discount: `${response.data.discountPercentage}%`,
-                    startDate: response.data.startDate.split("T")[0],
-                    endDate: response.data.endDate.split("T")[0],
-                  }
-                : p
-            )
-          );
+        try {
+          const response = await promotionsAPI.editPromotions(form.id, {
+            ...payload,
+            promotionId: form.id,
+          });
 
+          if (response.status === 204) {
+            // API trả về NoContent (204), tự cập nhật dữ liệu trên UI
+            setPromotions((prev) =>
+              prev.map((p) =>
+                p.id === form.id
+                  ? {
+                      id: form.id,
+                      name: form.name,
+                      discount: `${form.discount}%`,
+                      startDate: form.startDate,
+                      endDate: form.endDate,
+                    }
+                  : p
+              )
+            );
+
+            Swal.fire({
+              icon: "success",
+              title: "Cập nhật thành công!",
+              text: "Khuyến mãi đã được cập nhật.",
+              timer: 2000,
+              showConfirmButton: false,
+            });
+          }
+        } catch (error) {
           Swal.fire({
-            icon: "success",
-            title: "Cập nhật thành công!",
-            text: "Khuyến mãi đã được cập nhật.",
-            timer: 2000,
-            showConfirmButton: false,
+            icon: "error",
+            title: "Lỗi!",
+            text: "Không thể cập nhật khuyến mãi, vui lòng thử lại.",
           });
         }
       } else {
-        const response = await promotionsAPI.createPromotions(payload);
-        if (response?.data) {
-          setPromotions([
-            ...promotions,
-            {
-              id: response.data.promotionId,
-              name: response.data.promotionName,
-              discount: `${response.data.discountPercentage}%`,
-              startDate: response.data.startDate.split("T")[0],
-              endDate: response.data.endDate.split("T")[0],
-            },
-          ]);
-        }
+        try {
+          const response = await promotionsAPI.createPromotions(payload);
 
-        Swal.fire({
-          icon: "success",
-          title: "Thêm thành công!",
-          text: "Khuyến mãi mới đã được thêm.",
-          timer: 2000,
-          showConfirmButton: false,
-        });
+          if (response?.data) {
+            setPromotions((prev) => [
+              ...prev,
+              {
+                id: response.data.promotionId,
+                name: response.data.promotionName,
+                discount: `${response.data.discountPercentage}%`,
+                startDate: response.data.startDate.split("T")[0],
+                endDate: response.data.endDate.split("T")[0],
+              },
+            ]);
+
+            Swal.fire({
+              icon: "success",
+              title: "Thêm thành công!",
+              text: "Khuyến mãi mới đã được thêm.",
+              timer: 2000,
+              showConfirmButton: false,
+            });
+          }
+        } catch (error) {
+          Swal.fire({
+            icon: "error",
+            title: "Lỗi!",
+            text: "Không thể thêm khuyến mãi, vui lòng thử lại.",
+          });
+        }
       }
 
       setShowModal(false);
       setForm({ id: null, name: "", discount: "", startDate: "", endDate: "" });
     } catch (error) {
-      console.error("Lỗi khi thêm/chỉnh sửa khuyến mãi:", error);
       Swal.fire({
         icon: "error",
         title: "Lỗi!",
-        text: "Có lỗi xảy ra, vui lòng thử lại sau.",
+        text: "Có lỗi xảy ra, vui lòng thử lại.",
       });
     }
   };
