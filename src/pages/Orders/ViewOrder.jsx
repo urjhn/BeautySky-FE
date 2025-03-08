@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import {
   CheckCircleIcon,
@@ -5,37 +6,72 @@ import {
   CreditCardIcon,
   MapPinIcon,
 } from "@heroicons/react/24/solid";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import Navbar from "../../components/Navbar/Navbar";
 import Footer from "../../components/Footer/Footer";
-import { useCart } from "../../context/CartContext";
 import { formatCurrency } from "../../utils/formatCurrency";
+import orderAPI from "../../services/order"; // ✅ API lấy thông tin đơn hàng
+import Swal from "sweetalert2";
 
 const ViewOrder = () => {
   const navigate = useNavigate();
-  const { cartItems, totalPrice } = useCart(); // ✅ Lấy thông tin từ CartContext
+  const [searchParams] = useSearchParams();
+  const orderId = searchParams.get("orderId"); // ✅ Lấy orderId từ URL
+  const [orderData, setOrderData] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-  // ✅ Đảm bảo totalPrice luôn là số
-  const formattedTotalPrice = Number(totalPrice) || 0;
+  useEffect(() => {
+    const fetchOrderDetails = async () => {
+      if (!orderId) {
+        Swal.fire({
+          icon: "error",
+          title: "Lỗi!",
+          text: "Không tìm thấy mã đơn hàng.",
+        });
+        setLoading(false);
+        return;
+      }
 
-  // Giả lập dữ liệu đơn hàng (có thể thay bằng API sau này)
-  const orderData = {
-    orderId: `#ORD${new Date().toISOString().slice(0, 10).replace(/-/g, "")}`,
-    trackingId: "VN123456789",
-    paymentInfo: {
-      bankAccount: "9704 **** **** 6789",
-      amountPaid: totalPrice,
-      paymentMethod: "VNPAY",
-    },
-    shippingStatus: "Đang giao hàng",
-    shippingSteps: [
-      "Đã tiếp nhận đơn hàng",
-      "Đang chuẩn bị hàng",
-      "Đã xuất kho",
-      "Đang vận chuyển",
-      "Giao hàng thành công",
-    ],
-  };
+      try {
+        const response = await orderAPI.getOrderDetails(orderId);
+        if (response) {
+          setOrderData(response);
+        } else {
+          Swal.fire({
+            icon: "error",
+            title: "Lỗi tải đơn hàng!",
+            text: "Không tìm thấy thông tin đơn hàng.",
+          });
+        }
+      } catch (error) {
+        console.error("Lỗi khi lấy đơn hàng:", error);
+        Swal.fire({
+          icon: "error",
+          title: "Lỗi hệ thống!",
+          text: "Không thể tải dữ liệu đơn hàng. Vui lòng thử lại sau.",
+        });
+      }
+      setLoading(false);
+    };
+
+    fetchOrderDetails();
+  }, [orderId]);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gray-100">
+        <p className="text-lg text-gray-600">Đang tải thông tin đơn hàng...</p>
+      </div>
+    );
+  }
+
+  if (!orderData) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gray-100">
+        <p className="text-lg text-red-500">Không tìm thấy đơn hàng.</p>
+      </div>
+    );
+  }
 
   return (
     <>
@@ -59,12 +95,13 @@ const ViewOrder = () => {
             <span className="font-semibold">{orderData.trackingId}</span>
           </p>
 
+          {/* Danh sách sản phẩm */}
           <div className="mt-4">
             <h2 className="text-lg font-semibold text-gray-700">
               Sản phẩm đã mua:
             </h2>
             <div className="bg-gray-100 p-4 rounded-lg space-y-4 mt-2">
-              {cartItems.map((item) => (
+              {orderData.items.map((item) => (
                 <div
                   key={item.id}
                   className="flex items-center justify-between text-gray-700"
@@ -87,11 +124,12 @@ const ViewOrder = () => {
               ))}
               <div className="flex justify-between font-bold text-gray-900 mt-2 border-t pt-2">
                 <span>Tổng cộng:</span>
-                <span>{formatCurrency(formattedTotalPrice.toFixed(2))}</span>
+                <span>{formatCurrency(orderData.totalAmount.toFixed(2))}</span>
               </div>
             </div>
           </div>
 
+          {/* Thông tin thanh toán */}
           <div className="mt-6 bg-blue-50 p-4 rounded-lg">
             <h2 className="text-lg font-semibold text-gray-700 flex items-center">
               <CreditCardIcon className="w-6 h-6 text-blue-500 mr-2" /> Thông
@@ -117,6 +155,7 @@ const ViewOrder = () => {
             </p>
           </div>
 
+          {/* Trạng thái giao hàng */}
           <div className="mt-6 bg-green-50 p-4 rounded-lg">
             <h2 className="text-lg font-semibold text-gray-700 flex items-center">
               <TruckIcon className="w-6 h-6 text-green-500 mr-2" /> Trạng thái
@@ -130,7 +169,7 @@ const ViewOrder = () => {
                 <li
                   key={index}
                   className={`flex items-center text-gray-700 ${
-                    index < 3 ? "text-blue-500" : ""
+                    index < orderData.currentStep ? "text-blue-500" : ""
                   }`}
                 >
                   <MapPinIcon className="w-5 h-5 mr-2" /> {step}
@@ -139,6 +178,7 @@ const ViewOrder = () => {
             </ul>
           </div>
 
+          {/* Nút điều hướng */}
           <div className="mt-6 flex justify-center">
             <button
               onClick={() => navigate("/product")}

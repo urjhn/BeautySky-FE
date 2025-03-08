@@ -5,8 +5,6 @@ import Login from "./pages/Login/Login.jsx";
 import Register from "./pages/Register/Register.jsx";
 import Product from "./pages/Product/Product.jsx";
 import ProductDetail from "./pages/Product/ProductDetail.jsx";
-import CheckoutInfomation from "./pages/Checkout/CheckoutInformation.jsx";
-import CheckoutProcess from "./pages/Checkout/CheckoutProcess.jsx";
 import PaymentSuccess from "./pages/Checkout/PaymentSuccess.jsx";
 import ViewOrder from "./pages/Orders/ViewOrder.jsx";
 import Viewcart from "./pages/Product/Viewcart.jsx";
@@ -49,8 +47,6 @@ const App = () => (
     <Route path="/register" element={<Register />} />
     <Route path="/product" element={<Product />} />
     <Route path="/product/:id" element={<ProductDetail />} />
-    <Route path="/checkoutinfo" element={<CheckoutInfomation />} />
-    <Route path="/checkoutprocess" element={<CheckoutProcess />} />
     <Route path="/paymentsuccess" element={<PaymentSuccess />} />
     <Route path="/vieworder" element={<ViewOrder />} />
     <Route path="/orderdetail/:orderId:" element={<OrderDetail />} />

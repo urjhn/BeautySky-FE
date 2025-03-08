@@ -1,12 +1,61 @@
+import { useEffect, useState } from "react";
 import { CheckCircleIcon, XCircleIcon } from "@heroicons/react/24/solid";
 import { motion } from "framer-motion";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import orderAPI from "../../services/order"; // Import API xử lý đơn hàng
 import Navbar from "../../components/Navbar/Navbar";
 import Footer from "../../components/Footer/Footer";
+import Swal from "sweetalert2";
 
 const PaymentSuccess = () => {
   const navigate = useNavigate();
-  const status = "success"; // Hardcoded status
+  const [searchParams] = useSearchParams();
+  const [status, setStatus] = useState("pending");
+  const orderId = searchParams.get("orderId"); // Lấy orderId từ URL
+
+  useEffect(() => {
+    const completeOrder = async () => {
+      if (!orderId) {
+        setStatus("failed");
+        Swal.fire({
+          icon: "error",
+          title: "Lỗi thanh toán!",
+          text: "Không tìm thấy đơn hàng.",
+        });
+        return;
+      }
+
+      try {
+        const response = await orderAPI.createOrderCompleted(orderId);
+
+        if (response && response.status === "Complete") {
+          setStatus("success");
+          Swal.fire({
+            icon: "success",
+            title: "Thanh toán thành công!",
+            text: "Đơn hàng của bạn đã được xác nhận.",
+          });
+        } else {
+          setStatus("failed");
+          Swal.fire({
+            icon: "error",
+            title: "Thanh toán thất bại!",
+            text: "Có lỗi xảy ra. Vui lòng thử lại.",
+          });
+        }
+      } catch (error) {
+        console.error("Lỗi khi hoàn tất đơn hàng:", error);
+        setStatus("failed");
+        Swal.fire({
+          icon: "error",
+          title: "Lỗi hệ thống!",
+          text: "Không thể xử lý đơn hàng. Hãy thử lại sau.",
+        });
+      }
+    };
+
+    completeOrder();
+  }, [orderId]);
 
   return (
     <>
@@ -28,7 +77,7 @@ const PaymentSuccess = () => {
                 Cảm ơn bạn đã mua hàng. Đơn hàng của bạn đã được xác nhận.
               </p>
             </>
-          ) : (
+          ) : status === "failed" ? (
             <>
               <XCircleIcon className="w-16 h-16 text-red-500 mx-auto mb-4" />
               <h1 className="text-2xl font-bold text-red-600">
@@ -38,7 +87,12 @@ const PaymentSuccess = () => {
                 Có lỗi xảy ra trong quá trình thanh toán. Hãy thử lại.
               </p>
             </>
+          ) : (
+            <p className="text-gray-600">
+              Đang kiểm tra trạng thái thanh toán...
+            </p>
           )}
+
           <div className="mt-6">
             <button
               onClick={() => navigate("/vieworder")}
