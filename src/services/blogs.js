@@ -7,31 +7,23 @@ const blogsAPI = {
     const response = await axiosInstance.get(endPoint);
     return response;
   },
-  createBlogs: async (payload) => {
-    const response = await axiosInstance.post(endPoint, payload);
-    if (response.status >= 200 && response.status < 300) {
-      return response;
-    }
-    return response;
+  createBlog: async (payload) => {
+    return await axiosInstance.post(endPoint, payload);
   },
-  searchBlogs: async (id, payload) => {
-    return await axiosInstance.get(`${endPoint}/${id}`, payload);
+  searchBlog: async (id) => {
+    return await axiosInstance.get(`${endPoint}/${id}`);
   },
-  editBlogs: async (id, payload) => {
+  editBlog: async (id, payload) => {
     return await axiosInstance.put(`${endPoint}/${id}`, payload);
   },
-  deleteProduct: async (id) => {
+  deleteBlog: async (id) => {
     return await axiosInstance.delete(`${endPoint}/${id}`);
   },
-  getSkinType: async () => {
-    return (response = await axiosInstance.get(
-      `${endPoint}/by-skin-type/${skinType}`
-    ));
+  getSkinType: async (skinType) => {
+    return await axiosInstance.get(`${endPoint}/by-skin-type/${skinType}`);
   },
-  getCategory: async () => {
-    return (response = await axiosInstance.get(
-      `${endPoint}/by-category/${category}`
-    ));
+  getCategory: async (category) => {
+    return await axiosInstance.get(`${endPoint}/by-category/${category}`);
   },
 };
 
