@@ -26,27 +26,14 @@ const DashboardEvents = () => {
   const indexOfFirstEvent = indexOfLastEvent - eventsPerPage;
   const currentEvents = news.slice(indexOfFirstEvent, indexOfLastEvent);
 
-  const handleImageUpload = async (e) => {
+  const handleImageUpload = (e) => {
     const file = e.target.files[0];
-    if (!file) return;
-
-    const formData = new FormData();
-    formData.append("image", file);
-
-    try {
-      const response = await fetch("API_UPLOAD_ENDPOINT", {
-        method: "POST",
-        body: formData,
-      });
-
-      if (!response.ok) {
-        throw new Error("Upload failed");
-      }
-
-      const data = await response.json();
-      setForm((prev) => ({ ...prev, imageUrl: data.imageUrl })); // Lưu URL ảnh từ API
-    } catch (error) {
-      console.error("Error uploading image:", error);
+    if (file) {
+      setForm((prev) => ({
+        ...prev,
+        file: file,
+        imageUrl: URL.createObjectURL(file), // Hiển thị ảnh preview
+      }));
     }
   };
 
@@ -57,21 +44,22 @@ const DashboardEvents = () => {
     }
 
     try {
-      let response;
-      const requestData = {
-        title: form.title,
-        content: form.content,
-        imageUrl: form.imageUrl,
-        createDate: form.createDate,
-        startDate: form.startDate,
-        endDate: form.endDate,
-      };
+      const formData = new FormData();
+      formData.append("title", form.title);
+      formData.append("content", form.content);
+      formData.append("createDate", form.createDate);
+      formData.append("startDate", form.startDate);
+      formData.append("endDate", form.endDate);
+
+      if (form.file) {
+        formData.append("file", form.file);
+      }
 
       if (form.id) {
-        response = await newsAPI.editNews(form.id, requestData);
+        await newsAPI.editNews(form.id, formData);
         Swal.fire("Thành công!", "Sự kiện đã được cập nhật.", "success");
       } else {
-        response = await newsAPI.createNews(requestData);
+        await newsAPI.createNews(formData);
         Swal.fire("Thành công!", "Sự kiện mới đã được thêm.", "success");
       }
 
@@ -79,17 +67,7 @@ const DashboardEvents = () => {
       fetchNews();
     } catch (error) {
       console.error("Lỗi khi lưu sự kiện:", error);
-      if (error.response) {
-        Swal.fire(
-          "Lỗi!",
-          `Không thể lưu sự kiện: ${error.response.data.message}`,
-          "error"
-        );
-      } else if (error.request) {
-        Swal.fire("Lỗi!", "Không nhận được phản hồi từ máy chủ.", "error");
-      } else {
-        Swal.fire("Lỗi!", `Đã xảy ra lỗi: ${error.message}`, "error");
-      }
+      Swal.fire("Lỗi!", `Không thể lưu sự kiện: ${error.message}`, "error");
     }
   };
 
@@ -97,10 +75,6 @@ const DashboardEvents = () => {
     try {
       const response = await newsAPI.getNewsById(eventId);
       const eventToEdit = response.data;
-
-      if (!eventToEdit) {
-        throw new Error("Event not found");
-      }
 
       setForm({
         id: eventToEdit.id,
@@ -110,14 +84,11 @@ const DashboardEvents = () => {
         createDate: eventToEdit.createDate.split("T")[0],
         startDate: eventToEdit.startDate.split("T")[0],
         endDate: eventToEdit.endDate.split("T")[0],
+        file: null, // Để tránh gửi file cũ khi không chọn file mới
       });
     } catch (error) {
       console.error("Lỗi khi tải sự kiện:", error);
-      Swal.fire({
-        icon: "error",
-        title: "Lỗi!",
-        text: "Không thể tải thông tin sự kiện, vui lòng thử lại.",
-      });
+      Swal.fire("Lỗi!", "Không thể tải thông tin sự kiện.", "error");
     }
   };
 
@@ -139,6 +110,7 @@ const DashboardEvents = () => {
           Swal.fire("Đã xóa!", "Sự kiện đã được xóa thành công.", "success");
         } catch (error) {
           console.error("Error deleting event:", error);
+          Swal.fire("Lỗi!", "Không thể xóa sự kiện.", "error");
         }
       }
     });
@@ -159,6 +131,7 @@ const DashboardEvents = () => {
       createDate: new Date().toISOString().split("T")[0],
       startDate: "",
       endDate: "",
+      file: null,
     });
   };
 
