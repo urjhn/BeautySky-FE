@@ -1,7 +1,7 @@
 import axiosInstance from "../config/axios/axiosInstance";
 
 const endPoint = "/Categories";
-const categoryApi = {
+const categoryAPI = {
   getAll: async () => {
     const response = await axiosInstance.get(endPoint);
     return response;
@@ -23,4 +23,4 @@ const categoryApi = {
   },
 };
 
-export default categoryApi;
+export default categoryAPI;

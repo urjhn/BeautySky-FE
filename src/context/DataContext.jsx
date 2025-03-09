@@ -1,7 +1,7 @@
 import { createContext, useEffect, useState, useContext } from "react";
-import productApi from "../services/product";
-import skinTypeApi from "../services/skintype";
-import categoryApi from "../services/category";
+import productAPI from "../services/product";
+import skinTypeAPI from "../services/skintype";
+import categoryAPI from "../services/category";
 import productImagesAPI from "../services/productImages";
 const DataContext = createContext();
 
@@ -12,7 +12,7 @@ const DataProvider = ({ children }) => {
   const [productImages, setProductImages] = useState([]);
   const fetchSkinTypes = async () => {
     try {
-      const response = await skinTypeApi.getAll();
+      const response = await skinTypeAPI.getAll();
       setSkinTypes(response.data);
     } catch (error) {
       console.error("Error fetching skin type data:", error);
@@ -20,7 +20,7 @@ const DataProvider = ({ children }) => {
   };
   const fetchCategories = async () => {
     try {
-      const response = await categoryApi.getAll();
+      const response = await categoryAPI.getAll();
       setCategories(response.data);
     } catch (error) {
       console.error("Error fetching category data:", error);
@@ -29,7 +29,7 @@ const DataProvider = ({ children }) => {
 
   const fetchProduct = async () => {
     try {
-      const response = await productApi.getAll();
+      const response = await productAPI.getAll();
       const productsData = response.data;
 
       // Gán hình ảnh cho từng sản phẩm

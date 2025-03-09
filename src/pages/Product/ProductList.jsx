@@ -11,6 +11,7 @@ const ProductList = ({ selectedSkinType, selectedCategory }) => {
 
   useEffect(() => {
     fetchProduct();
+    console.log("Products:", products);
   }, []);
 
   const handleAddToCart = (product) => {
@@ -33,12 +34,16 @@ const ProductList = ({ selectedSkinType, selectedCategory }) => {
 
   // Lọc sản phẩm theo loại da và loại sản phẩm
   const filteredProducts = products.filter((product) => {
+    // Lọc theo loại da (skinType)
     const skinTypeFilter =
       selectedSkinType === "Tất cả" ||
-      product.skinType?.skinTypeName === selectedSkinType;
+      product.SkinType?.skinTypeName === selectedSkinType;
+
+    // Lọc theo loại sản phẩm (category)
     const categoryFilter =
       selectedCategory === "Tất cả" ||
-      product.category?.categoryName === selectedCategory;
+      product.Category?.categoryName === selectedCategory;
+
     return skinTypeFilter && categoryFilter;
   });
 
@@ -69,15 +74,33 @@ const ProductList = ({ selectedSkinType, selectedCategory }) => {
                   </h3>
                   <p className="text-sm text-gray-500">
                     Loại da:{" "}
-                    {product.skinType?.skinTypeName || "Không xác định"}
+                    {product.SkinType?.skinTypeName || "Không xác định"}
                   </p>
                   <p className="text-sm text-gray-500 w-full text-center">
                     Loại sản phẩm:{" "}
-                    {product.category?.categoryName || "Không xác định"}
+                    {product.Category?.categoryName || "Không xác định"}
                   </p>
                   <p className="text-lg font-bold text-gray-900 mt-2">
                     {formatCurrency(product.price)}
                   </p>
+                  <div className="mt-2 flex items-center justify-center">
+                    <span className="text-yellow-500">
+                      {product.rating ? (
+                        Array.from({ length: Math.floor(product.rating) }).map(
+                          (_, index) => (
+                            <i key={index} className="fa fa-star"></i>
+                          )
+                        )
+                      ) : (
+                        <span>No rating</span>
+                      )}
+                    </span>
+                    {product.rating && (
+                      <span className="ml-2 text-sm text-gray-600">
+                        ({product.rating.toFixed(1)})
+                      </span>
+                    )}
+                  </div>
                 </div>
                 <div className="mt-4 space-y-2">
                   <button

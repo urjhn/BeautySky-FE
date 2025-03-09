@@ -1,7 +1,7 @@
 import axiosInstance from "../config/axios/axiosInstance";
 
 const endPoint = "/SkinTypes";
-const skinTypeApi = {
+const skinTypeAPI = {
   getAll: async () => {
     const response = await axiosInstance.get(endPoint);
     return response;
@@ -25,4 +25,4 @@ const skinTypeApi = {
   },
 };
 
-export default skinTypeApi;
+export default skinTypeAPI;
