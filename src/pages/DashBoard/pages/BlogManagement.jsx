@@ -120,6 +120,7 @@ const BlogManagement = () => {
           category: "",
           imgURL: "",
         });
+        fetchBlogs(blogData);
 
         Swal.fire("Thành công", "Blog đã được thêm", "success");
       } else {
@@ -185,7 +186,7 @@ const BlogManagement = () => {
               <tr key={blog.blogId} className="border-t hover:bg-gray-100">
                 <td className="py-3 px-4 text-center">{blog.blogId}</td>
                 <td className="py-3 px-4 font-semibold">{blog.title}</td>
-                <td className="py-3 px-4 font-semibold">{blog.content}</td>
+                <td className="py-3 px-4 ">{blog.content}</td>
                 <td
                   className={`py-3 px-4 font-semibold ${
                     blog.status === "published"
@@ -201,8 +202,8 @@ const BlogManagement = () => {
                 <td className="py-3 px-4">
                   {new Date(blog.updatedDate).toLocaleDateString("vi-VN")}
                 </td>
-                <td className="py-3 px-4 font-semibold ">{blog.skinType}</td>
-                <td className="py-3 px-4 font-semibold">{blog.category}</td>
+                <td className="py-3 px-4 ">{blog.skinType}</td>
+                <td className="py-3 px-4 ">{blog.category}</td>
                 <td className="py-3 px-4 flex space-x-2">
                   <button
                     className="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600"
