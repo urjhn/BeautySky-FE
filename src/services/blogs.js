@@ -7,14 +7,24 @@ const blogsAPI = {
     const response = await axiosInstance.get(endPoint);
     return response;
   },
-  createBlog: async (payload) => {
-    return await axiosInstance.post(endPoint, payload);
+  createBlog: async (formData) => {
+    const response = await axiosInstance.post(endPoint, formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+    return response;
   },
   searchBlog: async (id) => {
     return await axiosInstance.get(`${endPoint}/${id}`);
   },
-  editBlog: async (id, payload) => {
-    return await axiosInstance.put(`${endPoint}/${id}`, payload);
+  editBlog: async (id, formData) => {
+    const response = await axiosInstance.put(`${endPoint}/${id}`, formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+    return response;
   },
   deleteBlog: async (id) => {
     return await axiosInstance.delete(`${endPoint}/${id}`);
@@ -26,8 +36,10 @@ const blogsAPI = {
     return await axiosInstance.get(`${endPoint}/by-category/${category}`);
   },
   searchBlogs: async (keyword) => {
-    const response = await axiosInstance.get(`${endPoint}/search?keyword=${keyword}`);
-    return response.data.map(item => ({...item, type: 'blogs'}));
+    const response = await axiosInstance.get(
+      `${endPoint}/search?keyword=${keyword}`
+    );
+    return response.data.map((item) => ({ ...item, type: "blogs" }));
   },
 };
 
