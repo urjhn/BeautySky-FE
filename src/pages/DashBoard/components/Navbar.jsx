@@ -70,15 +70,21 @@ const Navbar = () => {
         <div className="flex items-center space-x-4">
           {user ? (
             <Popover content={menu} trigger="click" placement="bottomRight">
-              <Avatar
-                size="large"
-                icon={<UserOutlined />}
-                src={
-                  user.avatar ||
-                  "https://cellphones.com.vn/sforum/wp-content/uploads/2024/02/avatar-anh-meo-cute-3.jpg"
-                }
-                className="cursor-pointer border border-gray-300 hover:border-[#6BBCFE] transition"
-              />
+              {user.avatar ? (
+                <img
+                  src={user.avatar}
+                  alt={user.fullName || "Người dùng ẩn danh"}
+                  className="w-10 h-10 rounded-full object-cover border cursor-pointer"
+                />
+              ) : (
+                <img
+                  src={`https://api.dicebear.com/9.x/adventurer/svg?seed=${
+                    user.userName || `user-${Math.random()}`
+                  }`}
+                  alt="Avatar ảo"
+                  className="w-10 h-10 rounded-full border cursor-pointer"
+                />
+              )}
             </Popover>
           ) : (
             <Link

@@ -44,31 +44,34 @@ const Sidebar = () => {
   };
 
   return (
-    <aside className="w-64 bg-blue-100 p-5 flex flex-col space-y-6 h-screen shadow-lg">
+    <aside className="w-72 bg-gradient-to-b from-blue-50 to-blue-100 p-6 flex flex-col space-y-6 h-screen shadow-xl">
       {/* Header */}
-      <h2 className="text-2xl font-bold text-center text-black">Profile</h2>
+      <h2 className="text-3xl font-bold text-center text-blue-800 mb-2">
+        Profile
+      </h2>
 
       {/* User Info Section */}
-      <div className="text-center border-b pb-4 mb-4">
-        <h2 className="text-xl font-semibold text-gray-800">
+      <div className="text-center bg-white rounded-xl p-6 shadow-md">
+        <div className="w-24 h-24 mx-auto mb-4 rounded-full bg-blue-200 flex items-center justify-center">
+          {currentUser?.fullName?.[0] || "G"}
+        </div>
+        <h2 className="text-xl font-bold text-gray-800 mb-1">
           {currentUser?.fullName || "Guest"}
         </h2>
-        <p className="text-gray-500 text-base">
+        <p className="text-gray-500 text-sm">
           {currentUser?.email || "No email available"}
         </p>
       </div>
 
       {/* Navigation */}
-      <nav>
-        <ul className="space-y-2">
+      <nav className="flex-1">
+        <ul className="space-y-3">
           <NavItem icon={<FaUsers />} title="Profile" to="/profilelayout" />
           <NavItem
             icon={<FaChartBar />}
             title="Orders"
             to="/profilelayout/historyorder"
           />
-
-          {/* Cài đặt tài khoản */}
           <NavItem
             icon={<FaCreditCard />}
             title="Quản lý thanh toán"
@@ -88,10 +91,10 @@ const Sidebar = () => {
           {/* Logout Button */}
           <li
             onClick={handleLogout}
-            className="flex items-center space-x-3 px-4 py-3 rounded-lg cursor-pointer transition-all duration-300 text-black hover:bg-red-400"
+            className="flex items-center space-x-3 px-4 py-3 rounded-lg cursor-pointer transition-all duration-300 text-red-600 hover:bg-red-50 mt-8"
           >
-            <FaSignOutAlt className="text-2xl" />
-            <span className="text-lg">Logout</span>
+            <FaSignOutAlt className="text-xl" />
+            <span className="font-medium">Logout</span>
           </li>
         </ul>
       </nav>
@@ -108,13 +111,13 @@ const NavItem = ({ icon, title, to }) => (
         `flex items-center space-x-3 px-4 py-3 rounded-lg cursor-pointer transition-all duration-300
               ${
                 isActive
-                  ? "bg-blue-300 text-black shadow-md"
-                  : "text-black hover:bg-blue-500 hover:scale-105"
+                  ? "bg-blue-600 text-white shadow-md hover:bg-blue-700"
+                  : "text-gray-700 hover:bg-blue-50 hover:text-blue-600"
               }`
       }
     >
-      <div className="text-2xl">{icon}</div>
-      <span className="text-lg">{title}</span>
+      <div className="text-xl">{icon}</div>
+      <span className="font-medium">{title}</span>
     </NavLink>
   </li>
 );
