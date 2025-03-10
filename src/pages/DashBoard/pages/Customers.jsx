@@ -11,6 +11,7 @@ import usersAPI from "../../../services/users";
 import Swal from "sweetalert2";
 import { useOrdersContext } from "../../../context/OrdersContext";
 import { Plus } from "lucide-react";
+import orderAPI from "../../../services/order";
 
 const Customers = () => {
   const { users, fetchUsers } = useUsersContext();
@@ -265,8 +266,9 @@ const Customers = () => {
     if (!orders || !Array.isArray(orders)) {
       return 0;
     }
-
-    return orders.filter((order) => order.customerId === customerId).length;
+    return orders.filter(
+      (order) => order.userId === customerId && order.status > 0
+    ).length;
   };
 
   const handleAddUser = async () => {
