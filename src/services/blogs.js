@@ -37,9 +37,15 @@ const blogsAPI = {
   },
   searchBlogs: async (keyword) => {
     const response = await axiosInstance.get(
-      `${endPoint}/search?keyword=${keyword}`
+      `${endPoint}?title=${keyword}&categoryName=${keyword}&skinTypeName=${keyword}`
     );
-    return response.data.map((item) => ({ ...item, type: "blogs" }));
+    return response.data.map((item) => ({
+      ...item,
+      type: "blogs",
+      title: item.title,
+      category: item.category,
+      skinType: item.skinType,
+    }));
   },
 };
 
