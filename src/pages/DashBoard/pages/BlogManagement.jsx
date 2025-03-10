@@ -287,6 +287,15 @@ const BlogManagement = () => {
             />
             <input
               type="text"
+              placeholder="Trạng thái"
+              className="w-full p-3 mb-4 mt-4 border rounded"
+              value={editBlog.status}
+              onChange={(e) =>
+                setEditBlog({ ...editBlog, status: e.target.value })
+              }
+            />
+            <input
+              type="text"
               placeholder="Loại da"
               className="w-full p-2 mb-4 border rounded"
               value={editBlog.skinType}
@@ -363,6 +372,15 @@ const BlogManagement = () => {
               value={newBlog.authorId}
               onChange={(e) =>
                 setNewBlog({ ...newBlog, authorId: e.target.value })
+              }
+            />
+            <input
+              type="text"
+              placeholder="Trạng thái"
+              className="w-full p-2 mb-4 mt-4 border rounded"
+              value={newBlog.status}
+              onChange={(e) =>
+                setNewBlog({ ...newBlog, status: e.target.value })
               }
             />
             <input

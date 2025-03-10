@@ -4,7 +4,7 @@ import { useCart } from "../../context/CartContext";
 import { useDataContext } from "../../context/DataContext";
 import { formatCurrency } from "../../utils/formatCurrency";
 
-const ProductList = ({ selectedSkinType, selectedCategory }) => {
+const ProductList = ({ selectedSkinType, selectedCategory, sortOrder }) => {
   const navigate = useNavigate();
   const { addToCart } = useCart();
   const { products, fetchProduct } = useDataContext();
@@ -12,7 +12,7 @@ const ProductList = ({ selectedSkinType, selectedCategory }) => {
   useEffect(() => {
     fetchProduct();
     console.log("Products:", products);
-  }, []);
+  }, [selectedSkinType, selectedCategory]);
 
   const handleAddToCart = (product) => {
     if (product.quantity === 0) {
@@ -34,29 +34,44 @@ const ProductList = ({ selectedSkinType, selectedCategory }) => {
 
   // Lọc sản phẩm theo loại da và loại sản phẩm
   const filteredProducts = products.filter((product) => {
-    // Lọc theo loại da (skinType)
-    const skinTypeFilter =
-      selectedSkinType === "Tất cả" ||
-      product.SkinType?.skinTypeName === selectedSkinType;
+    // Chuyển đổi dữ liệu về dạng chữ thường để so sánh không phân biệt hoa/thường
+    const productSkinType =
+      product.skinTypeName?.toLowerCase() ||
+      product.SkinTypeName?.toLowerCase() ||
+      "";
+    const productCategory =
+      product.categoryName?.toLowerCase() ||
+      product.CategoryName?.toLowerCase() ||
+      "";
 
-    // Lọc theo loại sản phẩm (category)
+    const selectedSkinTypeLower = selectedSkinType.toLowerCase();
+    const selectedCategoryLower = selectedCategory.toLowerCase();
+
+    const skinTypeFilter =
+      selectedSkinTypeLower === "tất cả" ||
+      productSkinType.includes(selectedSkinTypeLower);
+
     const categoryFilter =
-      selectedCategory === "Tất cả" ||
-      product.Category?.categoryName === selectedCategory;
+      selectedCategoryLower === "tất cả" ||
+      productCategory.includes(selectedCategoryLower);
 
     return skinTypeFilter && categoryFilter;
   });
+
+  const sortedProducts = [...filteredProducts].sort((a, b) =>
+    sortOrder === "asc" ? a.price - b.price : b.price - a.price
+  );
 
   return (
     <div className="bg-gradient-to-r from-blue-50 to-blue-100 py-10">
       <div className="mx-auto max-w-7xl px-6 lg:px-8">
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-          {filteredProducts.length === 0 ? (
+          {sortedProducts.length === 0 ? (
             <p className="text-center col-span-4 text-gray-500">
               Không có sản phẩm nào phù hợp.
             </p>
           ) : (
-            filteredProducts.map((product) => (
+            sortedProducts.map((product) => (
               <div
                 key={product.productId}
                 className="bg-white p-4 rounded-xl shadow-lg transition-all duration-300 transform hover:scale-105 hover:shadow-2xl flex flex-col"
@@ -73,12 +88,10 @@ const ProductList = ({ selectedSkinType, selectedCategory }) => {
                     {product.productName}
                   </h3>
                   <p className="text-sm text-gray-500">
-                    Loại da:{" "}
-                    {product.SkinType?.skinTypeName || "Không xác định"}
+                    Loại da: {product.skinTypeName || "Không xác định"}
                   </p>
                   <p className="text-sm text-gray-500 w-full text-center">
-                    Loại sản phẩm:{" "}
-                    {product.Category?.categoryName || "Không xác định"}
+                    Loại sản phẩm: {product.categoryName || "Không xác định"}
                   </p>
                   <p className="text-lg font-bold text-gray-900 mt-2">
                     {formatCurrency(product.price)}

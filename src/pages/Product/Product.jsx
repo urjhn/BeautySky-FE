@@ -25,30 +25,6 @@ const ProductsPage = () => {
     setCurrentPage(1);
   }, [selectedSkinType, selectedCategory]);
 
-  // Bộ lọc sản phẩm
-  const filteredProducts = products.filter((product) => {
-    const skinTypeFilter =
-      selectedSkinType === "Tất cả" ||
-      product.skinType?.skinTypeName === selectedSkinType;
-    const categoryFilter =
-      selectedCategory === "Tất cả" ||
-      product.category?.categoryName === selectedCategory;
-    return skinTypeFilter && categoryFilter;
-  });
-
-  // Sắp xếp sản phẩm theo giá
-  const sortedProducts = [...filteredProducts].sort((a, b) =>
-    sortOrder === "asc" ? a.price - b.price : b.price - a.price
-  );
-
-  // Phân trang sản phẩm
-  const indexOfLastItem = currentPage * itemsPerPage;
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentProducts = sortedProducts.slice(
-    indexOfFirstItem,
-    indexOfLastItem
-  );
-
   const handlePageChange = (newPage) => {
     setCurrentPage(newPage);
     window.scrollTo(0, 0);
@@ -70,28 +46,30 @@ const ProductsPage = () => {
 
             {/* Loại da filter */}
             <div className="mb-4">
-              <label className="block text-gray-600 font-medium mb-2 flex items-center gap-2">
-                <Droplet size={18} className="text-blue-400" /> Loại da
+              <label className="block text-gray-700 font-semibold mb-2 flex items-center gap-2">
+                <Droplet size={18} className="text-blue-500" /> Loại da
               </label>
               <div className="grid grid-cols-2 gap-2">
                 {[
-                  "Tất cả",
-                  "Da Dầu",
-                  "Da Khô",
-                  "Da Thường",
-                  "Da Hỗn Hợp",
-                  "Da Nhạy Cảm",
+                  { label: "Tất cả", value: "Tất cả" },
+                  { label: "Da Dầu", value: "Da Dầu" },
+                  { label: "Da Khô", value: "Da Khô" },
+                  { label: "Da Thường", value: "Da Thường" },
+                  { label: "Da Hỗn Hợp", value: "Da Hỗn Hợp" },
+                  { label: "Da Nhạy Cảm", value: "Da Nhạy Cảm" },
                 ].map((type) => (
                   <button
-                    key={type}
-                    className={`px-3 py-1.5 text-sm rounded-full font-medium transition-all duration-200 border border-gray-300 hover:bg-purple-100 hover:text-purple-600 shadow-md ${
-                      selectedSkinType === type
-                        ? "bg-gray-500 text-white"
-                        : "bg-white"
-                    }`}
-                    onClick={() => setSelectedSkinType(type)}
+                    key={type.value}
+                    className={`px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 border border-gray-300 shadow-md 
+          ${
+            selectedSkinType === type.value
+              ? "bg-blue-500 text-white"
+              : "bg-white hover:bg-blue-100 hover:text-blue-600"
+          }`}
+                    onClick={() => setSelectedSkinType(type.value)}
+                    aria-pressed={selectedSkinType === type.value}
                   >
-                    {type}
+                    {type.label}
                   </button>
                 ))}
               </div>
@@ -99,29 +77,31 @@ const ProductsPage = () => {
 
             {/* Loại sản phẩm filter */}
             <div className="mb-4">
-              <label className="block text-gray-600 font-medium mb-2 flex items-center gap-2">
-                <Sun size={18} className="text-yellow-400" /> Loại sản phẩm
+              <label className="block text-gray-700 font-semibold mb-2 flex items-center gap-2">
+                <Sun size={18} className="text-yellow-500" /> Loại sản phẩm
               </label>
               <div className="grid grid-cols-2 gap-2">
                 {[
-                  "Tất cả",
-                  "Tẩy trang",
-                  "Sữa rửa mặt",
-                  "Toner",
-                  "Serum",
-                  "Kem Dưỡng",
-                  "Kem Chống Nắng",
+                  { label: "Tất cả", value: "Tất cả" },
+                  { label: "Tẩy trang", value: "Tẩy trang" },
+                  { label: "Sữa rửa mặt", value: "Sữa rửa mặt" },
+                  { label: "Toner", value: "Toner" },
+                  { label: "Serum", value: "Serum" },
+                  { label: "Kem Dưỡng", value: "Kem Dưỡng" },
+                  { label: "Kem Chống Nắng", value: "Kem Chống Nắng" },
                 ].map((category) => (
                   <button
-                    key={category}
-                    className={`px-3 py-1.5 text-sm rounded-full font-medium transition-all duration-200 border border-gray-300 hover:bg-pink-100 hover:text-pink-600 shadow-md ${
-                      selectedCategory === category
-                        ? "bg-gray-500 text-white"
-                        : "bg-white"
-                    }`}
-                    onClick={() => setSelectedCategory(category)}
+                    key={category.value}
+                    className={`px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 border border-gray-300 shadow-md 
+          ${
+            selectedCategory === category.value
+              ? "bg-yellow-500 text-white"
+              : "bg-white hover:bg-yellow-100 hover:text-yellow-600"
+          }`}
+                    onClick={() => setSelectedCategory(category.value)}
+                    aria-pressed={selectedCategory === category.value}
                   >
-                    {category}
+                    {category.label}
                   </button>
                 ))}
               </div>
@@ -144,22 +124,19 @@ const ProductsPage = () => {
               </button>
             </div>
 
-            {/* Kiểm tra nếu không có sản phẩm */}
-            {sortedProducts.length === 0 ? (
-              <div className="text-center text-gray-500">
-                Không có sản phẩm nào được tìm thấy.
-              </div>
-            ) : (
-              <>
-                <ProductList products={currentProducts} addToCart={addToCart} />
-                <PaginationComponent
-                  itemsPerPage={itemsPerPage}
-                  totalItems={sortedProducts.length}
-                  currentPage={currentPage}
-                  onPageChange={handlePageChange}
-                />
-              </>
-            )}
+            {/* ProductList */}
+            <ProductList
+              selectedSkinType={selectedSkinType}
+              selectedCategory={selectedCategory}
+              sortOrder={sortOrder}
+            />
+
+            <PaginationComponent
+              itemsPerPage={itemsPerPage}
+              totalItems={products.length}
+              currentPage={currentPage}
+              onPageChange={handlePageChange}
+            />
           </div>
         </div>
       </main>
