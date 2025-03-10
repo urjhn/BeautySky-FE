@@ -13,6 +13,7 @@ import productAPI from "../../services/product";
 import blogsAPI from "../../services/blogs";
 import categoryApi from "../../services/category";
 import skinTypeApi from "../../services/skintype";
+import { HiMenu, HiX } from "react-icons/hi";
 
 const Navbar = () => {
   const navigate = useNavigate();
@@ -25,6 +26,7 @@ const Navbar = () => {
   const [searchResults, setSearchResults] = useState([]);
   const [showProductDropdown, setShowProductDropdown] = useState(false);
   const dropdownRef = useRef(null);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -79,33 +81,42 @@ const Navbar = () => {
   );
 
   return (
-    <nav className="bg-white shadow-md pr-1 pl-1">
+    <nav className="bg-white shadow-md pr-1 pl-1 relative">
       <div className="container mx-auto flex justify-between items-center py-4 px-1">
         {/* Logo */}
         <div className="flex items-center">
           <Link to="/" className="flex items-center">
-            <img src={Logo} alt="Logo" className="w-16" />
-            <img src={Namebrand} alt="Tên thương hiệu" className="w-32" />
+            <img src={Logo} alt="Logo" className="w-12 md:w-16" />
+            <img
+              src={Namebrand}
+              alt="Tên thương hiệu"
+              className="w-24 md:w-32"
+            />
           </Link>
         </div>
 
-        {/* Menu */}
-        <ul className="hidden md:flex items-center gap-4 text-gray-700 font-semibold">
+        {/* Desktop & Tablet Menu */}
+        <ul className="hidden sm:flex items-center gap-2 lg:gap-4 text-gray-700 font-semibold text-sm lg:text-base">
           {NavbarMenu.map((item) => (
-            <li key={item.id} className="relative flex items-center gap-2">
-              {item.icon && <span className="text-lg">{item.icon}</span>}
+            <li
+              key={item.id}
+              className="relative flex items-center gap-1 lg:gap-2"
+            >
+              {item.icon && (
+                <span className="text-base lg:text-lg">{item.icon}</span>
+              )}
               {item.submenu ? (
                 <button
                   onMouseEnter={() => setShowProductDropdown(true)}
                   onClick={() => setShowProductDropdown((prev) => !prev)}
-                  className="hover:text-[#6BBCFE] transition duration-300 flex items-center gap-2"
+                  className="hover:text-[#6BBCFE] transition duration-300 flex items-center gap-1 lg:gap-2"
                 >
                   {item.title}
                 </button>
               ) : (
                 <Link
                   to={item.link}
-                  className="hover:text-[#6BBCFE] transition duration-300 flex items-center gap-2"
+                  className="hover:text-[#6BBCFE] transition duration-300 flex items-center gap-1 lg:gap-2"
                 >
                   {item.title}
                 </Link>
@@ -114,16 +125,47 @@ const Navbar = () => {
           ))}
         </ul>
 
+        {/* Mobile Menu Button */}
+        <button
+          className="sm:hidden text-gray-700 p-2"
+          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+        >
+          {isMobileMenuOpen ? (
+            <HiX className="h-6 w-6" />
+          ) : (
+            <HiMenu className="h-6 w-6" />
+          )}
+        </button>
+
+        {/* Mobile Menu */}
+        <div
+          className={`${
+            isMobileMenuOpen ? "flex" : "hidden"
+          } sm:hidden absolute top-full left-0 right-0 bg-white shadow-md flex-col w-full z-50`}
+        >
+          {NavbarMenu.map((item) => (
+            <Link
+              key={item.id}
+              to={item.link}
+              className="px-4 py-3 hover:bg-gray-100 border-b border-gray-200 flex items-center gap-2"
+              onClick={() => setIsMobileMenuOpen(false)}
+            >
+              {item.icon && <span className="text-lg">{item.icon}</span>}
+              {item.title}
+            </Link>
+          ))}
+        </div>
+
         {/* Search, Cart, User */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 lg:gap-3">
           {/* Search Bar */}
-          <div className="relative">
+          <div className="relative hidden sm:block">
             <input
               type="text"
               placeholder="Tìm kiếm"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-35 md:w-32 border border-gray-300 rounded-full px-4 py-1 focus:outline-none focus:border-primary"
+              className="w-24 sm:w-28 lg:w-40 border border-gray-300 rounded-full px-3 lg:px-4 py-1 focus:outline-none focus:border-primary text-sm"
             />
             <button onClick={handleSearch} className="absolute right-3 top-2">
               <IoMdSearch className="text-gray-500 hover:text-[#6BBCFE]" />
@@ -150,9 +192,9 @@ const Navbar = () => {
           {/* Cart */}
           <Link
             to="/viewcart"
-            className="relative flex items-center bg-gradient-to-r from-[#6BBCFE] to-[#0272cd] text-white py-2 px-4 rounded-full"
+            className="relative flex items-center bg-gradient-to-r from-[#6BBCFE] to-[#0272cd] text-white py-1.5 px-3 lg:py-2 lg:px-4 rounded-full"
           >
-            <FaShoppingCart className="text-xl" />
+            <FaShoppingCart className="text-base lg:text-xl" />
             {cartCount > 0 && (
               <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs px-2 py-1 rounded-full">
                 {cartCount}
@@ -160,30 +202,25 @@ const Navbar = () => {
             )}
           </Link>
 
-          {/* 🆕 User Section */}
+          {/* User Section */}
           {user ? (
             <Popover content={menu} trigger="click" placement="bottomRight">
-              {user.avatar ? (
-                <img
-                  src={user.avatar}
-                  alt={user.fullName || "Người dùng ẩn danh"}
-                  className="w-10 h-10 rounded-full object-cover border cursor-pointer"
-                />
-              ) : (
-                <img
-                  src={`https://api.dicebear.com/9.x/adventurer/svg?seed=${
+              <img
+                src={
+                  user.avatar ||
+                  `https://api.dicebear.com/9.x/adventurer/svg?seed=${
                     user.userName || `user-${Math.random()}`
-                  }`}
-                  alt="Avatar ảo"
-                  className="w-10 h-10 rounded-full border cursor-pointer"
-                />
-              )}
+                  }`
+                }
+                alt={user.fullName || "Người dùng ẩn danh"}
+                className="w-8 h-8 lg:w-10 lg:h-10 rounded-full object-cover border cursor-pointer"
+              />
             </Popover>
           ) : (
-            <div className="flex gap-4">
+            <div className="flex gap-2 lg:gap-4">
               <Link
                 to="/login"
-                className="hover:bg-[#6BBCFE] text-primary font-semibold hover:text-white rounded-md border-2 border-[#6BBFCE] px-6 py-2 transition duration-200"
+                className="text-xs sm:text-sm lg:text-base hover:bg-[#6BBCFE] text-primary font-semibold hover:text-white rounded-md border-2 border-[#6BBFCE] px-2 sm:px-3 lg:px-6 py-1.5 lg:py-2 transition duration-200"
               >
                 Đăng nhập
               </Link>

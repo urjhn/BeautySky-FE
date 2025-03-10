@@ -76,12 +76,12 @@ const ProductForm = ({
   };
 
   return (
-    <div className="p-6 max-h-[80vh] overflow-y-auto bg-gray-50">
+    <div className="p-4 md:p-6 max-h-[80vh] overflow-y-auto bg-gray-50">
       <Form
         form={form}
         layout="vertical"
         onFinish={onFinish}
-        className="space-y-4"
+        className="space-y-3 md:space-y-4"
       >
         <Form.Item
           label="Tên sản phẩm"
@@ -91,8 +91,8 @@ const ProductForm = ({
           <Input disabled={loading} placeholder="Nhập tên sản phẩm" />
         </Form.Item>
 
-        <Row gutter={16}>
-          <Col span={12}>
+        <Row gutter={[16, 16]}>
+          <Col xs={24} sm={24} md={12}>
             <Form.Item
               label="Giá"
               name="price"
@@ -108,7 +108,7 @@ const ProductForm = ({
               />
             </Form.Item>
           </Col>
-          <Col span={12}>
+          <Col xs={24} sm={24} md={12}>
             <Form.Item
               label="Số lượng"
               name="quantity"
@@ -142,8 +142,8 @@ const ProductForm = ({
           />
         </Form.Item>
 
-        <Row gutter={16}>
-          <Col span={12}>
+        <Row gutter={[16, 16]}>
+          <Col xs={24} sm={24} md={12}>
             <Form.Item
               label="Danh mục"
               name="categoryId"
@@ -159,7 +159,7 @@ const ProductForm = ({
               />
             </Form.Item>
           </Col>
-          <Col span={12}>
+          <Col xs={24} sm={24} md={12}>
             <Form.Item
               label="Loại da"
               name="skinTypeId"
@@ -195,11 +195,20 @@ const ProductForm = ({
           </Upload>
         </Form.Item>
 
-        <div className="flex justify-end space-x-4">
-          <Button onClick={onCancel} disabled={loading}>
+        <div className="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-4">
+          <Button 
+            onClick={onCancel} 
+            disabled={loading}
+            className="w-full sm:w-auto"
+          >
             Hủy
           </Button>
-          <Button type="primary" htmlType="submit" loading={loading}>
+          <Button 
+            type="primary" 
+            htmlType="submit" 
+            loading={loading}
+            className="w-full sm:w-auto"
+          >
             {isAddMode ? "Thêm sản phẩm" : "Cập nhật sản phẩm"}
           </Button>
         </div>

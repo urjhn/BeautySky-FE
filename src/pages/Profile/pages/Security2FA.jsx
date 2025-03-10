@@ -26,16 +26,16 @@ const Security2FA = () => {
   };
 
   return (
-    <div className="w-3/4 mx-auto p-6 bg-white shadow-md rounded-lg">
-      <h2 className="text-2xl font-bold mb-4 flex items-center">
+    <div className="w-full md:w-11/12 lg:w-3/4 mx-auto p-4 md:p-6 bg-white shadow-md rounded-lg">
+      <h2 className="text-xl md:text-2xl font-bold mb-3 md:mb-4 flex items-center">
         <FaShieldAlt className="mr-2" /> Bảo mật 2 lớp (2FA)
       </h2>
-      <p className="mb-4 text-gray-600">
+      <p className="mb-3 md:mb-4 text-gray-600 text-sm md:text-base">
         Bật bảo mật 2 lớp để tăng cường bảo vệ tài khoản của bạn.
       </p>
       <button
         onClick={handleToggle2FA}
-        className={`px-4 py-2 font-semibold text-white rounded ${
+        className={`px-3 md:px-4 py-1.5 md:py-2 font-semibold text-white rounded text-sm md:text-base ${
           is2FAEnabled ? "bg-red-500" : "bg-blue-500"
         }`}
       >
@@ -43,12 +43,18 @@ const Security2FA = () => {
       </button>
 
       {is2FAEnabled && (
-        <div className="mt-6">
-          <h3 className="font-semibold mb-2">
+        <div className="mt-4 md:mt-6">
+          <h3 className="font-semibold mb-2 text-sm md:text-base">
             Quét mã QR với Google Authenticator
           </h3>
-          <QRCode value={secretKey} size={200} className="mx-auto" />
-          <p className="mt-4">
+          <div className="flex justify-center">
+            <QRCode 
+              value={secretKey} 
+              size={window.innerWidth < 768 ? 150 : 200} 
+              className="mx-auto"
+            />
+          </div>
+          <p className="mt-3 md:mt-4 text-sm md:text-base">
             Mã bảo mật: <span className="font-bold">{secretKey}</span>
           </p>
 
@@ -57,11 +63,11 @@ const Security2FA = () => {
             placeholder="Nhập mã xác thực"
             value={verificationCode}
             onChange={(e) => setVerificationCode(e.target.value)}
-            className="border px-3 py-2 w-full mt-4"
+            className="border px-3 py-1.5 md:py-2 w-full mt-3 md:mt-4 text-sm md:text-base rounded"
           />
           <button
             onClick={handleVerifyCode}
-            className="mt-2 px-4 py-2 bg-green-500 text-white rounded"
+            className="mt-2 px-3 md:px-4 py-1.5 md:py-2 bg-green-500 text-white rounded text-sm md:text-base w-full md:w-auto"
           >
             Xác minh mã
           </button>

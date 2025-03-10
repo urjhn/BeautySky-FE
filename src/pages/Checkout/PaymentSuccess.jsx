@@ -63,49 +63,49 @@ const PaymentSuccess = () => {
   return (
     <>
       <Navbar />
-      <div className="flex items-center justify-center min-h-screen bg-gradient-to-r from-green-100 to-blue-200">
+      <div className="flex items-center justify-center min-h-screen bg-gradient-to-r from-green-100 to-blue-200 px-4 py-8 sm:px-6 lg:px-8">
         <motion.div
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.5 }}
-          className="bg-white shadow-lg rounded-lg p-8 text-center max-w-md mx-auto"
+          className="bg-white shadow-lg rounded-lg p-4 sm:p-6 lg:p-8 text-center w-full max-w-md mx-auto"
         >
           {status === "success" ? (
             <>
-              <CheckCircleIcon className="w-16 h-16 text-green-500 mx-auto mb-4" />
-              <h1 className="text-2xl font-bold text-green-600">
+              <CheckCircleIcon className="w-12 h-12 sm:w-16 sm:h-16 text-green-500 mx-auto mb-3 sm:mb-4" />
+              <h1 className="text-xl sm:text-2xl font-bold text-green-600">
                 Thanh toán thành công!
               </h1>
-              <p className="text-gray-600 mt-2">
+              <p className="text-sm sm:text-base text-gray-600 mt-2">
                 Cảm ơn bạn đã mua hàng. Đơn hàng của bạn đã được xác nhận.
               </p>
             </>
           ) : status === "failed" ? (
             <>
-              <XCircleIcon className="w-16 h-16 text-red-500 mx-auto mb-4" />
-              <h1 className="text-2xl font-bold text-red-600">
+              <XCircleIcon className="w-12 h-12 sm:w-16 sm:h-16 text-red-500 mx-auto mb-3 sm:mb-4" />
+              <h1 className="text-xl sm:text-2xl font-bold text-red-600">
                 Thanh toán thất bại
               </h1>
-              <p className="text-gray-600 mt-2">
+              <p className="text-sm sm:text-base text-gray-600 mt-2">
                 Có lỗi xảy ra trong quá trình thanh toán. Hãy thử lại.
               </p>
             </>
           ) : (
-            <p className="text-gray-600">
+            <p className="text-sm sm:text-base text-gray-600">
               Đang kiểm tra trạng thái thanh toán...
             </p>
           )}
 
-          <div className="mt-6">
+          <div className="mt-4 sm:mt-6 flex flex-col sm:flex-row justify-center gap-3 sm:gap-4">
             <button
               onClick={() => navigate("/vieworder")}
-              className="px-4 py-2 bg-blue-500 text-white rounded-lg shadow hover:bg-blue-600 transition"
+              className="w-full sm:w-auto px-4 py-2 bg-blue-500 text-white text-sm sm:text-base rounded-lg shadow hover:bg-blue-600 transition"
             >
               Xem đơn hàng
             </button>
             <button
               onClick={() => navigate("/")}
-              className="ml-4 px-4 py-2 bg-gray-500 text-white rounded-lg shadow hover:bg-gray-600 transition"
+              className="w-full sm:w-auto px-4 py-2 bg-gray-500 text-white text-sm sm:text-base rounded-lg shadow hover:bg-gray-600 transition"
             >
               Trang chủ
             </button>

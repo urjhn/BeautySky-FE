@@ -148,92 +148,95 @@ const BlogManagement = () => {
   const currentBlogs = filteredBlogs.slice(indexOfFirstBlog, indexOfLastBlog);
 
   return (
-    <div className="p-6 bg-white rounded-lg shadow-md">
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold text-gray-800">Quản lý Blogs</h2>
+    <div className="p-4 md:p-6 bg-white rounded-lg shadow-md">
+      <div className="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
+        <h2 className="text-xl md:text-2xl font-bold text-gray-800">Quản lý Blogs</h2>
         <input
           type="text"
           placeholder="Tìm kiếm..."
-          className="border p-2 rounded-md w-1/3 shadow-sm focus:ring-2 focus:ring-blue-400"
+          className="border p-2 rounded-md w-full md:w-1/3 shadow-sm focus:ring-2 focus:ring-blue-400"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
         <button
-          className="px-4 py-2 bg-blue-600 text-white rounded-md shadow-md hover:bg-blue-700 transition"
+          className="w-full md:w-auto px-4 py-2 bg-blue-600 text-white rounded-md shadow-md hover:bg-blue-700 transition"
           onClick={() => setIsAdding(true)}
         >
           + Thêm Blog
         </button>
       </div>
 
-      <div className="overflow-x-auto">
-        <table className="min-w-full bg-white border rounded-lg shadow-sm">
-          <thead className="bg-blue-500 text-white">
-            <tr>
-              <th className="py-3 px-4">ID</th>
-              <th className="py-3 px-4">Tiêu đề</th>
-              <th className="py-3 px-4">Nội dung</th>
-              <th className="py-3 px-4">Trạng thái</th>
-              <th className="py-3 px-4">Ngày tạo</th>
-              <th className="py-3 px-4">Ngày cập nhật</th>
-              <th className="py-3 px-4">Loại da</th>
-              <th className="py-3 px-4">Danh mục</th>
-              <th className="py-3 px-4">Hành động</th>
-            </tr>
-          </thead>
-          <tbody>
-            {currentBlogs.map((blog) => (
-              <tr key={blog.blogId} className="border-t hover:bg-gray-100">
-                <td className="py-3 px-4 text-center">{blog.blogId}</td>
-                <td className="py-3 px-4 font-semibold">{blog.title}</td>
-                <td className="py-3 px-4 ">{blog.content}</td>
-                <td
-                  className={`py-3 px-4 font-semibold ${
-                    blog.status === "published"
-                      ? "text-green-600"
-                      : "text-red-600"
-                  }`}
-                >
-                  {blog.status}
-                </td>
-                <td className="py-3 px-4">
-                  {new Date(blog.createdDate).toLocaleDateString("vi-VN")}
-                </td>
-                <td className="py-3 px-4">
-                  {new Date(blog.updatedDate).toLocaleDateString("vi-VN")}
-                </td>
-                <td className="py-3 px-4 ">{blog.skinType}</td>
-                <td className="py-3 px-4 ">{blog.category}</td>
-                <td className="py-3 px-4 flex space-x-2">
-                  <button
-                    className="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600"
-                    onClick={() => handleEdit(blog)}
-                  >
-                    Sửa
-                  </button>
-                  <button
-                    className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600"
-                    onClick={() => handleDelete(blog.blogId)}
-                  >
-                    Xóa
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+      <div className="overflow-x-auto -mx-4 md:mx-0">
+        <div className="inline-block min-w-full align-middle">
+          <div className="overflow-hidden border rounded-lg">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-blue-500 text-white">
+                <tr>
+                  <th className="py-3 px-2 md:px-4">ID</th>
+                  <th className="py-3 px-2 md:px-4">Tiêu đề</th>
+                  <th className="hidden md:table-cell py-3 px-4">Nội dung</th>
+                  <th className="py-3 px-2 md:px-4">Trạng thái</th>
+                  <th className="hidden md:table-cell py-3 px-4">Ngày tạo</th>
+                  <th className="hidden md:table-cell py-3 px-4">Ngày cập nhật</th>
+                  <th className="hidden md:table-cell py-3 px-4">Loại da</th>
+                  <th className="hidden md:table-cell py-3 px-4">Danh mục</th>
+                  <th className="py-3 px-2 md:px-4">Hành động</th>
+                </tr>
+              </thead>
+              <tbody>
+                {currentBlogs.map((blog) => (
+                  <tr key={blog.blogId} className="border-t hover:bg-gray-100">
+                    <td className="py-2 px-2 md:px-4 text-center text-sm">{blog.blogId}</td>
+                    <td className="py-2 px-2 md:px-4 font-semibold text-sm">{blog.title}</td>
+                    <td className="hidden md:table-cell py-2 px-4 text-sm">{blog.content}</td>
+                    <td className={`py-2 px-2 md:px-4 font-semibold text-sm ${
+                      blog.status === "published" ? "text-green-600" : "text-red-600"
+                    }`}>
+                      {blog.status}
+                    </td>
+                    <td className="hidden md:table-cell py-2 px-4 text-sm">
+                      {new Date(blog.createdDate).toLocaleDateString("vi-VN")}
+                    </td>
+                    <td className="hidden md:table-cell py-2 px-4 text-sm">
+                      {new Date(blog.updatedDate).toLocaleDateString("vi-VN")}
+                    </td>
+                    <td className="hidden md:table-cell py-2 px-4 text-sm">{blog.skinType}</td>
+                    <td className="hidden md:table-cell py-2 px-4 text-sm">{blog.category}</td>
+                    <td className="py-2 px-2 md:px-4">
+                      <div className="flex flex-col md:flex-row gap-2 md:space-x-2">
+                        <button
+                          className="px-2 py-1 text-sm bg-green-500 text-white rounded hover:bg-green-600"
+                          onClick={() => handleEdit(blog)}
+                        >
+                          Sửa
+                        </button>
+                        <button
+                          className="px-2 py-1 text-sm bg-red-500 text-white rounded hover:bg-red-600"
+                          onClick={() => handleDelete(blog.blogId)}
+                        >
+                          Xóa
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
       </div>
-      <div className="flex justify-center mt-4">
+
+      <div className="flex justify-center mt-4 gap-2">
         <button
-          className="px-4 py-2 mx-1 bg-blue-500 text-white rounded disabled:opacity-50"
+          className="px-3 py-1 text-sm md:px-4 md:py-2 bg-blue-500 text-white rounded disabled:opacity-50"
           onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
           disabled={currentPage === 1}
         >
           Trước
         </button>
-        <span className="px-4 py-2">Trang {currentPage}</span>
+        <span className="px-3 py-1 text-sm md:px-4 md:py-2">Trang {currentPage}</span>
         <button
-          className="px-4 py-2 mx-1 bg-blue-500 text-white rounded disabled:opacity-50"
+          className="px-3 py-1 text-sm md:px-4 md:py-2 bg-blue-500 text-white rounded disabled:opacity-50"
           onClick={() => setCurrentPage((prev) => prev + 1)}
           disabled={indexOfLastBlog >= filteredBlogs.length}
         >
@@ -242,8 +245,8 @@ const BlogManagement = () => {
       </div>
 
       {isEditing && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-          <div className="bg-white p-6  rounded-lg w-1/2">
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 p-4">
+          <div className="bg-white p-4 md:p-6 rounded-lg w-full md:w-2/3 lg:w-1/2 max-h-[90vh] overflow-y-auto">
             <h2 className="text-xl font-semibold mb-4">Chỉnh sửa Blog</h2>
             <Editor
               apiKey="id9dr20skz3tb1pbl1f434waqto1zo5xvpidirto97vdi38y"
@@ -331,10 +334,9 @@ const BlogManagement = () => {
       )}
 
       {isAdding && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-          <div className="bg-white p-6 rounded-lg w-1/2">
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 p-4">
+          <div className="bg-white p-4 md:p-6 rounded-lg w-full md:w-2/3 lg:w-1/2 max-h-[90vh] overflow-y-auto">
             <h2 className="text-xl font-semibold mb-4">Thêm Blog Mới</h2>
-            {/* TinyMCE Title */}
             <Editor
               apiKey="id9dr20skz3tb9pbl1f434waqto1zo5xvpidirto97vdi38y"
               init={{

@@ -62,10 +62,19 @@ const TopProducts = () => {
         },
       },
       {
-        breakpoint: 1024,
+        breakpoint: 1280,
         settings: {
           slidesToShow: 3,
           slidesToScroll: 1,
+          arrows: true,
+        },
+      },
+      {
+        breakpoint: 1024,
+        settings: {
+          slidesToShow: 2,
+          slidesToScroll: 1,
+          arrows: true,
         },
       },
       {
@@ -73,6 +82,8 @@ const TopProducts = () => {
         settings: {
           slidesToShow: 2,
           slidesToScroll: 1,
+          arrows: false,
+          dots: true,
         },
       },
       {
@@ -80,6 +91,8 @@ const TopProducts = () => {
         settings: {
           slidesToShow: 1,
           slidesToScroll: 1,
+          arrows: false,
+          dots: true,
         },
       },
     ],
@@ -87,14 +100,14 @@ const TopProducts = () => {
 
   return (
     <div>
-      <div className="container py-20">
+      <div className="container py-10 md:py-20 px-4 md:px-0">
         <div className="text-center max-w-[800px] mx-auto">
           <p data-aos="fade-up" className="text-sm text-black">
             Sản phẩm được đánh giá cao nhất dành cho bạn
           </p>
           <h1
             data-aos="fade-up"
-            className="text-center text-4xl underline underline-offset-8 hover:underline decoration-1 decoration-black font-bold text-[#6BBCFE]"
+            className="text-center text-2xl md:text-4xl underline underline-offset-8 hover:underline decoration-1 decoration-black font-bold text-[#6BBCFE]"
           >
             Sản phẩm tốt nhất
           </h1>
@@ -104,7 +117,7 @@ const TopProducts = () => {
         </div>
 
         {/* Slider Section */}
-        <div data-aos="fade-up" className="relative max-w-7xl mx-auto">
+        <div data-aos="fade-up" className="relative max-w-7xl mx-auto px-4 md:px-8">
           {topRatedProducts.length > 0 ? (
             <Slider {...settings} className="pb-4">
               {topRatedProducts.map((product) => (

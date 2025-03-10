@@ -83,19 +83,19 @@ const ProductList = ({ selectedSkinType, selectedCategory, sortOrder }) => {
           </div>
         ) : (
           <>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
               {paginatedProducts.map((product) => (
                 <div
                   key={product.productId}
-                  className="bg-white p-5 rounded-2xl shadow-lg transition-all duration-300 transform hover:scale-102 hover:shadow-xl flex flex-col group"
+                  className="bg-white p-3 sm:p-5 rounded-2xl shadow-lg transition-all duration-300 transform hover:scale-102 hover:shadow-xl flex flex-col group"
                 >
-                  <div className="relative overflow-hidden rounded-xl mb-4">
+                  <div className="relative overflow-hidden rounded-xl mb-3 sm:mb-4">
                     <img
                       src={
                         product.productsImages?.[0]?.imageUrl || product.image
                       }
                       alt={product.productName}
-                      className="w-full h-64 object-cover transform group-hover:scale-110 transition-transform duration-500"
+                      className="w-full h-48 sm:h-64 object-cover transform group-hover:scale-110 transition-transform duration-500"
                     />
                     {product.quantity === 0 && (
                       <div className="absolute top-2 right-2 bg-red-500 text-white px-3 py-1 rounded-full text-sm font-semibold">
@@ -103,11 +103,11 @@ const ProductList = ({ selectedSkinType, selectedCategory, sortOrder }) => {
                       </div>
                     )}
                   </div>
-                  <div className="flex flex-col items-center flex-grow space-y-2">
-                    <h3 className="text-lg font-bold text-gray-800 text-center line-clamp-2 hover:text-blue-600 cursor-pointer">
+                  <div className="flex flex-col items-center flex-grow space-y-1 sm:space-y-2">
+                    <h3 className="text-base sm:text-lg font-bold text-gray-800 text-center line-clamp-2 hover:text-blue-600 cursor-pointer">
                       {product.productName}
                     </h3>
-                    <p className="text-xl font-bold text-blue-600 mt-2">
+                    <p className="text-lg sm:text-xl font-bold text-blue-600 mt-1 sm:mt-2">
                       {formatCurrency(product.price)}
                     </p>
                     <div className="flex items-center space-x-1">
@@ -134,9 +134,9 @@ const ProductList = ({ selectedSkinType, selectedCategory, sortOrder }) => {
                       )}
                     </div>
                   </div>
-                  <div className="mt-4 space-y-3">
+                  <div className="mt-3 sm:mt-4 space-y-2 sm:space-y-3">
                     <button
-                      className={`w-full py-2.5 rounded-xl transition-all duration-300 font-semibold ${
+                      className={`w-full py-2 sm:py-2.5 rounded-xl transition-all duration-300 text-sm sm:text-base font-semibold ${
                         product.quantity === 0
                           ? "bg-gray-200 text-gray-500 cursor-not-allowed"
                           : "bg-gradient-to-r from-blue-400 to-blue-500 hover:from-blue-600 hover:to-blue-700 text-white shadow-lg hover:shadow-blue-500/50"
@@ -151,7 +151,7 @@ const ProductList = ({ selectedSkinType, selectedCategory, sortOrder }) => {
                     </button>
                     <button
                       onClick={() => handleViewDetails(product.productId)}
-                      className="w-full bg-gradient-to-r from-pink-400 to-pink-500 hover:from-pink-600 hover:to-pink-700 text-white py-2.5 rounded-xl font-semibold transition-all duration-300 shadow-lg hover:shadow-pink-500/50"
+                      className="w-full bg-gradient-to-r from-pink-400 to-pink-500 hover:from-pink-600 hover:to-pink-700 text-white py-2 sm:py-2.5 rounded-xl text-sm sm:text-base font-semibold transition-all duration-300 shadow-lg hover:shadow-pink-500/50"
                     >
                       <i className="fas fa-eye mr-2"></i>
                       Xem chi tiết

@@ -151,10 +151,10 @@ const ProfileForm = () => {
   }
 
   return (
-    <div className="max-w-4xl mx-auto mt-10 px-4">
+    <div className="max-w-4xl mx-auto mt-10 px-4 sm:px-6 lg:px-8">
       <Title
         level={3}
-        className="text-center text-[#0272cd] font-bold mb-8 relative"
+        className="text-center text-[#0272cd] font-bold mb-8 relative text-xl sm:text-2xl lg:text-3xl"
       >
         <span className="relative inline-block after:content-[''] after:absolute after:-bottom-2 after:left-0 after:w-full after:h-1 after:bg-[#6BBCFE] after:rounded-full">
           Thông Tin Cá Nhân
@@ -162,7 +162,7 @@ const ProfileForm = () => {
       </Title>
 
       <Card
-        className="shadow-lg hover:shadow-xl transition-shadow duration-300 rounded-3xl p-8 border border-gray-200 bg-white overflow-hidden relative"
+        className="shadow-lg hover:shadow-xl transition-shadow duration-300 rounded-3xl p-4 sm:p-6 lg:p-8 border border-gray-200 bg-white overflow-hidden relative"
         style={{
           background: "linear-gradient(145deg, #ffffff 0%, #f8faff 100%)",
         }}
@@ -174,9 +174,9 @@ const ProfileForm = () => {
           form={form}
           layout="vertical"
           onFinish={handleFormSubmit}
-          className="bg-white/80 backdrop-blur-sm p-8 rounded-xl space-y-6 relative z-10"
+          className="bg-white/80 backdrop-blur-sm p-4 sm:p-6 lg:p-8 rounded-xl space-y-4 sm:space-y-6 relative z-10"
         >
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 lg:gap-8">
             {/* Form Items với styling mới */}
             <Form.Item
               label={
@@ -294,14 +294,14 @@ const ProfileForm = () => {
             </Form.Item>
           </div>
 
-          {/* Buttons với animation */}
-          <div className="flex justify-end gap-4 mt-8">
+          {/* Buttons với responsive */}
+          <div className="flex flex-col sm:flex-row justify-end gap-3 sm:gap-4 mt-6 sm:mt-8">
             {!isEditing ? (
               <Button
                 type="primary"
                 onClick={handleEditClick}
                 icon={<EditOutlined />}
-                className="bg-gradient-to-r from-[#6BBCFE] to-[#0272cd] hover:from-[#0272cd] hover:to-[#025aa3] transition-all duration-300 text-lg font-semibold px-8 py-5 rounded-lg shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
+                className="w-full sm:w-auto bg-gradient-to-r from-[#6BBCFE] to-[#0272cd] hover:from-[#0272cd] hover:to-[#025aa3] transition-all duration-300 text-base sm:text-lg font-semibold px-4 sm:px-8 py-3 sm:py-5 rounded-lg shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
               >
                 Chỉnh sửa
               </Button>
@@ -310,7 +310,7 @@ const ProfileForm = () => {
                 <Button
                   onClick={handleCancelClick}
                   icon={<CloseOutlined />}
-                  className="border-gray-400 px-8 py-3 text-gray-600 hover:bg-gray-100 transition-all duration-300 rounded-lg transform hover:-translate-y-0.5"
+                  className="w-full sm:w-auto border-gray-400 px-4 sm:px-8 py-3 text-gray-600 hover:bg-gray-100 transition-all duration-300 rounded-lg transform hover:-translate-y-0.5"
                 >
                   Hủy
                 </Button>
@@ -318,7 +318,7 @@ const ProfileForm = () => {
                   type="primary"
                   htmlType="submit"
                   icon={<SaveOutlined />}
-                  className="bg-gradient-to-r from-[#6BBCFE] to-[#0272cd] hover:from-[#0272cd] hover:to-[#025aa3] text-white px-8 py-3 font-semibold rounded-lg transition-all duration-300 shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
+                  className="w-full sm:w-auto bg-gradient-to-r from-[#6BBCFE] to-[#0272cd] hover:from-[#0272cd] hover:to-[#025aa3] text-white px-4 sm:px-8 py-3 font-semibold rounded-lg transition-all duration-300 shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
                 >
                   Lưu thay đổi
                 </Button>

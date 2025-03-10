@@ -205,23 +205,23 @@ const ProductDetail = () => {
     <>
       <Navbar />
       <div
-        className="min-h-screen flex flex-col items-center py-12 px-6"
+        className="min-h-screen flex flex-col items-center py-8 px-4 sm:py-12 sm:px-6"
         style={{ backgroundColor: "#f8fafc" }}
       >
-        <div className="bg-white rounded-lg shadow-2xl p-8 flex flex-col md:flex-row w-full max-w-6xl animate-fadeIn gap-8 border-0 hover:shadow-xl transition-shadow duration-300">
+        <div className="bg-white rounded-lg shadow-2xl p-4 sm:p-8 flex flex-col md:flex-row w-full max-w-6xl animate-fadeIn gap-4 sm:gap-8 border-0 hover:shadow-xl transition-shadow duration-300">
           <div className="w-full md:w-1/2">
             <img
               src={images[activeImage]}
               alt={product.productName}
-              className="w-full h-auto rounded-none shadow-lg object-cover cursor-pointer"
+              className="w-full h-[300px] sm:h-[400px] md:h-auto rounded-none shadow-lg object-cover cursor-pointer"
               onClick={() => handleOpenDialog(activeImage)}
             />
 
-            <div className="flex mt-4 overflow-x-auto gap-2 pb-2">
+            <div className="flex mt-2 sm:mt-4 overflow-x-auto gap-2 pb-2">
               {images.map((image, index) => (
                 <div
                   key={index}
-                  className={`min-w-[80px] h-20 border-2 rounded cursor-pointer ${
+                  className={`min-w-[60px] sm:min-w-[80px] h-16 sm:h-20 border-2 rounded cursor-pointer ${
                     activeImage === index
                       ? "border-blue-500"
                       : "border-gray-200"
@@ -238,8 +238,8 @@ const ProductDetail = () => {
             </div>
           </div>
 
-          <div className="md:ml-10 flex flex-col justify-between mt-6 md:mt-0 w-full space-y-6">
-            <h1 className="text-4xl font-bold text-gray-800 hover:text-blue-600 transition-colors duration-300">
+          <div className="md:ml-6 lg:ml-10 flex flex-col justify-between mt-4 md:mt-0 w-full space-y-4 sm:space-y-6">
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-800 hover:text-blue-600 transition-colors duration-300">
               {product.productName}
             </h1>
 
@@ -275,7 +275,7 @@ const ProductDetail = () => {
               )}
             </div>
 
-            <div className="grid grid-cols-2 gap-4 bg-gray-50 p-4 rounded-lg">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-gray-50 p-4 rounded-lg">
               <div className="flex flex-col">
                 <span className="text-gray-600 text-sm">Loại da</span>
                 <span className="font-semibold text-blue-700">
@@ -320,9 +320,9 @@ const ProductDetail = () => {
               </div>
             </div>
 
-            <div className="flex space-x-4">
+            <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
               <button
-                className={`w-full py-4 rounded-lg font-semibold transition-all flex items-center justify-center gap-2 ${
+                className={`w-full py-3 sm:py-4 rounded-lg font-semibold transition-all flex items-center justify-center gap-2 ${
                   product.quantity === 0
                     ? "bg-gray-400 text-gray-800 cursor-not-allowed"
                     : "bg-blue-600 hover:bg-blue-700 text-white transform hover:scale-105"
@@ -334,7 +334,7 @@ const ProductDetail = () => {
                 {product.quantity === 0 ? "Hết hàng" : "Thêm vào giỏ hàng"}
               </button>
               <button
-                className="w-full bg-gray-200 text-gray-800 py-4 rounded-lg font-semibold hover:bg-gray-300 transition-all flex items-center justify-center gap-2 transform hover:scale-105"
+                className="w-full bg-gray-200 text-gray-800 py-3 sm:py-4 rounded-lg font-semibold hover:bg-gray-300 transition-all flex items-center justify-center gap-2 transform hover:scale-105"
                 onClick={() => navigate(-1)}
               >
                 <FaArrowLeft className="text-xl" /> Quay lại
@@ -344,13 +344,13 @@ const ProductDetail = () => {
         </div>
 
         {/* Tab panel section */}
-        <div className="w-full max-w-6xl mt-10 bg-white p-8 rounded-lg shadow-lg border-0">
-          <div className="flex mb-6">
+        <div className="w-full max-w-6xl mt-6 sm:mt-10 bg-white p-4 sm:p-8 rounded-lg shadow-lg border-0">
+          <div className="flex flex-wrap mb-4 sm:mb-6 gap-2">
             {["Mô tả", "Thành phần", `Đánh giá (${productReviews.length})`].map(
               (tab, index) => (
                 <button
                   key={tab}
-                  className={`px-6 py-3 mr-2 rounded-lg font-medium transition-all duration-300 ${
+                  className={`px-4 sm:px-6 py-2 sm:py-3 rounded-lg font-medium transition-all duration-300 text-sm sm:text-base ${
                     tabValue === index
                       ? "bg-blue-600 text-white shadow-lg transform scale-105"
                       : "bg-gray-100 text-gray-600 hover:bg-gray-200"

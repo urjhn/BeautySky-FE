@@ -258,6 +258,7 @@ const Products = () => {
         title: "Hình ảnh",
         dataIndex: "productsImages",
         key: "productsImages",
+        responsive: ['md'],
         render: (productsImages) => {
           const imageUrl =
             productsImages?.length > 0
@@ -277,13 +278,14 @@ const Products = () => {
         dataIndex: "productName",
         key: "productName",
         render: (text) => (
-          <span className="font-medium text-gray-800">{text}</span>
+          <span className="font-medium text-gray-800 break-words">{text}</span>
         ),
       },
       {
         title: "Giá",
         dataIndex: "price",
         key: "price",
+        responsive: ['sm'],
         render: (price) => (
           <span className="font-medium text-indigo-600">
             {formatCurrency(price)}
@@ -296,6 +298,7 @@ const Products = () => {
         title: "Số lượng",
         dataIndex: "quantity",
         key: "quantity",
+        responsive: ['lg'],
         render: (quantity) => (
           <span className="font-semibold text-gray-700">{quantity}</span>
         ),
@@ -304,6 +307,7 @@ const Products = () => {
         title: "Trạng thái",
         dataIndex: "quantity",
         key: "status",
+        responsive: ['sm'],
         render: (quantity) =>
           quantity > 0 ? (
             <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-semibold">
@@ -347,13 +351,13 @@ const Products = () => {
   );
 
   return (
-    <div className="p-8 bg-gray-50 min-h-screen">
-      <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold text-gray-800 flex items-center">
+    <div className="p-4 md:p-8 bg-gray-50 min-h-screen">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 md:mb-8 gap-4">
+        <h1 className="text-2xl md:text-3xl font-bold text-gray-800 flex items-center">
           <span className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white p-2 rounded-lg mr-3">
             <svg
               xmlns="http://www.w3.org/2000/svg"
-              className="h-6 w-6"
+              className="h-5 w-5 md:h-6 md:w-6"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -372,23 +376,23 @@ const Products = () => {
           type="primary"
           onClick={() => setShowAddModal(true)}
           disabled={loading}
-          className="flex items-center bg-indigo-600 hover:bg-indigo-700 border-0 h-10 px-5 rounded-lg shadow-md"
+          className="w-full md:w-auto flex items-center justify-center bg-indigo-600 hover:bg-indigo-700 border-0 h-10 px-5 rounded-lg shadow-md"
         >
           <FaPlus className="mr-2" /> Thêm sản phẩm
         </Button>
       </div>
 
-      <div className="mb-6 flex items-center justify-between bg-white p-4 rounded-lg shadow-sm">
-        <div className="text-gray-700 font-medium">
+      <div className="mb-4 md:mb-6 flex flex-col md:flex-row items-start md:items-center justify-between bg-white p-4 rounded-lg shadow-sm gap-4">
+        <div className="text-gray-700 font-medium w-full md:w-auto">
           Tổng số:{" "}
           <span className="text-indigo-600 font-bold">
             {filteredProducts.length}
           </span>{" "}
           sản phẩm
         </div>
-        <Space>
+        <Space className="w-full md:w-auto flex flex-col sm:flex-row gap-2">
           <Select
-            className="w-40"
+            className="w-full sm:w-40"
             value={filter}
             onChange={(value) => setFilter(value)}
             options={[
@@ -399,7 +403,7 @@ const Products = () => {
             disabled={loading}
           />
           <Select
-            className="w-40"
+            className="w-full sm:w-40"
             value={sortOrder || "default"}
             onChange={(value) =>
               setSortOrder(value === "default" ? null : value)
@@ -414,7 +418,7 @@ const Products = () => {
         </Space>
       </div>
 
-      <div className="bg-white p-6 rounded-xl shadow-md overflow-x-auto">
+      <div className="bg-white p-2 md:p-6 rounded-xl shadow-md overflow-x-auto">
         <Table
           columns={columns}
           dataSource={displayedProducts}
@@ -425,11 +429,15 @@ const Products = () => {
             onChange: (page) => setCurrentPage(page),
             style: { marginTop: "1rem" },
             className: "bg-gray-50 p-3 rounded-lg",
+            responsive: true,
+            size: "small",
           }}
           rowKey="productId"
           loading={loading}
           className="border-spacing-y-3"
           rowClassName="hover:bg-gray-50 transition-colors"
+          scroll={{ x: true }}
+          size="middle"
         />
       </div>
 

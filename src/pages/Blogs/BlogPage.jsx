@@ -69,8 +69,8 @@ const Blogs = () => {
           </h2>
 
           {/* Bộ lọc được cải thiện */}
-          <div className="flex flex-col sm:flex-row justify-center gap-4 mb-8">
-            <div className="relative">
+          <div className="flex flex-col sm:flex-row justify-center gap-4 mb-8 px-4 sm:px-0">
+            <div className="relative w-full sm:w-auto">
               <select
                 value={selectedSkinType}
                 onChange={(e) => {
@@ -107,7 +107,7 @@ const Blogs = () => {
             </div>
 
             {/* Tương tự cho category select ... */}
-            <div className="relative">
+            <div className="relative w-full sm:w-auto">
               <select
                 value={selectedCategory}
                 onChange={(e) => {
@@ -152,7 +152,7 @@ const Blogs = () => {
             </div>
           ) : (
             <>
-              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8 max-w-7xl mx-auto px-4 sm:px-6">
                 {paginatedBlogs.map((post) => (
                   <div
                     key={post.blogId}
@@ -165,7 +165,7 @@ const Blogs = () => {
                       <img
                         src={post.imgURL}
                         alt={post.title}
-                        className="w-full h-64 object-cover transform group-hover:scale-110 transition-transform duration-300"
+                        className="w-full h-48 sm:h-56 lg:h-64 object-cover transform group-hover:scale-110 transition-transform duration-300"
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                     </div>
@@ -267,19 +267,15 @@ const Blogs = () => {
 
         {/* Modal được cải thiện */}
         {selectedBlog && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <div
-              className="absolute inset-0 bg-black/40 backdrop-blur-sm transition-opacity"
-              onClick={() => setSelectedBlog(null)}
-            />
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4">
             <div
               className="bg-white rounded-2xl shadow-2xl w-full max-w-5xl relative
                         transform transition-all duration-300 scale-100
-                        max-h-[95vh] overflow-hidden flex flex-col"
+                        max-h-[98vh] sm:max-h-[95vh] overflow-hidden flex flex-col"
             >
               {/* Header */}
-              <div className="p-6 border-b border-gray-100 flex justify-between items-center sticky top-0 bg-white z-10">
-                <h2 className="text-3xl font-bold text-gray-800">
+              <div className="p-4 sm:p-6 border-b border-gray-100 flex justify-between items-center sticky top-0 bg-white z-10">
+                <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-800 line-clamp-1">
                   {selectedBlog.title}
                 </h2>
                 <button
@@ -307,11 +303,11 @@ const Blogs = () => {
               </div>
 
               {/* Content */}
-              <div className="flex-1 overflow-y-auto p-8">
+              <div className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
                 <img
                   src={selectedBlog.imgURL}
                   alt={selectedBlog.title}
-                  className="w-full h-[500px] object-cover rounded-xl mb-8 shadow-md"
+                  className="w-full h-[200px] sm:h-[300px] lg:h-[500px] object-cover rounded-xl mb-4 sm:mb-6 lg:mb-8 shadow-md"
                 />
                 <div className="space-y-4 mb-8">
                   <div className="flex space-x-4 text-sm text-gray-600">
