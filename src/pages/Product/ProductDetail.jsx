@@ -12,6 +12,7 @@ import { FaArrowLeft, FaShoppingCart } from "react-icons/fa";
 import Swal from "sweetalert2";
 import { Rating, Chip, Dialog, DialogContent, IconButton } from "@mui/material";
 import reviewsAPI from "../../services/reviews";
+import dayjs from "dayjs";
 
 const ProductDetail = () => {
   const { id } = useParams();
@@ -134,8 +135,8 @@ const ProductDetail = () => {
   };
 
   const handleReviewSubmit = async () => {
-    if (isSubmitting) return; // Tránh gửi nhiều lần
-    setIsSubmitting(true); // Bật trạng thái gửi
+    if (isSubmitting) return;
+    setIsSubmitting(true);
 
     const { currentUser } = useAuth();
 
@@ -158,26 +159,28 @@ const ProductDetail = () => {
     }
 
     try {
-      const formData = new FormData();
-      formData.append("productId", product.productId);
-      formData.append("userId", currentUser.id);
-      formData.append("rating", newRating);
-      formData.append("comment", newComment);
-      if (selectedImage) {
-        formData.append("image", selectedImage);
+      // Dữ liệu gửi lên BE
+      const reviewData = {
+        productId: product.productId, // Đảm bảo `productId` có giá trị
+        userId: currentUser.id, // Đảm bảo `userId` có giá trị
+        rating: newRating,
+        comment: newComment,
+        reviewDate: new Date().toISOString(), // Format chuẩn ISO cho BE
+      };
+
+      // Gửi đánh giá lên API
+      const response = await reviewsAPI.createReviews(reviewData);
+
+      if (response.status >= 200 && response.status < 300) {
+        // Cập nhật UI ngay lập tức sau khi lưu thành công
+        setReviews([response.data, ...reviews]);
+        setNewRating(0);
+        setNewComment("");
+
+        Swal.fire("Thành công!", "Đánh giá của bạn đã được gửi!", "success");
+      } else {
+        throw new Error("Có lỗi xảy ra khi gửi đánh giá.");
       }
-
-      const response = await reviewsAPI.createReviews(formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
-
-      setReviews([response.data, ...reviews]);
-      setNewRating(0);
-      setNewComment("");
-      setSelectedImage(null);
-      setPreviewImage(null);
-
-      Swal.fire("Thành công!", "Đánh giá của bạn đã được gửi!", "success");
     } catch (error) {
       console.error("Lỗi gửi đánh giá:", error);
       Swal.fire(
@@ -186,7 +189,7 @@ const ProductDetail = () => {
         "error"
       );
     } finally {
-      setIsSubmitting(false); // Tắt trạng thái gửi sau khi hoàn tất
+      setIsSubmitting(false);
     }
   };
 
@@ -267,7 +270,13 @@ const ProductDetail = () => {
             <p className="text-md text-gray-500">
               Loại da:
               <span className="font-semibold">
-                {product.skinType?.skinTypeName || "Không xác định"}
+                {product.skinTypeName || "Không xác định"}
+              </span>
+            </p>
+            <p className="text-md text-gray-500">
+              Danh mục:
+              <span className="font-semibold">
+                {product.categoryName || "Không xác định"}
               </span>
             </p>
 
@@ -373,11 +382,21 @@ const ProductDetail = () => {
                         >
                           {/* Avatar & Tên người dùng */}
                           <div className="flex items-center gap-3">
-                            <img
-                              src={user.avatar || "/default-avatar.png"}
-                              alt={user.fullName || "Người dùng ẩn danh"}
-                              className="w-10 h-10 rounded-full object-cover border"
-                            />
+                            {user.avatar ? (
+                              <img
+                                src={user.avatar}
+                                alt={user.fullName || "Người dùng ẩn danh"}
+                                className="w-10 h-10 rounded-full object-cover border"
+                              />
+                            ) : (
+                              <img
+                                src={`https://api.dicebear.com/9.x/adventurer/svg?seed=Liliana${
+                                  user.userName || "default"
+                                }`}
+                                alt="Avatar ảo"
+                                className="w-10 h-10 rounded-full border"
+                              />
+                            )}
                             <div>
                               <p className="text-lg font-semibold">
                                 {user.userName || "Người dùng ẩn danh"}
@@ -391,6 +410,11 @@ const ProductDetail = () => {
                           </div>
                           {/* Nội dung đánh giá */}
                           <p className="mt-2 text-gray-700">{review.comment}</p>
+                          <p>
+                            {dayjs(review.reviewDate).format(
+                              "DD/MM/YYYY HH:mm"
+                            )}
+                          </p>
                         </div>
                       );
                     })}
