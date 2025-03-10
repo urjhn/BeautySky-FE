@@ -17,9 +17,9 @@ const productAPI = {
   editProduct: async (id, payload) => {
     return await axiosInstance.put(`${endPoint}/${id}`, payload);
   },
-  searchProduct: async (id) => {
-    const response = await axiosInstance.get(`${endPoint}/${id}`);
-    return response;
+  searchProduct: async (keyword) => {
+    const response = await axiosInstance.get(`${endPoint}?name=${keyword}`);
+    return response.data;
   },
   deleteProduct: async (id) => {
     return await axiosInstance.delete(`${endPoint}/${id}`);

@@ -17,9 +17,9 @@ const categoryAPI = {
     const response = await axiosInstance.put(`${endPoint}/${id}`, payload);
     return response;
   },
-  searchCategory: async (id) => {
-    const response = await axiosInstance.get(`${endPoint}/${id}`);
-    return response;
+  searchCategory: async (keyword) => {
+    const response = await axiosInstance.get(`${endPoint}/search?keyword=${keyword}`);
+    return response.data.map(item => ({...item, type: 'categories'}));
   },
 };
 

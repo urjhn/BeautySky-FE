@@ -138,56 +138,78 @@ const ProductDetail = () => {
     if (isSubmitting) return;
     setIsSubmitting(true);
 
-    const { currentUser } = useAuth();
-
-    if (!currentUser) {
-      Swal.fire("Lỗi", "Bạn cần đăng nhập để gửi đánh giá!", "warning");
-      setIsSubmitting(false);
-      return;
-    }
-
-    if (!newComment.trim()) {
-      Swal.fire("Lỗi", "Vui lòng nhập nội dung đánh giá!", "warning");
-      setIsSubmitting(false);
-      return;
-    }
-
-    if (newRating === 0) {
-      Swal.fire("Lỗi", "Vui lòng chọn số sao!", "warning");
-      setIsSubmitting(false);
-      return;
-    }
-
     try {
-      // Dữ liệu gửi lên BE
+      // Kiểm tra user đã đăng nhập chưa
+      const { currentUser } = useAuth();
+      if (!currentUser) {
+        Swal.fire({
+          icon: "warning",
+          title: "Cần đăng nhập",
+          text: "Bạn cần đăng nhập để gửi đánh giá!",
+        });
+        return;
+      }
+
+      // Validate dữ liệu đầu vào
+      if (!newComment.trim()) {
+        Swal.fire({
+          icon: "warning",
+          title: "Thiếu nội dung",
+          text: "Vui lòng nhập nội dung đánh giá!",
+        });
+        return;
+      }
+
+      if (newRating === 0) {
+        Swal.fire({
+          icon: "warning",
+          title: "Thiếu đánh giá",
+          text: "Vui lòng chọn số sao đánh giá!",
+        });
+        return;
+      }
+
+      // Tạo object review theo cấu trúc API
       const reviewData = {
-        productId: product.productId, // Đảm bảo `productId` có giá trị
-        userId: currentUser.id, // Đảm bảo `userId` có giá trị
+        productId: product.productId,
+        userId: currentUser.id,
         rating: newRating,
         comment: newComment,
-        reviewDate: new Date().toISOString(), // Format chuẩn ISO cho BE
+        reviewDate: new Date().toISOString(),
       };
 
-      // Gửi đánh giá lên API
+      // Gọi API tạo review
       const response = await reviewsAPI.createReviews(reviewData);
 
-      if (response.status >= 200 && response.status < 300) {
-        // Cập nhật UI ngay lập tức sau khi lưu thành công
-        setReviews([response.data, ...reviews]);
+      // Xử lý response thành công
+      if (response.status === 200) {
+        // Thêm review mới vào state
+        const newReview = {
+          ...reviewData,
+          reviewId: response.data.reviewId, // Lấy ID từ response nếu có
+        };
+        setReviews((prevReviews) => [newReview, ...prevReviews]);
+
+        // Reset form
         setNewRating(0);
         setNewComment("");
+        setSelectedImage(null);
+        setPreviewImage(null);
 
-        Swal.fire("Thành công!", "Đánh giá của bạn đã được gửi!", "success");
-      } else {
-        throw new Error("Có lỗi xảy ra khi gửi đánh giá.");
+        // Thông báo thành công
+        Swal.fire({
+          icon: "success",
+          title: "Thành công!",
+          text: "Đánh giá của bạn đã được gửi thành công!",
+        });
       }
     } catch (error) {
-      console.error("Lỗi gửi đánh giá:", error);
-      Swal.fire(
-        "Lỗi!",
-        error.response?.data?.message || "Có lỗi xảy ra khi gửi đánh giá.",
-        "error"
-      );
+      console.error("Lỗi khi gửi đánh giá:", error);
+      Swal.fire({
+        icon: "error",
+        title: "Lỗi!",
+        text: "Có lỗi xảy ra khi gửi đánh giá. Vui lòng thử lại sau.",
+      });
     } finally {
       setIsSubmitting(false);
     }

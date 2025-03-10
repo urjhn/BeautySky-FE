@@ -25,6 +25,10 @@ const blogsAPI = {
   getCategory: async (category) => {
     return await axiosInstance.get(`${endPoint}/by-category/${category}`);
   },
+  searchBlogs: async (keyword) => {
+    const response = await axiosInstance.get(`${endPoint}/search?keyword=${keyword}`);
+    return response.data.map(item => ({...item, type: 'blogs'}));
+  },
 };
 
 export default blogsAPI;

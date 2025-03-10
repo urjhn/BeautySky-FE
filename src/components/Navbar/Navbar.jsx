@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { IoMdSearch } from "react-icons/io";
+import { IoMdSearch, IoMdImage } from "react-icons/io";
 import { FaShoppingCart } from "react-icons/fa";
 import { useCart } from "../../context/CartContext";
 import { useAuth } from "../../context/AuthContext"; // 🆕 Import useAuth
@@ -8,11 +8,7 @@ import { NavbarMenu } from "../Navbar/Data";
 import Logo from "../../assets/logo.png";
 import Namebrand from "../../assets/namebrand.png";
 import { Menu, Popover, Avatar } from "antd";
-import { UserOutlined } from "@ant-design/icons";
 import productAPI from "../../services/product";
-import blogsAPI from "../../services/blogs";
-import categoryApi from "../../services/category";
-import skinTypeApi from "../../services/skintype";
 import { HiMenu, HiX } from "react-icons/hi";
 
 const Navbar = () => {
@@ -38,20 +34,45 @@ const Navbar = () => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const handleSearch = async () => {
-    if (!searchQuery) return;
-    try {
-      const [products, blogs, categories, skinTypes] = await Promise.all([
-        productAPI.searchProduct(searchQuery),
-        blogsAPI.searchBlogs(searchQuery),
-        categoryApi.searchCategory(searchQuery),
-        skinTypeApi.searchSkinType(searchQuery),
-      ]);
+  useEffect(() => {
+    console.log("searchQuery changed:", searchQuery); // Kiểm tra searchQuery thay đổi
+    const delayDebounce = setTimeout(() => {
+      if (searchQuery.trim()) {
+        console.log("Calling handleSearch with query:", searchQuery.trim());
+        handleSearch();
+      } else {
+        console.log("Empty search query - clearing results");
+        setSearchResults([]);
+        setShowProductDropdown(false);
+      }
+    }, 300);
 
-      setSearchResults([...products, ...blogs, ...categories, ...skinTypes]);
+    return () => clearTimeout(delayDebounce);
+  }, [searchQuery]);
+
+  const handleSearch = async () => {
+    try {
+      if (!searchQuery.trim()) {
+        setSearchResults([]);
+        setShowProductDropdown(false);
+        return;
+      }
+
+      const products = await productAPI.searchProduct(searchQuery);
+      
+      const formattedResults = products.map(item => ({
+        id: item.productId,
+        title: item.productName,
+        price: item.price,
+        description: item.description,
+        image: item.productsImages?.[0]?.imageUrl
+      }));
+
+      setSearchResults(formattedResults);
       setShowProductDropdown(true);
     } catch (error) {
-      console.error("Lỗi tìm kiếm:", error);
+      console.error("Search error:", error);
+      setSearchResults([]);
     }
   };
 
@@ -160,30 +181,106 @@ const Navbar = () => {
         <div className="flex items-center gap-2 lg:gap-3">
           {/* Search Bar */}
           <div className="relative hidden sm:block">
-            <input
-              type="text"
-              placeholder="Tìm kiếm"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-24 sm:w-28 lg:w-40 border border-gray-300 rounded-full px-3 lg:px-4 py-1 focus:outline-none focus:border-primary text-sm"
-            />
-            <button onClick={handleSearch} className="absolute right-3 top-2">
-              <IoMdSearch className="text-gray-500 hover:text-[#6BBCFE]" />
-            </button>
+            <div className="relative">
+              <input
+                type="text"
+                placeholder="Tìm kiếm sản phẩm..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onFocus={() => {
+                  if (searchResults.length > 0) {
+                    setShowProductDropdown(true);
+                  }
+                }}
+                className="w-32 sm:w-48 lg:w-64 border-2 border-gray-200 rounded-full 
+                           px-4 py-2 pr-10 focus:outline-none focus:border-blue-400 
+                           transition-all duration-300 text-sm placeholder-gray-400"
+              />
+              <div className="absolute right-3 top-1/2 transform -translate-y-1/2 
+                              text-gray-400 hover:text-blue-500 transition-colors duration-200">
+                <IoMdSearch className="w-5 h-5" />
+              </div>
+            </div>
+
+            {/* Dropdown Results */}
             {showProductDropdown && (
-              <div className="absolute bg-white shadow-md mt-2 w-full z-10 p-2">
+              <div className="absolute bg-white w-96 mt-2 rounded-lg shadow-lg 
+                              max-h-[32rem] overflow-y-auto z-50 border border-gray-100"
+                   ref={dropdownRef}>
+                <div className="sticky top-0 bg-gray-50 p-3 border-b border-gray-100">
+                  <p className="text-sm text-gray-500">
+                    {searchResults.length > 0 
+                      ? `Tìm thấy ${searchResults.length} sản phẩm` 
+                      : 'Không tìm thấy sản phẩm'}
+                  </p>
+                </div>
+
                 {searchResults.length > 0 ? (
-                  searchResults.map((item, index) => (
-                    <Link
-                      key={index}
-                      to={`/${item.type}/${item.id}`}
-                      className="block p-2 hover:bg-gray-100"
-                    >
-                      {item.name || item.title}
-                    </Link>
-                  ))
+                  <div className="divide-y divide-gray-100">
+                    {searchResults.map((item) => (
+                      <Link
+                        key={item.id}
+                        to={`/product/${item.id}`}
+                        className="flex items-start p-4 hover:bg-blue-50 transition-all 
+                                 duration-200 group cursor-pointer"
+                        onClick={() => {
+                          setShowProductDropdown(false);
+                          setSearchQuery('');
+                        }}
+                      >
+                        <div className="flex-shrink-0">
+                          {item.image ? (
+                            <img 
+                              src={item.image} 
+                              alt={item.title} 
+                              className="w-20 h-20 object-cover rounded-lg shadow-sm 
+                                       group-hover:shadow-md transition-shadow duration-200"
+                            />
+                          ) : (
+                            <div className="w-20 h-20 bg-gray-100 rounded-lg flex items-center 
+                                          justify-center">
+                              <IoMdImage className="w-8 h-8 text-gray-400" />
+                            </div>
+                          )}
+                        </div>
+
+                        <div className="ml-4 flex-1">
+                          <div className="flex items-start justify-between">
+                            <div>
+                              <h3 className="font-medium text-gray-900 group-hover:text-blue-600 
+                                           transition-colors duration-150 line-clamp-2">
+                                {item.title}
+                              </h3>
+                              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full 
+                                             text-xs font-medium bg-blue-100 text-blue-800 mt-1">
+                                Sản phẩm
+                              </span>
+                            </div>
+                            <p className="text-sm font-semibold text-blue-600">
+                              {item.price?.toLocaleString('vi-VN')}₫
+                            </p>
+                          </div>
+                          
+                          {item.description && (
+                            <p className="mt-1 text-sm text-gray-500 line-clamp-2 leading-relaxed">
+                              {item.description}
+                            </p>
+                          )}
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
                 ) : (
-                  <p className="text-gray-500 p-2">Không tìm thấy kết quả</p>
+                  <div className="p-8 text-center">
+                    <div className="inline-flex items-center justify-center w-12 h-12 
+                                   rounded-full bg-gray-100 mb-4">
+                      <IoMdSearch className="w-6 h-6 text-gray-400" />
+                    </div>
+                    <p className="text-gray-500">Không tìm thấy sản phẩm phù hợp</p>
+                    <p className="text-sm text-gray-400 mt-1">
+                      Vui lòng thử tìm kiếm với từ khóa khác
+                    </p>
+                  </div>
                 )}
               </div>
             )}

@@ -19,9 +19,9 @@ const skinTypeAPI = {
     const response = await axiosInstance.put(`${endPoint}/${id}`, payload);
     return response;
   },
-  searchSkinType: async (id) => {
-    const response = await axiosInstance.get(`${endPoint}/${id}`);
-    return response;
+  searchSkinType: async (keyword) => {
+    const response = await axiosInstance.get(`${endPoint}/search?keyword=${keyword}`);
+    return response.data.map(item => ({...item, type: 'skintypes'}));
   },
 };
 
