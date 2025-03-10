@@ -4,6 +4,7 @@ import { useAuth } from "../../../context/AuthContext";
 import { useUsersContext } from "../../../context/UserContext";
 import Swal from "sweetalert2"; // Import SweetAlert
 import { EditOutlined, SaveOutlined, CloseOutlined } from "@ant-design/icons";
+import { useNotifications } from "../../../context/NotificationContext";
 
 const { Title } = Typography;
 
@@ -14,17 +15,20 @@ const ProfileForm = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [form] = Form.useForm();
   const [isLoading, setIsLoading] = useState(true);
+  const { addNotification } = useNotifications();
 
   useEffect(() => {
     const loadUsers = async () => {
-      // Chỉ fetch khi chưa có users
-      if (users.length === 0) {
-        setIsLoading(true);
-        await fetchUsers();
-        setIsLoading(false);
-      }
+      setIsLoading(true);
+      await fetchUsers();
+      setIsLoading(false);
     };
-    loadUsers();
+
+    if (users.length === 0) {
+      loadUsers();
+    } else {
+      setIsLoading(false); // Nếu users đã có sẵn thì không cần load lại
+    }
   }, [fetchUsers, users.length]);
 
   useEffect(() => {
@@ -32,11 +36,15 @@ const ProfileForm = () => {
       const foundUser = users.find(
         (u) => u.email?.toLowerCase() === authUser.email?.toLowerCase()
       );
-      
+
       // Cập nhật form chỉ khi có thay đổi user
-      if (foundUser && JSON.stringify(foundUser) !== JSON.stringify(currentUser)) {
+      if (
+        foundUser &&
+        JSON.stringify(foundUser) !== JSON.stringify(currentUser)
+      ) {
         setCurrentUser(foundUser);
         form.setFieldsValue(foundUser);
+        setIsLoading(false);
       }
     }
   }, [authUser, users, form, currentUser]);
@@ -61,7 +69,7 @@ const ProfileForm = () => {
         cancelButtonText: "Hủy",
         reverseButtons: true,
       });
-  
+
       if (confirmResult.isConfirmed) {
         // Hiển thị loading khi đang xử lý
         Swal.fire({
@@ -72,7 +80,7 @@ const ProfileForm = () => {
             Swal.showLoading();
           },
         });
-  
+
         const payload = {
           userName: values.userName,
           fullName: values.fullName,
@@ -80,13 +88,13 @@ const ProfileForm = () => {
           phone: values.phone,
           address: values.address,
         };
-  
+
         const apiResult = await updateUser(currentUser.userId, payload);
-  
+
         if (apiResult?.success) {
           // Đóng loading
           Swal.close();
-          
+
           // Thông báo thành công
           await Swal.fire({
             title: "Thành công!",
@@ -94,7 +102,8 @@ const ProfileForm = () => {
             icon: "success",
             confirmButtonColor: "#3085d6",
           });
-  
+          addNotification("Bạn đã cập nhật thông tin thành công! 🎉");
+
           setCurrentUser((prev) => ({ ...prev, ...payload }));
           updateAuthUser({ ...authUser, ...payload });
           setIsEditing(false);

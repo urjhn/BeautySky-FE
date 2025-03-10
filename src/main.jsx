@@ -12,6 +12,7 @@ import { ThemeProvider } from "./pages/DashBoard/context/ThemeContext.jsx";
 import { BlogsProvider } from "./context/BlogsContext.jsx";
 import { AuthProvider } from "./context/AuthContext.jsx";
 import { QuizProvider } from "./context/QuizContext.jsx";
+import { NotificationProvider } from "./context/NotificationContext.jsx";
 
 const root = createRoot(document.getElementById("root"));
 
@@ -20,25 +21,27 @@ root.render(
     {" "}
     {/* Chỉ có 1 Router ở đây */}
     <AuthProvider>
-      <OrdersProvider>
-        <CartProvider>
-          <UsersProvider>
-            <DataProvider>
-              <QuizProvider>
-                <ReviewProvider>
-                  <ThemeProvider>
-                    <NewsProvider>
-                      <BlogsProvider>
-                        <App />
-                      </BlogsProvider>
-                    </NewsProvider>
-                  </ThemeProvider>
-                </ReviewProvider>
-              </QuizProvider>
-            </DataProvider>
-          </UsersProvider>
-        </CartProvider>
-      </OrdersProvider>
+      <NotificationProvider>
+        <OrdersProvider>
+          <CartProvider>
+            <UsersProvider>
+              <DataProvider>
+                <QuizProvider>
+                  <ReviewProvider>
+                    <ThemeProvider>
+                      <NewsProvider>
+                        <BlogsProvider>
+                          <App />
+                        </BlogsProvider>
+                      </NewsProvider>
+                    </ThemeProvider>
+                  </ReviewProvider>
+                </QuizProvider>
+              </DataProvider>
+            </UsersProvider>
+          </CartProvider>
+        </OrdersProvider>
+      </NotificationProvider>
     </AuthProvider>
   </Router>
 );

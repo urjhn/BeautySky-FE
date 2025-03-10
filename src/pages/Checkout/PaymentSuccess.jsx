@@ -6,12 +6,14 @@ import orderAPI from "../../services/order"; // Import API xử lý đơn hàng
 import Navbar from "../../components/Navbar/Navbar";
 import Footer from "../../components/Footer/Footer";
 import Swal from "sweetalert2";
+import { useNotifications } from "../../context/NotificationContext";
 
 const PaymentSuccess = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [status, setStatus] = useState("pending");
   const orderId = searchParams.get("orderId"); // Lấy orderId từ URL
+  const { addNotification } = useNotifications();
 
   useEffect(() => {
     const completeOrder = async () => {
@@ -35,6 +37,7 @@ const PaymentSuccess = () => {
             title: "Thanh toán thành công!",
             text: "Đơn hàng của bạn đã được xác nhận.",
           });
+          addNotification("Bạn đã thanh toán thành công! 🎉");
         } else {
           setStatus("failed");
           Swal.fire({

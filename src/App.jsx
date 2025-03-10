@@ -30,6 +30,8 @@ import OrderDetail from "./pages/Orders/OrderDetail.jsx";
 import ProtectedRoute from "./context/ProtectedRoute.jsx";
 import ProfileAdmin from "./pages/DashBoard/pages/ProfileAdmin.jsx";
 import ProfileLayout from "./pages/Profile/ProfileLayout.jsx";
+import Security from "./pages/Profile/pages/Security2FA.jsx";
+import Notifications from "./pages/Profile/pages/Notifications.jsx";
 
 import Unauthorized from "./pages/Unauthorized/unauthorized.jsx";
 
@@ -91,6 +93,8 @@ const App = () => (
     <Route path="/profilelayout" element={<ProfileLayout />}>
       <Route index element={<UserProfile />} />
       <Route path="historyorder" element={<HistoryOrder />} />
+      <Route path="security" element={<Security />} />
+      <Route path="notifications" element={<Notifications />} />
     </Route>
   </Routes>
 );

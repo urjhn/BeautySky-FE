@@ -6,6 +6,7 @@ import Navbar from "../../components/Navbar/Navbar";
 import Footer from "../../components/Footer/Footer";
 import loginImage from "../../assets/login/login.png";
 import { useAuth } from "../../context/AuthContext";
+import { useNotifications } from "../../context/NotificationContext";
 
 function Login() {
   const { user, login } = useAuth();
@@ -13,6 +14,7 @@ function Login() {
   const [loading, setLoading] = useState(false);
   const [recaptchaToken, setRecaptchaToken] = useState(null);
   const navigate = useNavigate();
+  const { addNotification } = useNotifications();
 
   useEffect(() => {
     if (user) {
@@ -49,6 +51,7 @@ function Login() {
         timer: 2000,
         showConfirmButton: false,
       });
+      addNotification("Bạn đã đăng nhập thành công! 🎉");
 
       navigate("/");
     } catch (err) {

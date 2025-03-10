@@ -5,10 +5,12 @@ import Footer from "../../components/Footer/Footer";
 import registerImage from "../../assets/register/register.png";
 import { useAuth } from "../../context/AuthContext";
 import Swal from "sweetalert2";
+import { useNotifications } from "../../context/NotificationContext";
 
 function Register() {
   const { register } = useAuth();
   const navigate = useNavigate();
+  const { addNotification } = useNotifications();
 
   const [formData, setFormData] = useState({
     fullName: "",
@@ -87,6 +89,7 @@ function Register() {
         icon: "success",
         confirmButtonColor: "#6bbcfe",
       }).then(() => navigate("/login"));
+      addNotification("Bạn đã đăng ký tài khoản thành công! 🎉");
     } catch (err) {
       Swal.fire(
         "Lỗi",

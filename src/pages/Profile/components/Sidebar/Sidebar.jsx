@@ -1,13 +1,10 @@
 import {
   FaChartBar,
   FaUsers,
-  FaBox,
-  FaHome,
-  FaCog,
-  FaTags,
-  FaFileAlt,
-  FaBlog,
   FaSignOutAlt,
+  FaCreditCard,
+  FaShieldAlt,
+  FaBell,
 } from "react-icons/fa";
 import { NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "../../../../context/AuthContext";
@@ -35,7 +32,6 @@ const Sidebar = () => {
       const foundUser = users.find(
         (u) => u.email?.toLowerCase() === authUser.email?.toLowerCase()
       );
-
       if (foundUser) {
         setCurrentUser(foundUser);
       }
@@ -71,16 +67,22 @@ const Sidebar = () => {
             title="Orders"
             to="/profilelayout/historyorder"
           />
-          <NavItem icon={<FaHome />} title="Cửa hàng" to="/" />
+
+          {/* Cài đặt tài khoản */}
           <NavItem
-            icon={<FaFileAlt />}
-            title="Báo cáo"
-            to="/dashboardlayout/reports"
+            icon={<FaCreditCard />}
+            title="Quản lý thanh toán"
+            to="/profilelayout/payment"
           />
           <NavItem
-            icon={<FaCog />}
-            title="Cài đặt"
-            to="/dashboardlayout/settings"
+            icon={<FaShieldAlt />}
+            title="Bảo mật 2 lớp (2FA)"
+            to="/profilelayout/security"
+          />
+          <NavItem
+            icon={<FaBell />}
+            title="Thông báo"
+            to="/profilelayout/notifications"
           />
 
           {/* Logout Button */}
