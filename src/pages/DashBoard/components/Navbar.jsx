@@ -8,6 +8,8 @@ import Logo from "../public/images/logo.png";
 import Namebrand from "../public/images/namebrand.png";
 import { HiMenu } from "react-icons/hi";
 import productAPI from "../../../services/product";
+import blogsAPI from "../../../services/blogs";
+import usersAPI from "../../../services/users";
 
 const Navbar = () => {
   const navigate = useNavigate();
@@ -17,6 +19,7 @@ const Navbar = () => {
   const [searchResults, setSearchResults] = useState([]);
   const [showDropdown, setShowDropdown] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [searchType, setSearchType] = useState("products");
   const dropdownRef = useRef(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
@@ -47,9 +50,49 @@ const Navbar = () => {
 
   const handleSearch = async () => {
     try {
+      if (!searchQuery.trim()) {
+        setSearchResults([]);
+        setShowDropdown(false);
+        return;
+      }
+
       setIsLoading(true);
-      const products = await productAPI.searchProduct(searchQuery);
-      setSearchResults(products);
+      
+      let results = [];
+      
+      // Tìm kiếm dựa vào loại đã chọn
+      if (searchType === "products") {
+        const products = await productAPI.searchProduct(searchQuery);
+        results = products.map(product => ({
+          ...product,
+          type: "product"
+        }));
+      } 
+      else if (searchType === "blogs") {
+        const blogs = await blogsAPI.searchBlogs(searchQuery);
+        results = blogs.map(blog => ({
+          ...blog,
+          type: "blog"
+        }));
+      }
+      else if (searchType === "users") {
+        const usersResponse = await usersAPI.getAll();
+        const users = usersResponse.data || [];
+        
+        // Lọc người dùng theo từ khóa tìm kiếm
+        results = users
+          .filter(user => 
+            user.userName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            user.fullName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            user.email?.toLowerCase().includes(searchQuery.toLowerCase())
+          )
+          .map(user => ({
+            ...user,
+            type: "user"
+          }));
+      }
+      
+      setSearchResults(results);
       setShowDropdown(true);
     } catch (error) {
       console.error("Lỗi tìm kiếm:", error);
@@ -98,7 +141,10 @@ const Navbar = () => {
           <div className="relative">
             <input
               type="text"
-              placeholder="Tìm kiếm sản phẩm..."
+              placeholder={`Tìm kiếm ${
+                searchType === "products" ? "sản phẩm" : 
+                searchType === "blogs" ? "bài viết" : "người dùng"
+              }...`}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full border-2 border-gray-200 rounded-full px-4 py-2 
@@ -114,6 +160,40 @@ const Navbar = () => {
             </div>
           </div>
 
+          {/* Tabs cho loại tìm kiếm */}
+          <div className="flex mt-2 bg-gray-100 rounded-full p-1">
+            <button
+              onClick={() => setSearchType("products")}
+              className={`flex-1 py-1 px-2 text-xs rounded-full transition-all ${
+                searchType === "products" 
+                  ? "bg-white text-blue-600 shadow-sm" 
+                  : "text-gray-600 hover:bg-gray-200"
+              }`}
+            >
+              Sản phẩm
+            </button>
+            <button
+              onClick={() => setSearchType("blogs")}
+              className={`flex-1 py-1 px-2 text-xs rounded-full transition-all ${
+                searchType === "blogs" 
+                  ? "bg-white text-blue-600 shadow-sm" 
+                  : "text-gray-600 hover:bg-gray-200"
+              }`}
+            >
+              Bài viết
+            </button>
+            <button
+              onClick={() => setSearchType("users")}
+              className={`flex-1 py-1 px-2 text-xs rounded-full transition-all ${
+                searchType === "users" 
+                  ? "bg-white text-blue-600 shadow-sm" 
+                  : "text-gray-600 hover:bg-gray-200"
+              }`}
+            >
+              Người dùng
+            </button>
+          </div>
+
           {/* Dropdown Results */}
           {showDropdown && (
             <div 
@@ -124,65 +204,195 @@ const Navbar = () => {
               <div className="sticky top-0 bg-gray-50 p-3 border-b border-gray-100">
                 <p className="text-sm text-gray-500">
                   {searchResults.length > 0 
-                    ? `Tìm thấy ${searchResults.length} sản phẩm` 
-                    : 'Không tìm thấy sản phẩm'}
+                    ? `Tìm thấy ${searchResults.length} ${
+                        searchType === "products" ? "sản phẩm" : 
+                        searchType === "blogs" ? "bài viết" : "người dùng"
+                      }` 
+                    : `Không tìm thấy ${
+                        searchType === "products" ? "sản phẩm" : 
+                        searchType === "blogs" ? "bài viết" : "người dùng"
+                      }`}
                 </p>
               </div>
 
               <div className="divide-y divide-gray-100">
-                {searchResults.map((product) => (
-                  <Link
-                    key={product.productId}
-                    to={`/dashboardlayout/products/${product.productId}`}
-                    className="flex items-start p-4 hover:bg-blue-50 
-                             transition-all duration-200 group"
-                    onClick={() => {
-                      setShowDropdown(false);
-                      setSearchQuery('');
-                    }}
-                  >
-                    <div className="flex-shrink-0">
-                      {product.productsImages?.[0]?.imageUrl ? (
-                        <img 
-                          src={product.productsImages[0].imageUrl}
-                          alt={product.productName}
-                          className="w-16 h-16 object-cover rounded-lg 
-                                   shadow-sm group-hover:shadow-md 
-                                   transition-shadow duration-200"
-                        />
-                      ) : (
-                        <div className="w-16 h-16 bg-gray-100 rounded-lg 
-                                      flex items-center justify-center">
-                          <IoMdImage className="w-6 h-6 text-gray-400" />
+                {searchResults.map((item) => {
+                  // Hiển thị kết quả sản phẩm
+                  if (item.type === "product") {
+                    return (
+                      <Link
+                        key={`product-${item.productId}`}
+                        to={`/dashboardlayout/products/${item.productId}`}
+                        className="flex items-start p-4 hover:bg-blue-50 
+                                 transition-all duration-200 group"
+                        onClick={() => {
+                          setShowDropdown(false);
+                          setSearchQuery('');
+                        }}
+                      >
+                        <div className="flex-shrink-0">
+                          {item.productsImages?.[0]?.imageUrl ? (
+                            <img 
+                              src={item.productsImages[0].imageUrl}
+                              alt={item.productName}
+                              className="w-16 h-16 object-cover rounded-lg 
+                                       shadow-sm group-hover:shadow-md 
+                                       transition-shadow duration-200"
+                            />
+                          ) : (
+                            <div className="w-16 h-16 bg-gray-100 rounded-lg 
+                                          flex items-center justify-center">
+                              <IoMdImage className="w-6 h-6 text-gray-400" />
+                            </div>
+                          )}
                         </div>
-                      )}
-                    </div>
 
-                    <div className="ml-4 flex-1">
-                      <div className="flex items-start justify-between">
-                        <div>
-                          <h3 className="font-medium text-gray-900 
-                                       group-hover:text-blue-600 
-                                       transition-colors duration-150">
-                            {product.productName}
-                          </h3>
-                          <div className="mt-1 space-y-1">
-                            <p className="text-sm font-semibold text-blue-600">
-                              {product.price?.toLocaleString('vi-VN')}₫
-                            </p>
-                            <p className="text-sm text-gray-500">
-                              Số lượng: {product.quantity}
-                            </p>
+                        <div className="ml-4 flex-1">
+                          <div className="flex items-start justify-between">
+                            <div>
+                              <h3 className="font-medium text-gray-900 
+                                           group-hover:text-blue-600 
+                                           transition-colors duration-150">
+                                {item.productName}
+                              </h3>
+                              <div className="mt-1 space-y-1">
+                                <p className="text-sm font-semibold text-blue-600">
+                                  {item.price?.toLocaleString('vi-VN')}₫
+                                </p>
+                                <p className="text-sm text-gray-500">
+                                  Số lượng: {item.quantity}
+                                </p>
+                              </div>
+                            </div>
+                            <span className="text-xs px-2 py-1 rounded-full 
+                                           bg-blue-100 text-blue-800">
+                              {item.categoryName || 'Sản phẩm'}
+                            </span>
                           </div>
                         </div>
-                        <span className="text-xs px-2 py-1 rounded-full 
-                                       bg-blue-100 text-blue-800">
-                          {product.categoryName || 'Sản phẩm'}
-                        </span>
-                      </div>
-                    </div>
-                  </Link>
-                ))}
+                      </Link>
+                    );
+                  }
+                  
+                  // Hiển thị kết quả blog
+                  else if (item.type === "blog") {
+                    return (
+                      <Link
+                        key={`blog-${item.blogId}`}
+                        to={`/dashboardlayout/blogs/${item.blogId}`}
+                        className="flex items-start p-4 hover:bg-blue-50 
+                                 transition-all duration-200 group"
+                        onClick={() => {
+                          setShowDropdown(false);
+                          setSearchQuery('');
+                        }}
+                      >
+                        <div className="flex-shrink-0">
+                          {item.imgURL ? (
+                            <img 
+                              src={item.imgURL}
+                              alt={item.title}
+                              className="w-16 h-16 object-cover rounded-lg 
+                                       shadow-sm group-hover:shadow-md 
+                                       transition-shadow duration-200"
+                            />
+                          ) : (
+                            <div className="w-16 h-16 bg-gray-100 rounded-lg 
+                                          flex items-center justify-center">
+                              <IoMdImage className="w-6 h-6 text-gray-400" />
+                            </div>
+                          )}
+                        </div>
+
+                        <div className="ml-4 flex-1">
+                          <div className="flex items-start justify-between">
+                            <div>
+                              <h3 className="font-medium text-gray-900 
+                                           group-hover:text-blue-600 
+                                           transition-colors duration-150">
+                                {item.title}
+                              </h3>
+                              <div className="mt-1">
+                                <p className="text-sm text-gray-500 line-clamp-2">
+                                  {item.content?.substring(0, 100) || ""}
+                                </p>
+                              </div>
+                            </div>
+                            <span className="text-xs px-2 py-1 rounded-full 
+                                           bg-green-100 text-green-800">
+                              {item.category || 'Bài viết'}
+                            </span>
+                          </div>
+                        </div>
+                      </Link>
+                    );
+                  }
+                  
+                  // Hiển thị kết quả người dùng
+                  else if (item.type === "user") {
+                    return (
+                      <Link
+                        key={`user-${item.userId}`}
+                        to={`/dashboardlayout/users/${item.userId}`}
+                        className="flex items-start p-4 hover:bg-blue-50 
+                                 transition-all duration-200 group"
+                        onClick={() => {
+                          setShowDropdown(false);
+                          setSearchQuery('');
+                        }}
+                      >
+                        <div className="flex-shrink-0">
+                          {item.avatar ? (
+                            <img 
+                              src={item.avatar}
+                              alt={item.fullName || item.userName}
+                              className="w-16 h-16 object-cover rounded-full 
+                                       shadow-sm group-hover:shadow-md 
+                                       transition-shadow duration-200"
+                            />
+                          ) : (
+                            <img
+                              src={`https://api.dicebear.com/9.x/adventurer/svg?seed=${
+                                item.userName || `user-${Math.random()}`
+                              }`}
+                              alt="Avatar ảo"
+                              className="w-16 h-16 object-cover rounded-full 
+                                       shadow-sm group-hover:shadow-md 
+                                       transition-shadow duration-200"
+                            />
+                          )}
+                        </div>
+
+                        <div className="ml-4 flex-1">
+                          <div className="flex items-start justify-between">
+                            <div>
+                              <h3 className="font-medium text-gray-900 
+                                           group-hover:text-blue-600 
+                                           transition-colors duration-150">
+                                {item.fullName || "Chưa cập nhật"}
+                              </h3>
+                              <div className="mt-1 space-y-1">
+                                <p className="text-sm text-gray-500">
+                                  @{item.userName}
+                                </p>
+                                <p className="text-sm text-gray-500">
+                                  {item.email}
+                                </p>
+                              </div>
+                            </div>
+                            <span className="text-xs px-2 py-1 rounded-full 
+                                           bg-purple-100 text-purple-800">
+                              {item.roleId === 2 ? "Staff" : 
+                               item.roleId === 3 ? "Manager" : "Khách hàng"}
+                            </span>
+                          </div>
+                        </div>
+                      </Link>
+                    );
+                  }
+                  
+                  return null;
+                })}
               </div>
             </div>
           )}
@@ -225,7 +435,10 @@ const Navbar = () => {
             <div className="relative">
               <input
                 type="text"
-                placeholder="Tìm kiếm ..."
+                placeholder={`Tìm kiếm ${
+                  searchType === "products" ? "sản phẩm" : 
+                  searchType === "blogs" ? "bài viết" : "người dùng"
+                }...`}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full border border-gray-300 rounded-full px-4 py-2 focus:outline-none focus:border-[#6BBCFE] transition"
@@ -234,8 +447,42 @@ const Navbar = () => {
                 <IoMdSearch className="text-gray-500 hover:text-[#6BBCFE] text-xl" />
               </button>
             </div>
+            
+            {/* Tabs cho mobile */}
+            <div className="flex mt-2 bg-gray-100 rounded-full p-1">
+              <button
+                onClick={() => setSearchType("products")}
+                className={`flex-1 py-1 px-2 text-xs rounded-full transition-all ${
+                  searchType === "products" 
+                    ? "bg-white text-blue-600 shadow-sm" 
+                    : "text-gray-600 hover:bg-gray-200"
+                }`}
+              >
+                Sản phẩm
+              </button>
+              <button
+                onClick={() => setSearchType("blogs")}
+                className={`flex-1 py-1 px-2 text-xs rounded-full transition-all ${
+                  searchType === "blogs" 
+                    ? "bg-white text-blue-600 shadow-sm" 
+                    : "text-gray-600 hover:bg-gray-200"
+                }`}
+              >
+                Bài viết
+              </button>
+              <button
+                onClick={() => setSearchType("users")}
+                className={`flex-1 py-1 px-2 text-xs rounded-full transition-all ${
+                  searchType === "users" 
+                    ? "bg-white text-blue-600 shadow-sm" 
+                    : "text-gray-600 hover:bg-gray-200"
+                }`}
+              >
+                Người dùng
+              </button>
+            </div>
           </div>
-
+          
           {/* Mobile User Section */}
           <div className="p-4 border-t">
             {user ? (

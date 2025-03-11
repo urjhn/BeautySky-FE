@@ -3,6 +3,13 @@ import blogsAPI from "../../../services/blogs";
 import Swal from "sweetalert2";
 import "sweetalert2/dist/sweetalert2.min.css";
 
+// Thêm hàm để cắt ngắn nội dung
+const truncateText = (text, maxLength = 100) => {
+  if (!text) return '';
+  if (text.length <= maxLength) return text;
+  return text.substring(0, maxLength) + '...';
+};
+
 const BlogManagement = () => {
   const [blogs, setBlogs] = useState([]);
   const [search, setSearch] = useState("");
@@ -208,10 +215,10 @@ const BlogManagement = () => {
                       {blog.blogId}
                     </td>
                     <td className="py-2 px-2 md:px-4 font-semibold text-sm">
-                      {blog.title}
+                      {truncateText(blog.title, 50)}
                     </td>
                     <td className="hidden md:table-cell py-2 px-4 text-sm">
-                      {blog.content}
+                      {truncateText(blog.content, 100)}
                     </td>
                     <td
                       className={`py-2 px-2 md:px-4 font-semibold text-sm ${

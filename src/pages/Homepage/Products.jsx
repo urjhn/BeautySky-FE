@@ -26,6 +26,26 @@ const CustomNextArrow = (props) => (
 const Products = () => {
   const { products } = useDataContext();
 
+  // Lấy ngẫu nhiên 10 sản phẩm từ danh sách
+  const getRandomProducts = () => {
+    if (!products || products.length === 0) return [];
+    
+    // Tạo bản sao của mảng sản phẩm để không ảnh hưởng đến dữ liệu gốc
+    const shuffled = [...products];
+    
+    // Thuật toán Fisher-Yates để xáo trộn mảng
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    
+    // Lấy tối đa 10 sản phẩm
+    return shuffled.slice(0, 10);
+  };
+  
+  // Lấy danh sách sản phẩm ngẫu nhiên
+  const randomProducts = getRandomProducts();
+
   // Slider settings
   const settings = {
     dots: true,
@@ -99,9 +119,9 @@ const Products = () => {
 
         {/* Slider Section */}
         <div data-aos="fade-up" className="relative max-w-7xl mx-auto">
-          {products.length > 0 ? (
+          {randomProducts.length > 0 ? (
             <Slider {...settings} className="pb-4">
-              {products.map((data, index) => (
+              {randomProducts.map((data, index) => (
                 <div key={data.productId} className="px-2 pb-4">
                   <Link to={`/product/${data.productId}`} className="block">
                     <div

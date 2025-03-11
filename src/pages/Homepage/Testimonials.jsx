@@ -30,7 +30,20 @@ const Testimonials = () => {
     const fetchReviews = async () => {
       try {
         const response = await reviewsAPI.getAll();
-        setReviews(response.data);
+        
+        // Lấy ngẫu nhiên tối đa 10 đánh giá
+        const allReviews = response.data || [];
+        const shuffledReviews = [...allReviews];
+        
+        // Thuật toán Fisher-Yates để xáo trộn mảng
+        for (let i = shuffledReviews.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [shuffledReviews[i], shuffledReviews[j]] = [shuffledReviews[j], shuffledReviews[i]];
+        }
+        
+        // Lấy tối đa 10 đánh giá
+        const randomReviews = shuffledReviews.slice(0, 10);
+        setReviews(randomReviews);
       } catch (error) {
         console.error("Error fetching reviews:", error);
       } finally {
