@@ -109,7 +109,7 @@ const ProductsPage = () => {
           <div className="w-full lg:w-4/5">
             <div className="flex flex-col md:flex-row justify-between items-center mb-6 md:mb-8 bg-white/80 backdrop-blur-sm p-4 md:p-6 rounded-2xl shadow-lg gap-4">
               <h2 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-gray-700 to-gray-900 bg-clip-text text-transparent">
-                🌸 Sản phẩm nổi bật 🌸
+                 Sản phẩm nổi bật 
               </h2>
               <button
                 className={`w-full md:w-auto px-4 md:px-6 py-2 md:py-3 text-white rounded-xl flex items-center justify-center gap-2 transition-all duration-300 ${

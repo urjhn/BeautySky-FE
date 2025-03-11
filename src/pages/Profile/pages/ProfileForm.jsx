@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Form, Input, Button, Typography, Card, message, Spin } from "antd";
+import { Form, Input, Button, Typography, Card, message, Spin, Select } from "antd";
 import { useAuth } from "../../../context/AuthContext";
 import { useUsersContext } from "../../../context/UserContext";
 import Swal from "sweetalert2"; // Import SweetAlert
@@ -16,6 +16,15 @@ const ProfileForm = () => {
   const [form] = Form.useForm();
   const [isLoading, setIsLoading] = useState(true);
   const { addNotification } = useNotifications();
+  const [provinces, setProvinces] = useState([]);
+  const [districts, setDistricts] = useState([]);
+  const [wards, setWards] = useState([]);
+  const [selectedProvince, setSelectedProvince] = useState(null);
+  const [selectedDistrict, setSelectedDistrict] = useState(null);
+  const [loadingProvinces, setLoadingProvinces] = useState(false);
+  const [loadingDistricts, setLoadingDistricts] = useState(false);
+  const [loadingWards, setLoadingWards] = useState(false);
+  const [fullAddress, setFullAddress] = useState("");
 
   useEffect(() => {
     const loadUsers = async () => {
@@ -49,10 +58,140 @@ const ProfileForm = () => {
     }
   }, [authUser, users, form, currentUser]);
 
+  useEffect(() => {
+    const fetchProvinces = async () => {
+      try {
+        setLoadingProvinces(true);
+        const response = await fetch("https://provinces.open-api.vn/api/p/");
+        if (!response.ok) {
+          throw new Error("Không thể kết nối với API tỉnh thành");
+        }
+        const data = await response.json();
+        setProvinces(data);
+      } catch (error) {
+        console.error("Lỗi khi lấy danh sách tỉnh thành:", error);
+        message.error("Không thể tải danh sách tỉnh thành");
+      } finally {
+        setLoadingProvinces(false);
+      }
+    };
+
+    fetchProvinces();
+  }, []);
+
+  useEffect(() => {
+    if (!selectedProvince) {
+      setDistricts([]);
+      return;
+    }
+
+    const fetchDistricts = async () => {
+      try {
+        setLoadingDistricts(true);
+        const response = await fetch(`https://provinces.open-api.vn/api/p/${selectedProvince}?depth=2`);
+        if (!response.ok) {
+          throw new Error("Không thể kết nối với API quận huyện");
+        }
+        const data = await response.json();
+        setDistricts(data.districts || []);
+      } catch (error) {
+        console.error("Lỗi khi lấy danh sách quận huyện:", error);
+        message.error("Không thể tải danh sách quận huyện");
+        setDistricts([]);
+      } finally {
+        setLoadingDistricts(false);
+      }
+    };
+
+    fetchDistricts();
+  }, [selectedProvince]);
+
+  useEffect(() => {
+    if (!selectedDistrict) {
+      setWards([]);
+      return;
+    }
+
+    const fetchWards = async () => {
+      try {
+        setLoadingWards(true);
+        const response = await fetch(`https://provinces.open-api.vn/api/d/${selectedDistrict}?depth=2`);
+        if (!response.ok) {
+          throw new Error("Không thể kết nối với API xã phường");
+        }
+        const data = await response.json();
+        setWards(data.wards || []);
+      } catch (error) {
+        console.error("Lỗi khi lấy danh sách xã phường:", error);
+        message.error("Không thể tải danh sách xã phường");
+        setWards([]);
+      } finally {
+        setLoadingWards(false);
+      }
+    };
+
+    fetchWards();
+  }, [selectedDistrict]);
+
+  useEffect(() => {
+    if (currentUser && users.length > 0) {
+      const foundUser = users.find(
+        (u) => u.email?.toLowerCase() === authUser.email?.toLowerCase()
+      );
+
+      if (
+        foundUser &&
+        JSON.stringify(foundUser) !== JSON.stringify(currentUser)
+      ) {
+        setCurrentUser(foundUser);
+        form.setFieldsValue(foundUser);
+        
+        // Nếu có địa chỉ, phân tích thành các thành phần
+        if (foundUser.address) {
+          setFullAddress(foundUser.address);
+        }
+        
+        setIsLoading(false);
+      }
+    }
+  }, [authUser, users, form, currentUser]);
+
   const handleEditClick = () => setIsEditing(true);
   const handleCancelClick = () => {
     setIsEditing(false);
     form.setFieldsValue(currentUser);
+  };
+
+  const handleProvinceChange = (value, option) => {
+    setSelectedProvince(option.key);
+    setSelectedDistrict(null);
+    form.setFieldsValue({ district: undefined, ward: undefined });
+    updateFullAddress(option.children, "", "");
+  };
+
+  const handleDistrictChange = (value, option) => {
+    setSelectedDistrict(option.key);
+    form.setFieldsValue({ ward: undefined });
+    updateFullAddress(null, option.children, "");
+  };
+
+  const handleWardChange = (value, option) => {
+    updateFullAddress(null, null, option.children);
+  };
+
+  const updateFullAddress = (province, district, ward) => {
+    let newAddress = "";
+    
+    const currentProvince = province || form.getFieldValue("province");
+    const currentDistrict = district || form.getFieldValue("district");
+    const currentWard = ward || form.getFieldValue("ward");
+    
+    if (currentWard) newAddress += currentWard;
+    if (currentDistrict) newAddress += newAddress ? `, ${currentDistrict}` : currentDistrict;
+    if (currentProvince) newAddress += newAddress ? `, ${currentProvince}` : currentProvince;
+    
+    setFullAddress(newAddress);
+    form.setFieldsValue({ address: newAddress });
   };
 
   const handleFormSubmit = async (values) => {
@@ -261,18 +400,112 @@ const ProfileForm = () => {
               />
             </Form.Item>
 
-            {/* Địa chỉ */}
+            {/* Tỉnh/Thành phố */}
             <Form.Item
-              label={<span className="text-gray-700 font-medium">Địa chỉ</span>}
-              name="address"
+              label={<span className="text-gray-700 font-medium">Tỉnh/Thành phố</span>}
+              name="province"
+              rules={[{ required: true, message: "Vui lòng chọn tỉnh/thành phố!" }]}
             >
-              <Input
+              <Select
                 disabled={!isEditing}
+                loading={loadingProvinces}
+                placeholder="Chọn tỉnh/thành phố"
+                onChange={handleProvinceChange}
                 className={`rounded-lg ${
                   !isEditing
                     ? "bg-gray-50"
                     : "hover:border-[#6BBCFE] focus:border-[#0272cd]"
                 }`}
+                showSearch
+                optionFilterProp="children"
+                filterOption={(input, option) =>
+                  option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                }
+              >
+                {provinces.map((province) => (
+                  <Select.Option key={province.code} value={province.name}>
+                    {province.name}
+                  </Select.Option>
+                ))}
+              </Select>
+            </Form.Item>
+
+            {/* Quận/Huyện */}
+            <Form.Item
+              label={<span className="text-gray-700 font-medium">Quận/Huyện</span>}
+              name="district"
+              rules={[{ required: true, message: "Vui lòng chọn quận/huyện!" }]}
+            >
+              <Select
+                disabled={!isEditing || !selectedProvince}
+                loading={loadingDistricts}
+                placeholder={selectedProvince ? "Chọn quận/huyện" : "Vui lòng chọn tỉnh/thành phố trước"}
+                onChange={handleDistrictChange}
+                className={`rounded-lg ${
+                  !isEditing || !selectedProvince
+                    ? "bg-gray-50"
+                    : "hover:border-[#6BBCFE] focus:border-[#0272cd]"
+                }`}
+                showSearch
+                optionFilterProp="children"
+                filterOption={(input, option) =>
+                  option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                }
+              >
+                {districts.map((district) => (
+                  <Select.Option key={district.code} value={district.name}>
+                    {district.name}
+                  </Select.Option>
+                ))}
+              </Select>
+            </Form.Item>
+
+            {/* Xã/Phường */}
+            <Form.Item
+              label={<span className="text-gray-700 font-medium">Xã/Phường</span>}
+              name="ward"
+              rules={[{ required: true, message: "Vui lòng chọn xã/phường!" }]}
+            >
+              <Select
+                disabled={!isEditing || !selectedDistrict}
+                loading={loadingWards}
+                placeholder={selectedDistrict ? "Chọn xã/phường" : "Vui lòng chọn quận/huyện trước"}
+                onChange={handleWardChange}
+                className={`rounded-lg ${
+                  !isEditing || !selectedDistrict
+                    ? "bg-gray-50"
+                    : "hover:border-[#6BBCFE] focus:border-[#0272cd]"
+                }`}
+                showSearch
+                optionFilterProp="children"
+                filterOption={(input, option) =>
+                  option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                }
+              >
+                {wards.map((ward) => (
+                  <Select.Option key={ward.code} value={ward.name}>
+                    {ward.name}
+                  </Select.Option>
+                ))}
+              </Select>
+            </Form.Item>
+
+            {/* Địa chỉ đầy đủ (ẩn) */}
+            <Form.Item
+              name="address"
+              hidden
+            >
+              <Input />
+            </Form.Item>
+
+            {/* Hiển thị địa chỉ đầy đủ */}
+            <Form.Item
+              label={<span className="text-gray-700 font-medium">Địa chỉ đầy đủ</span>}
+            >
+              <Input
+                disabled
+                value={fullAddress}
+                className="rounded-lg bg-gray-50"
               />
             </Form.Item>
 

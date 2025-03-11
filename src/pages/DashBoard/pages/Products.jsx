@@ -33,36 +33,22 @@ const Products = () => {
   });
 
   const handleImageUpload = async ({ file, onSuccess, onError }) => {
-    const maxSize = 5 * 1024 * 1024; // 5MB
-
-    if (file.size > maxSize) {
-      message.error("Kích thước file không được vượt quá 5MB!");
-      onError(new Error("File quá lớn"));
-      return;
-    }
-
-    const allowedTypes = ["image/jpeg", "image/png", "image/gif"];
-    if (!allowedTypes.includes(file.type)) {
-      message.error("Chỉ cho phép tải lên file ảnh JPG, PNG, GIF!");
-      onError(new Error("Định dạng không hợp lệ"));
-      return;
-    }
-
     try {
-      const formData = new FormData();
-      formData.append("image", file); // Đảm bảo backend nhận đúng key "image"
-
-      const response = await productImagesAPI.uploadproductImages(formData);
+      // Gọi API upload ảnh trực tiếp với file
+      const response = await productImagesAPI.uploadproductImages(file);
 
       if (response && response.imageUrl) {
-        message.success("Tải ảnh lên thành công!");
-        onSuccess({ url: response.imageUrl }); // Trả về URL ảnh
+        // Nếu upload thành công, gọi onSuccess với response
+        onSuccess(response);
+        console.log("Upload thành công:", response);
       } else {
-        throw new Error("Lỗi khi nhận URL ảnh từ API!");
+        throw new Error("Không nhận được URL ảnh từ API");
       }
     } catch (error) {
-      message.error("Tải ảnh lên thất bại!");
+      console.error("Lỗi khi upload ảnh:", error);
       onError(error);
+      // Hiển thị thông báo lỗi cho người dùng
+      message.error("Không thể tải lên hình ảnh. Vui lòng thử lại!");
     }
   };
   const filteredProducts = React.useMemo(() => {
@@ -151,9 +137,10 @@ const Products = () => {
       formData.append("CategoryId", values.categoryId);
       formData.append("SkinTypeId", values.skinTypeId);
 
-      if (values.file) {
-        formData.append("File", values.file);
-      }
+      // Thêm danh sách URL hình ảnh vào formData
+      values.productsImages.forEach((url, index) => {
+        formData.append(`ProductsImages[${index}]`, url);
+      });
 
       const response = await productApi.editProduct(
         editingProduct.productId,
@@ -202,9 +189,10 @@ const Products = () => {
       formData.append("CategoryId", values.categoryId);
       formData.append("SkinTypeId", values.skinTypeId);
 
-      if (values.file) {
-        formData.append("File", values.file);
-      }
+      // Thêm danh sách URL hình ảnh vào formData
+      values.productsImages.forEach((url, index) => {
+        formData.append(`ProductsImages[${index}]`, url);
+      });
 
       const response = await productApi.createProduct(formData);
 
@@ -268,7 +256,7 @@ const Products = () => {
             <img
               src={imageUrl}
               alt="Product"
-              className="w-14 h-14 object-cover rounded-lg shadow-sm border border-gray-200"
+              className="w-14 h-14 object-cover rounded-lg shadow-sm border border-gray-200 transition-transform duration-300 hover:scale-105"
             />
           );
         },
@@ -351,10 +339,10 @@ const Products = () => {
   );
 
   return (
-    <div className="p-4 md:p-8 bg-gray-50 min-h-screen">
+    <div className="p-4 md:p-8 bg-gradient-to-r from-gray-50 to-gray-100 min-h-screen">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 md:mb-8 gap-4">
         <h1 className="text-2xl md:text-3xl font-bold text-gray-800 flex items-center">
-          <span className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white p-2 rounded-lg mr-3">
+          <span className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white p-2 rounded-lg mr-3 shadow-lg">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               className="h-5 w-5 md:h-6 md:w-6"
@@ -376,7 +364,7 @@ const Products = () => {
           type="primary"
           onClick={() => setShowAddModal(true)}
           disabled={loading}
-          className="w-full md:w-auto flex items-center justify-center bg-indigo-600 hover:bg-indigo-700 border-0 h-10 px-5 rounded-lg shadow-md"
+          className="w-full md:w-auto flex items-center justify-center bg-indigo-600 hover:bg-indigo-700 border-0 h-10 px-5 rounded-lg shadow-md transition-transform duration-300 hover:scale-105"
         >
           <FaPlus className="mr-2" /> Thêm sản phẩm
         </Button>

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import {
   Form,
   Input,
@@ -22,12 +22,11 @@ const ProductForm = ({
   categories,
   isAddMode = false,
   loading = false,
-  handleImageUpload,
 }) => {
   const [form] = Form.useForm();
-  const [fileList, setFileList] = React.useState([]);
+  const [fileList, setFileList] = useState([]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (item) {
       form.setFieldsValue({
         productId: item.productId,
@@ -55,11 +54,38 @@ const ProductForm = ({
     }
   }, [item, form]);
 
-  const onFinish = (values) => {
-    const formData = isAddMode
-      ? values
-      : { ...values, productId: item?.productId };
-    onSubmit(formData);
+  const beforeUpload = (file) => {
+    const isJpgOrPng = file.type === "image/jpeg" || file.type === "image/png" || file.type === "image/webp";
+    if (!isJpgOrPng) {
+      message.error("Chỉ có thể tải lên file JPG/PNG/WEBP!");
+      return false;
+    }
+    const isLt2M = file.size / 1024 / 1024 < 2;
+    if (!isLt2M) {
+      message.error("Hình ảnh phải nhỏ hơn 2MB!");
+      return false;
+    }
+    return true;
+  };
+
+  const handleImageUpload = async ({ file, onSuccess, onError }) => {
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const response = await productImagesAPI.uploadproductImages(formData);
+
+      if (response && response.imageUrl) {
+        onSuccess({ imageUrl: response.imageUrl });
+        message.success(`${file.name} đã được tải lên thành công`);
+      } else {
+        throw new Error("Không nhận được URL ảnh từ API");
+      }
+    } catch (error) {
+      console.error("Lỗi khi upload ảnh:", error);
+      message.error(`${file.name} tải lên thất bại: ${error.message}`);
+      onError(error);
+    }
   };
 
   const handleFileChange = ({ file, fileList }) => {
@@ -67,12 +93,32 @@ const ProductForm = ({
       setFileList(
         fileList.map((item) => ({
           ...item,
-          url: item.response?.url || item.url, // Cập nhật URL ảnh từ response
+          url: item.response?.imageUrl || item.url,
         }))
       );
+
+      const imageUrls = fileList
+        .filter(item => item.status === "done")
+        .map(item => item.response?.imageUrl || item.url);
+
+      form.setFieldsValue({
+        productsImages: imageUrls
+      });
     } else {
       setFileList(fileList);
     }
+  };
+
+  const onFinish = (values) => {
+    const imageUrls = fileList
+      .filter(item => item.status === "done")
+      .map(item => item.response?.imageUrl || item.url);
+
+    const formData = isAddMode
+      ? { ...values, productsImages: imageUrls }
+      : { ...values, productId: item?.productId, productsImages: imageUrls };
+
+    onSubmit(formData);
   };
 
   return (
@@ -177,19 +223,31 @@ const ProductForm = ({
           </Col>
         </Row>
 
-        <Form.Item label="Hình ảnh">
+        <Form.Item
+          label="Hình ảnh"
+          name="productsImages"
+          rules={[{ required: true, message: 'Vui lòng tải lên ít nhất 1 hình ảnh!' }]}
+        >
           <Upload
             disabled={loading}
             listType="picture-card"
             fileList={fileList}
             onChange={handleFileChange}
             customRequest={handleImageUpload}
-            showUploadList
+            showUploadList={{
+              showPreviewIcon: true,
+              showRemoveIcon: true,
+              showDownloadIcon: false,
+            }}
+            accept=".jpg,.jpeg,.png,.webp"
+            multiple={true}
+            maxCount={5}
+            beforeUpload={beforeUpload}
           >
             {fileList.length < 5 && (
               <div>
                 <PlusOutlined />
-                <div>Thêm ảnh</div>
+                <div style={{ marginTop: 8 }}>Thêm ảnh</div>
               </div>
             )}
           </Upload>
