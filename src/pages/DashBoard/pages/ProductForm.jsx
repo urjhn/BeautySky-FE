@@ -1,18 +1,19 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import {
-  Form,
-  Input,
-  InputNumber,
-  Select,
   Button,
-  Upload,
+  Table,
+  Space,
+  Modal,
+  Input,
+  Form,
+  Select,
+  InputNumber,
   message,
   Row,
   Col,
+  Upload,
 } from "antd";
-import { FaTrash } from "react-icons/fa";
 import { PlusOutlined } from "@ant-design/icons";
-import productImagesAPI from "../../../services/productImages";
 
 const ProductForm = ({
   item,
@@ -22,57 +23,73 @@ const ProductForm = ({
   categories,
   isAddMode = false,
   loading = false,
-  handleImageUpload,
 }) => {
   const [form] = Form.useForm();
-  const [fileList, setFileList] = React.useState([]);
+  const [fileList, setFileList] = useState([]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (item) {
+      // Set initial form values based on the item being edited
       form.setFieldsValue({
         productId: item.productId,
         productName: item.productName,
         price: item.price,
         quantity: item.quantity,
-        description: item.description,
-        ingredient: item.ingredient,
+        description: item.description || "",
+        ingredient: item.ingredient || "",
         categoryId: item.categoryId,
         skinTypeId: item.skinTypeId,
-        productsImages: item.productsImages,
       });
-      if (item.productsImages) {
-        setFileList(
-          item.productsImages.map((url, index) => ({
-            uid: `-img-${index}`,
-            name: `Image-${index + 1}`,
-            status: "done",
-            url,
-          }))
-        );
+
+      // Initialize preview images if editing an existing product
+      if (item.productsImages && item.productsImages.length > 0) {
+        const existingImages = item.productsImages.map((img, index) => ({
+          uid: `-${index}`,
+          name: `image-${index}`,
+          status: 'done',
+          url: img.imageUrl,
+          imageUrl: img.imageUrl,
+        }));
+
+        setFileList(existingImages);
       }
     } else {
+      // Reset form when no item is provided (for add mode)
       form.resetFields();
+      setFileList([]);
     }
   }, [item, form]);
 
   const onFinish = (values) => {
-    const formData = isAddMode
-      ? values
-      : { ...values, productId: item?.productId };
+    // Create a FormData instance for the API call
+    const formData = new FormData();
+    
+    // Add all form fields to FormData
+    formData.append("productName", values.productName);
+    formData.append("price", values.price);
+    formData.append("quantity", values.quantity);
+    formData.append("description", values.description || "");
+    formData.append("ingredient", values.ingredient || "");
+    formData.append("categoryId", values.categoryId);
+    formData.append("skinTypeId", values.skinTypeId);
+    
+    // Add the image file if it exists
+    // Only add the first file in the list (as your backend seems to handle one image)
+    if (fileList.length > 0 && fileList[0].originFileObj) {
+      formData.append("File", fileList[0].originFileObj);
+      
+      // Add image description if needed
+      formData.append("imageDescription", values.productName || "Product Image");
+    }
+    
+    // Submit the form with the FormData
     onSubmit(formData);
   };
 
-  const handleFileChange = ({ file, fileList }) => {
-    if (file.status === "done") {
-      setFileList(
-        fileList.map((item) => ({
-          ...item,
-          url: item.response?.url || item.url, // Cập nhật URL ảnh từ response
-        }))
-      );
-    } else {
-      setFileList(fileList);
-    }
+  const handleFileChange = ({ fileList: newFileList }) => {
+    // Limit to only one file in this example, remove this if you want multiple files
+    const limitedFileList = newFileList.slice(-1);
+    setFileList(limitedFileList);
   };
 
   return (
@@ -82,6 +99,10 @@ const ProductForm = ({
         layout="vertical"
         onFinish={onFinish}
         className="space-y-3 md:space-y-4"
+        initialValues={{
+          description: "",
+          ingredient: "",
+        }}
       >
         <Form.Item
           label="Tên sản phẩm"
@@ -96,9 +117,7 @@ const ProductForm = ({
             <Form.Item
               label="Giá"
               name="price"
-              rules={[
-                { required: true, message: "Vui lòng nhập giá sản phẩm!" },
-              ]}
+              rules={[{ required: true, message: "Vui lòng nhập giá sản phẩm!" }]}
             >
               <InputNumber
                 className="w-full"
@@ -112,9 +131,7 @@ const ProductForm = ({
             <Form.Item
               label="Số lượng"
               name="quantity"
-              rules={[
-                { required: true, message: "Vui lòng nhập số lượng sản phẩm!" },
-              ]}
+              rules={[{ required: true, message: "Vui lòng nhập số lượng sản phẩm!" }]}
             >
               <InputNumber
                 className="w-full"
@@ -177,41 +194,66 @@ const ProductForm = ({
           </Col>
         </Row>
 
-        <Form.Item label="Hình ảnh">
+        <Form.Item
+          label={<span className="text-gray-700 font-medium">Hình ảnh</span>}
+        >
           <Upload
-            disabled={loading}
             listType="picture-card"
             fileList={fileList}
             onChange={handleFileChange}
-            customRequest={handleImageUpload}
-            showUploadList
+            beforeUpload={(file) => {
+              // Only allow images
+              const isImage = file.type.startsWith('image/');
+              if (!isImage) {
+                message.error('Bạn chỉ có thể tải lên tập tin hình ảnh!');
+              }
+              
+              // Return false to stop auto upload behavior
+              return false;
+            }}
+            onPreview={(file) => {
+              const preview = file.url || file.thumbUrl;
+              if (preview) {
+                const image = new Image();
+                image.src = preview;
+                const imgWindow = window.open(preview);
+                if (imgWindow) {
+                  imgWindow.document.write(image.outerHTML);
+                }
+              }
+            }}
           >
-            {fileList.length < 5 && (
-              <div>
-                <PlusOutlined />
-                <div>Thêm ảnh</div>
+            {fileList.length < 1 && (
+              <div className="flex flex-col items-center justify-center text-gray-500 hover:text-indigo-600">
+                <PlusOutlined className="text-xl mb-1" />
+                <div className="text-sm">Tải ảnh lên</div>
               </div>
             )}
           </Upload>
         </Form.Item>
 
-        <div className="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-4">
-          <Button 
-            onClick={onCancel} 
-            disabled={loading}
-            className="w-full sm:w-auto"
-          >
-            Hủy
-          </Button>
-          <Button 
-            type="primary" 
-            htmlType="submit" 
-            loading={loading}
-            className="w-full sm:w-auto"
-          >
-            {isAddMode ? "Thêm sản phẩm" : "Cập nhật sản phẩm"}
-          </Button>
-        </div>
+        <Form.Item className="border-t border-gray-200 pt-4 mb-0 flex justify-end">
+          <Space>
+            <Button
+              onClick={onCancel}
+              disabled={loading}
+              className="text-gray-700 border-gray-300 hover:text-gray-900 hover:border-gray-400"
+            >
+              Hủy
+            </Button>
+            <Button
+              type="primary"
+              htmlType="submit"
+              loading={loading}
+              disabled={loading}
+              className={`${
+                isAddMode ? "bg-green-600 hover:bg-green-700" : "bg-blue-600 hover:bg-blue-700"
+              } border-0`}
+            >
+              {isAddMode ? "Thêm mới" : "Lưu thay đổi"}
+            </Button>
+          </Space>
+        </Form.Item>
       </Form>
     </div>
   );
