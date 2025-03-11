@@ -29,42 +29,32 @@ const Products = () => {
     ingredient: "",
     categoryId: 0,
     skinTypeId: 0,
-    file: null,
+    productsImages: [],
   });
 
-  const handleImageUpload = async ({ file, onSuccess, onError }) => {
-    const maxSize = 5 * 1024 * 1024; // 5MB
+  const handleImageUpload = async ({ File}) => {
+     // Tạo đối tượng FormData
+     const formData = new FormData();
+     formData.append("File", File); // Thêm productsImages vào FormData
+   
+     try {
+       // Gọi API upload ảnh (Sử dụng formData để gửi ảnh)
+       const response = await productApi.uploadImage(formData); // Đảm bảo sử dụng formData
+   
+       // Giả sử server trả về URL của ảnh đã tải lên
+       const imageUrl = response.data.imageUrl; // Hoặc cấu trúc phù hợp với API của bạn
+       console.log("Ảnh đã được tải lên:", imageUrl);
+   
+       // Lưu URL này vào state hoặc xử lý theo nhu cầu của bạn
+       setNewProduct(prev => [...prev, imageUrl]); // Cập nhật lại state để lưu URL ảnh
+     } catch (error) {
+       console.error("Lỗi khi tải ảnh:", error);
+     }
+   };
 
-    if (file.size > maxSize) {
-      message.error("Kích thước file không được vượt quá 5MB!");
-      onError(new Error("File quá lớn"));
-      return;
-    }
 
-    const allowedTypes = ["image/jpeg", "image/png", "image/gif"];
-    if (!allowedTypes.includes(file.type)) {
-      message.error("Chỉ cho phép tải lên file ảnh JPG, PNG, GIF!");
-      onError(new Error("Định dạng không hợp lệ"));
-      return;
-    }
 
-    try {
-      const formData = new FormData();
-      formData.append("image", file); // Đảm bảo backend nhận đúng key "image"
 
-      const response = await productImagesAPI.uploadproductImages(formData);
-
-      if (response && response.imageUrl) {
-        message.success("Tải ảnh lên thành công!");
-        onSuccess({ url: response.imageUrl }); // Trả về URL ảnh
-      } else {
-        throw new Error("Lỗi khi nhận URL ảnh từ API!");
-      }
-    } catch (error) {
-      message.error("Tải ảnh lên thất bại!");
-      onError(error);
-    }
-  };
   const filteredProducts = React.useMemo(() => {
     let updatedProducts = [...products];
 
@@ -82,6 +72,9 @@ const Products = () => {
 
     return updatedProducts;
   }, [products, filter, sortOrder]);
+
+
+
 
   const displayedProducts = React.useMemo(
     () =>
@@ -134,123 +127,84 @@ const Products = () => {
     }
   };
 
-  const handleSaveEdit = async (values) => {
-    try {
-      setLoading(true);
-
-      if (!editingProduct || !editingProduct.productId) {
-        throw new Error("Missing product ID");
-      }
-
-      const formData = new FormData();
-      formData.append("ProductName", values.productName);
-      formData.append("Price", values.price);
-      formData.append("Quantity", values.quantity);
-      formData.append("Description", values.description);
-      formData.append("Ingredient", values.ingredient);
-      formData.append("CategoryId", values.categoryId);
-      formData.append("SkinTypeId", values.skinTypeId);
-
-      if (values.file) {
-        formData.append("File", values.file);
-      }
-
-      const response = await productApi.editProduct(
-        editingProduct.productId,
-        formData
-      );
-
-      if (response && response.status >= 200 && response.status < 300) {
-        const updatedProduct = response.data || response;
-        setProducts((prev) =>
-          prev.map((p) =>
-            p.productId === editingProduct.productId ? updatedProduct : p
-          )
-        );
-        setShowEditModal(false);
-        Swal.fire({
-          icon: "success",
-          title: "Thành công!",
-          text: `Sản phẩm "${values.productName}" đã được cập nhật thành công!`,
-        });
-        fetchProduct(response);
-      } else {
-        throw new Error("Edit failed");
-      }
-    } catch (error) {
-      console.error("Error updating product:", error);
+const handleAddProduct = async (formData) => {
+  try {
+    setLoading(true);
+    console.log("Adding product with formData");
+    
+    const response = await productApi.createProduct(formData);
+    
+    if (response && response.status >= 200 && response.status < 300) {
+      setShowAddModal(false);
+      
       Swal.fire({
-        icon: "error",
-        title: "Lỗi!",
-        text: "Cập nhật sản phẩm bị lỗi, vui lòng thử lại",
+        icon: "success",
+        title: "Thành công!",
+        text: "Sản phẩm đã được thêm thành công!",
+        confirmButtonColor: "#3085d6",
+        confirmButtonText: "OK",
       });
-    } finally {
-      setLoading(false);
+      
+      // Refresh product list
+      fetchProduct();
+    } else {
+      throw new Error("Add failed");
     }
-  };
+  } catch (error) {
+    console.error("Error adding product:", error);
+    
+    Swal.fire({
+      icon: "error",
+      title: "Lỗi!",
+      text: error.response?.data?.message || "Lỗi thêm sản phẩm, vui lòng thử lại",
+      confirmButtonColor: "#d33",
+      confirmButtonText: "Thử lại",
+    });
+  } finally {
+    setLoading(false);
+  }
+};
 
-  const handleAddProduct = async (values) => {
-    try {
-      setLoading(true);
-
-      const formData = new FormData();
-      formData.append("ProductName", values.productName);
-      formData.append("Price", values.price);
-      formData.append("Quantity", values.quantity);
-      formData.append("Description", values.description);
-      formData.append("Ingredient", values.ingredient);
-      formData.append("CategoryId", values.categoryId);
-      formData.append("SkinTypeId", values.skinTypeId);
-
-      if (values.file) {
-        formData.append("File", values.file);
-      }
-
-      const response = await productApi.createProduct(formData);
-
-      if (
-        response &&
-        ((response.status >= 200 && response.status < 300) ||
-          response.productId)
-      ) {
-        const newProductData = response.data || response;
-        setProducts((prev) => [...prev, newProductData]);
-        setShowAddModal(false);
-        setNewProduct({
-          productId: 0,
-          productName: "",
-          price: 0,
-          quantity: 1000,
-          description: "",
-          ingredient: "",
-          categoryId: 0,
-          skinTypeId: 0,
-          file: null,
-        });
-        Swal.fire({
-          icon: "success",
-          title: "Thành công!",
-          text: `Sản phẩm "${values.productName}" đã được thêm thành công!`,
-          confirmButtonColor: "#3085d6",
-          confirmButtonText: "OK",
-        });
-        fetchProduct(response);
-      } else {
-        throw new Error("Add failed");
-      }
-    } catch (error) {
-      console.error("Error adding product:", error);
+// Replace your existing handleSaveEdit with this:
+const handleSaveEdit = async (formData) => {
+  try {
+    setLoading(true);
+    
+    if (!editingProduct || !editingProduct.productId) {
+      throw new Error("Missing product ID");
+    }
+    
+    const response = await productApi.editProduct(
+      editingProduct.productId,
+      formData
+    );
+    
+    if (response && response.status >= 200 && response.status < 300) {
+      setShowEditModal(false);
+      
       Swal.fire({
-        icon: "error",
-        title: "Lỗi!",
-        text: "Lỗi thêm sản phẩm, vui lòng thử lại",
-        confirmButtonColor: "#d33",
-        confirmButtonText: "Thử lại",
+        icon: "success",
+        title: "Thành công!",
+        text: "Sản phẩm đã được cập nhật thành công!",
       });
-    } finally {
-      setLoading(false);
+      
+      // Refresh product list
+      fetchProduct();
+    } else {
+      throw new Error("Edit failed");
     }
-  };
+  } catch (error) {
+    console.error("Error updating product:", error);
+    
+    Swal.fire({
+      icon: "error",
+      title: "Lỗi!",
+      text: error.response?.data?.message || "Cập nhật sản phẩm bị lỗi, vui lòng thử lại",
+    });
+  } finally {
+    setLoading(false);
+  }
+};
 
   const columns = React.useMemo(
     () => [
