@@ -289,7 +289,7 @@ const Navbar = () => {
                           to={
                             item.type === "product"
                               ? `/product/${item.id}`
-                              : `/blog/${item.id}`
+                              : `/blog?blogId=${item.id}`
                           }
                           className="flex items-start p-4 hover:bg-blue-50 transition-all duration-200 group cursor-pointer"
                           onClick={() => {

@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import Navbar from "../../components/Navbar/Navbar";
 import Footer from "../../components/Footer/Footer";
 import Pagination from "../../components/Pagination/Pagination";
@@ -12,6 +13,10 @@ const Blogs = () => {
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
+  
+  const location = useLocation();
+  const queryParams = new URLSearchParams(location.search);
+  const blogIdFromUrl = queryParams.get('blogId');
 
   // Fetch blogs với filter
   useEffect(() => {
@@ -27,6 +32,13 @@ const Blogs = () => {
           response = await blogsAPI.getAll();
         }
         setBlogs(response.data);
+        
+        if (blogIdFromUrl) {
+          const blogToShow = response.data.find(blog => blog.blogId.toString() === blogIdFromUrl);
+          if (blogToShow) {
+            setSelectedBlog(blogToShow);
+          }
+        }
       } catch (error) {
         console.error("Error fetching blogs:", error);
       } finally {
@@ -34,7 +46,7 @@ const Blogs = () => {
       }
     };
     fetchBlogs();
-  }, [selectedSkinType, selectedCategory]);
+  }, [selectedSkinType, selectedCategory, blogIdFromUrl]);
 
   // Filter blogs based on skin type and category
   const filteredBlogs = blogs.filter(

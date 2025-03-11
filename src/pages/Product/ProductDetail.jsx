@@ -135,7 +135,7 @@ const ProductDetail = () => {
     Swal.fire({
       icon: "success",
       title: "Đã thêm vào giỏ hàng!",
-      text: `${product.productName} đã được thêm vào giỏ hàng.`,
+      text: `${product.productName} đã được thêm vào giỏ hàng với số lượng: ${quantity}.`,
     });
   };
 
@@ -649,7 +649,7 @@ const ProductDetail = () => {
                           Swal.fire({
                             icon: "success",
                             title: "Đã thêm vào giỏ hàng!",
-                            text: `${relatedProduct.productName} đã được thêm vào giỏ hàng.`,
+                            text: `${relatedProduct.productName} đã được thêm vào giỏ hàng với số lượng: 1.`,
                             showConfirmButton: false,
                             timer: 1500
                           });
