@@ -3,6 +3,7 @@ import { CheckCircleIcon, XCircleIcon } from "@heroicons/react/24/solid";
 import { motion } from "framer-motion";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import orderAPI from "../../services/order"; // Import API xử lý đơn hàng
+import paymentsAPI from "../../services/payment"; // Import API xử lý thanh toán
 import Navbar from "../../components/Navbar/Navbar";
 import Footer from "../../components/Footer/Footer";
 import Swal from "sweetalert2";
@@ -12,11 +13,12 @@ const PaymentSuccess = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [status, setStatus] = useState("pending");
+  const [paymentDetails, setPaymentDetails] = useState(null);
   const orderId = searchParams.get("orderId"); // Lấy orderId từ URL
   const { addNotification } = useNotifications();
 
   useEffect(() => {
-    const completeOrder = async () => {
+    const processPayment = async () => {
       if (!orderId) {
         setStatus("failed");
         Swal.fire({
@@ -28,16 +30,33 @@ const PaymentSuccess = () => {
       }
 
       try {
-        const response = await orderAPI.createOrderCompleted(orderId);
-
-        if (response && response.status === "Complete") {
-          setStatus("success");
-          Swal.fire({
-            icon: "success",
-            title: "Thanh toán thành công!",
-            text: "Đơn hàng của bạn đã được xác nhận.",
-          });
-          addNotification("Bạn đã thanh toán thành công! 🎉");
+        // Xử lý thanh toán với orderId
+        const paymentResponse = await paymentsAPI.processPayment(orderId);
+        
+        if (paymentResponse && paymentResponse.paymentId) {
+          // Lấy chi tiết thanh toán
+          const details = await paymentsAPI.getPaymentDetails(paymentResponse.paymentId);
+          setPaymentDetails(details);
+          
+          // Xác nhận thanh toán
+          const confirmResponse = await paymentsAPI.confirmPayment(paymentResponse.paymentId);
+          
+          if (confirmResponse) {
+            setStatus("success");
+            Swal.fire({
+              icon: "success",
+              title: "Thanh toán thành công!",
+              text: "Đơn hàng của bạn đã được xác nhận.",
+            });
+            addNotification("Bạn đã thanh toán thành công! 🎉");
+          } else {
+            setStatus("failed");
+            Swal.fire({
+              icon: "error",
+              title: "Thanh toán thất bại!",
+              text: "Có lỗi xảy ra khi xác nhận thanh toán. Vui lòng thử lại.",
+            });
+          }
         } else {
           setStatus("failed");
           Swal.fire({
@@ -47,18 +66,18 @@ const PaymentSuccess = () => {
           });
         }
       } catch (error) {
-        console.error("Lỗi khi hoàn tất đơn hàng:", error);
+        console.error("Lỗi khi xử lý thanh toán:", error);
         setStatus("failed");
         Swal.fire({
           icon: "error",
           title: "Lỗi hệ thống!",
-          text: "Không thể xử lý đơn hàng. Hãy thử lại sau.",
+          text: "Không thể xử lý thanh toán. Hãy thử lại sau.",
         });
       }
     };
 
-    completeOrder();
-  }, [orderId]);
+    processPayment();
+  }, [orderId, addNotification]);
 
   return (
     <>
@@ -79,6 +98,16 @@ const PaymentSuccess = () => {
               <p className="text-sm sm:text-base text-gray-600 mt-2">
                 Cảm ơn bạn đã mua hàng. Đơn hàng của bạn đã được xác nhận.
               </p>
+              {paymentDetails && (
+                <div className="mt-4 text-left border-t pt-4">
+                  <h2 className="font-semibold text-gray-800 mb-2">Chi tiết thanh toán:</h2>
+                  <p className="text-sm text-gray-600">Mã đơn hàng: #{paymentDetails.order?.orderId}</p>
+                  <p className="text-sm text-gray-600">Ngày đặt: {new Date(paymentDetails.order?.orderDate).toLocaleDateString('vi-VN')}</p>
+                  <p className="text-sm text-gray-600">Tổng tiền: {paymentDetails.order?.finalAmount?.toLocaleString('vi-VN')} VNĐ</p>
+                  <p className="text-sm text-gray-600">Phương thức: {paymentDetails.paymentType}</p>
+                  <p className="text-sm text-gray-600">Trạng thái: {paymentDetails.paymentStatus}</p>
+                </div>
+              )}
             </>
           ) : status === "failed" ? (
             <>

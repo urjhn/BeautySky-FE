@@ -20,9 +20,10 @@ const ProductDetail = () => {
   const { addToCart } = useCart();
   const { users } = useUsersContext();
   const { products, fetchProduct } = useDataContext();
+  const { currentUser } = useAuth();
+  const { reviews, fetchReviews, setReviews } = useReviewContext();
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
-  const { reviews, fetchReviews, setReviews } = useReviewContext();
   const [newRating, setNewRating] = useState(0);
   const [newComment, setNewComment] = useState("");
   const [selectedImage, setSelectedImage] = useState(null);
@@ -107,18 +108,20 @@ const ProductDetail = () => {
     if (!product || product.quantity === 0) {
       Swal.fire({
         icon: "error",
-        title: "Out of stock!",
-        text: "This product is out of stock.",
+        title: "Hết hàng!",
+        text: "Sản phẩm này hiện đã hết hàng.",
       });
       return;
     }
+    
     addToCart({
       id: product.productId,
       name: product.productName,
       price: product.price,
       image: images[0],
-      quantity,
+      quantity: quantity,
     });
+    
     Swal.fire({
       icon: "success",
       title: "Đã thêm vào giỏ hàng!",
@@ -140,13 +143,13 @@ const ProductDetail = () => {
 
     try {
       // Kiểm tra user đã đăng nhập chưa
-      const { currentUser } = useAuth();
       if (!currentUser) {
         Swal.fire({
           icon: "warning",
           title: "Cần đăng nhập",
           text: "Bạn cần đăng nhập để gửi đánh giá!",
         });
+        setIsSubmitting(false);
         return;
       }
 

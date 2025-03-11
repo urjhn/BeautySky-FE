@@ -19,7 +19,7 @@ const Products = () => {
   const [showAddModal, setShowAddModal] = React.useState(false);
   const [sortOrder, setSortOrder] = React.useState(null);
   const [loading, setLoading] = React.useState(false);
-  const productsPerPage = 5;
+  const productsPerPage = 10;
   const [newProduct, setNewProduct] = React.useState({
     productId: 0,
     productName: "",

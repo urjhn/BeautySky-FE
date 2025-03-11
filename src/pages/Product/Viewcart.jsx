@@ -14,7 +14,13 @@ import Swal from "sweetalert2";
 const Viewcart = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const { cartItems, removeFromCart, updateQuantity, totalPrice } = useCart();
+  const { 
+    cartItems, 
+    removeFromCart, 
+    updateQuantity, 
+    totalPrice,
+    checkout
+  } = useCart();
   const [errorMessage, setErrorMessage] = useState("");
   const [selectedVoucher, setSelectedVoucher] = useState(null);
   const [paymentMethod, setPaymentMethod] = useState("VNPay");
@@ -76,7 +82,7 @@ const Viewcart = () => {
     : totalPrice.toFixed(2);
 
   const handleProceedToPayment = async () => {
-    if (!formData.name || !formData.email) {
+    if (!formData.name || !formData.email || !formData.phone || !formData.address) {
       Swal.fire({
         icon: "error",
         title: "Thiếu thông tin!",
@@ -93,29 +99,12 @@ const Viewcart = () => {
         allowOutsideClick: false,
         didOpen: () => {
           Swal.showLoading();
-        },
+        }
       });
 
-      // Lấy danh sách đơn hàng và tìm đơn hàng "In Cart"
-      const response = await orderAPI.getAll();
-      const userCart = response.data.find(
-        (order) => order.userId === user.userId && order.status === "In Cart"
-      );
+      const promotionId = selectedVoucher ? selectedVoucher.promotionId : null;
+      await checkout(promotionId);
 
-      if (!userCart) {
-        Swal.fire({
-          icon: "error",
-          title: "Lỗi đơn hàng!",
-          text: "Không tìm thấy đơn hàng hợp lệ.",
-          confirmButtonColor: "#d33",
-        });
-        return;
-      }
-
-      // Cập nhật trạng thái đơn hàng thành "Pending"
-      await orderAPI.createOrderCheckout(userCart.orderId);
-
-      // Hiển thị thông báo thanh toán thành công
       Swal.fire({
         icon: "success",
         title: "Thanh toán thành công!",
@@ -125,7 +114,7 @@ const Viewcart = () => {
         navigate("/paymentsuccess");
       });
     } catch (error) {
-      console.error("Lỗi khi cập nhật trạng thái đơn hàng:", error);
+      console.error("Lỗi khi xử lý thanh toán:", error);
       Swal.fire({
         icon: "error",
         title: "Lỗi hệ thống!",

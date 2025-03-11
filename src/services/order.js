@@ -23,12 +23,22 @@ const orderAPI = {
     }
   },
 
-  createOrderAddCart: async (payload) => {
+  getInCartOrder: async () => {
     try {
-      const response = await axiosInstance.post(
-        `${endPoint}/add-to-cart`,
-        payload
-      );
+      const response = await axiosInstance.get(`${endPoint}/in-cart`);
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching in-cart order:", error);
+      throw error;
+    }
+  },
+
+  createOrderAddCart: async (userId, products) => {
+    try {
+      const response = await axiosInstance.post(`${endPoint}/add-to-cart`, {
+        userID: userId,
+        products: products
+      });
       return response.data;
     } catch (error) {
       console.error("Error adding to cart:", error);
@@ -36,10 +46,10 @@ const orderAPI = {
     }
   },
 
-  createOrderCheckout: async (orderId) => {
+  createOrderCheckout: async (orderId, promotionID = null) => {
     try {
       const response = await axiosInstance.post(`${endPoint}/checkout`, null, {
-        params: { orderId }, // Truyền orderId qua query parameters
+        params: { orderId, promotionID }
       });
       return response.data;
     } catch (error) {
@@ -47,6 +57,7 @@ const orderAPI = {
       throw error;
     }
   },
+
   createOrderCompleted: async (orderId) => {
     try {
       const response = await axiosInstance.patch(`${endPoint}/complete-order`, {
