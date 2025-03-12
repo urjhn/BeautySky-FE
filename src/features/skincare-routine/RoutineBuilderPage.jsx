@@ -4,6 +4,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import GetCarePlanAPI from "../services/getcareplan";
 import Navbar from "../../components/Navbar/Navbar";
 import Footer from "../../components/Footer/Footer";
+import { formatCurrency } from "../../utils/formatCurrency";
 
 const RoutineBuilderPage = () => {
   const { user } = useAuth();
@@ -45,6 +46,33 @@ const RoutineBuilderPage = () => {
 
   const handleLoginRedirect = () => {
     navigate("/login");
+  };
+
+  const handleProductClick = (productId) => {
+    navigate(`/product/${productId}`, { state: { from: location } });
+  };
+
+  const saveCarePlan = async () => {
+    if (!user) {
+      setShowLoginPopup(true);
+      return;
+    }
+
+    try {
+      const response = await GetCarePlanAPI.saveUserCarePlan(
+        user.userId,
+        carePlan.carePlanId,
+        carePlan.skinTypeId
+      );
+      if (response.status === 200) {
+        alert("Lộ trình đã được lưu thành công!");
+      } else {
+        alert("Không thể lưu lộ trình. Vui lòng thử lại sau.");
+      }
+    } catch (err) {
+      console.error("Error saving care plan:", err);
+      alert("Không thể lưu lộ trình. Vui lòng thử lại sau.");
+    }
   };
 
   if (loading) {
@@ -92,7 +120,7 @@ const RoutineBuilderPage = () => {
             </button>
             <button
               className="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition-colors"
-              onClick={() => navigate("/quiz")}
+              onClick={() => navigate("/quizz")}
             >
               Quay lại
             </button>
@@ -120,13 +148,9 @@ const RoutineBuilderPage = () => {
     <>
       <Navbar />
       <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-6">
-        <h1 className="text-5xl md:text-4xl sm:text-3xl font-bold text-[#6BBCFE] animate-pulse text-center mb-6 px-4">
-          ✨ Lộ trình chăm sóc da của bạn
-        </h1>
-
         <div className="bg-white shadow-xl p-10 sm:p-6 rounded-2xl w-full max-w-4xl">
           <div className="text-center mb-8">
-            <h2 className="text-4xl sm:text-3xl font-bold text-green-600 mb-4">
+            <h2 className="text-5xl md:text-4xl sm:text-3xl font-bold text-[#6BBCFE] animate-pulse text-center mb-6 px-4">
               {carePlan.planName}
             </h2>
             <p className="text-xl sm:text-lg text-gray-600">
@@ -152,12 +176,22 @@ const RoutineBuilderPage = () => {
                       {step.products.map((product) => (
                         <li
                           key={product.productId}
-                          className="flex items-center bg-white p-3 rounded-lg shadow-sm hover:bg-blue-50 transition-colors"
+                          className="flex items-center bg-white p-4 rounded-lg shadow-md hover:shadow-lg transition-shadow cursor-pointer"
+                          onClick={() => handleProductClick(product.productId)}
                         >
-                          <div className="w-2 h-2 bg-blue-400 rounded-full mr-3"></div>
-                          <span className="text-lg sm:text-base text-gray-700">
-                            {product.productName}
-                          </span>
+                          <img
+                            src={product.productImage}
+                            alt={product.productName}
+                            className="w-16 h-16 rounded-full mr-4"
+                          />
+                          <div className="flex-1">
+                            <span className="text-lg sm:text-xl text-gray-800">
+                              {product.productName}
+                            </span>
+                            <p className="text-md text-gray-600">
+                              {formatCurrency(product.price)}
+                            </p>
+                          </div>
                         </li>
                       ))}
                     </ul>
@@ -170,7 +204,7 @@ const RoutineBuilderPage = () => {
           <div className="mt-8 flex justify-center gap-4">
             <button
               className="bg-gradient-to-r from-blue-400 to-blue-600 text-white py-3 px-8 rounded-xl font-semibold shadow-md hover:from-blue-500 hover:to-blue-700 transition-all"
-              onClick={() => navigate("/quiz")}
+              onClick={() => navigate("/quizz")}
             >
               🔄 Làm lại bài kiểm tra
             </button>
@@ -179,6 +213,12 @@ const RoutineBuilderPage = () => {
               onClick={() => navigate("/")}
             >
               🏠 Về trang chủ
+            </button>
+            <button
+              className="bg-gradient-to-r from-yellow-400 to-yellow-600 text-white py-3 px-8 rounded-xl font-semibold shadow-md hover:from-yellow-500 hover:to-yellow-700 transition-all"
+              onClick={saveCarePlan}
+            >
+              💾 Lưu lộ trình
             </button>
           </div>
         </div>
