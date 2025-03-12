@@ -163,19 +163,111 @@ const ProductList = ({ selectedSkinType, selectedCategory, sortOrder }) => {
             {/* Phân trang */}
             {totalPages > 1 && (
               <div className="flex justify-center mt-8">
-                {Array.from({ length: totalPages }).map((_, index) => (
-                  <button
-                    key={index}
-                    className={`mx-1 px-4 py-2 rounded-lg font-semibold transition-all duration-300 ${
-                      currentPage === index + 1
-                        ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg"
-                        : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                    }`}
-                    onClick={() => setCurrentPage(index + 1)}
-                  >
-                    {index + 1}
-                  </button>
-                ))}
+                <button
+                  className={`mx-1 px-3 py-2 rounded-lg font-semibold transition-all duration-300 ${
+                    currentPage === 1
+                      ? "bg-gray-200 text-gray-400 cursor-not-allowed"
+                      : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                  }`}
+                  onClick={() => setCurrentPage(currentPage - 1)}
+                  disabled={currentPage === 1}
+                >
+                  <i className="fas fa-chevron-left"></i>
+                </button>
+
+                {totalPages <= 7 ? (
+                  // Hiển thị tất cả các trang nếu tổng số trang ≤ 7
+                  Array.from({ length: totalPages }).map((_, index) => (
+                    <button
+                      key={index}
+                      className={`mx-1 px-4 py-2 rounded-lg font-semibold transition-all duration-300 ${
+                        currentPage === index + 1
+                          ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg"
+                          : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                      }`}
+                      onClick={() => setCurrentPage(index + 1)}
+                    >
+                      {index + 1}
+                    </button>
+                  ))
+                ) : (
+                  // Hiển thị phân trang thông minh nếu tổng số trang > 7
+                  <>
+                    {/* Luôn hiển thị trang đầu tiên */}
+                    <button
+                      className={`mx-1 px-4 py-2 rounded-lg font-semibold transition-all duration-300 ${
+                        currentPage === 1
+                          ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg"
+                          : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                      }`}
+                      onClick={() => setCurrentPage(1)}
+                    >
+                      1
+                    </button>
+
+                    {/* Hiển thị dấu ... nếu trang hiện tại > 3 */}
+                    {currentPage > 3 && (
+                      <span className="mx-1 px-4 py-2 text-gray-500">...</span>
+                    )}
+
+                    {/* Hiển thị các trang xung quanh trang hiện tại */}
+                    {Array.from({ length: totalPages }).map((_, index) => {
+                      const pageNumber = index + 1;
+                      // Chỉ hiển thị trang nếu nó nằm trong khoảng [currentPage-1, currentPage+1]
+                      // và không phải trang đầu tiên hoặc trang cuối cùng
+                      if (
+                        pageNumber !== 1 &&
+                        pageNumber !== totalPages &&
+                        pageNumber >= currentPage - 1 &&
+                        pageNumber <= currentPage + 1
+                      ) {
+                        return (
+                          <button
+                            key={index}
+                            className={`mx-1 px-4 py-2 rounded-lg font-semibold transition-all duration-300 ${
+                              currentPage === pageNumber
+                                ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg"
+                                : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                            }`}
+                            onClick={() => setCurrentPage(pageNumber)}
+                          >
+                            {pageNumber}
+                          </button>
+                        );
+                      }
+                      return null;
+                    })}
+
+                    {/* Hiển thị dấu ... nếu trang hiện tại < totalPages - 2 */}
+                    {currentPage < totalPages - 2 && (
+                      <span className="mx-1 px-4 py-2 text-gray-500">...</span>
+                    )}
+
+                    {/* Luôn hiển thị trang cuối cùng */}
+                    <button
+                      className={`mx-1 px-4 py-2 rounded-lg font-semibold transition-all duration-300 ${
+                        currentPage === totalPages
+                          ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg"
+                          : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                      }`}
+                      onClick={() => setCurrentPage(totalPages)}
+                    >
+                      {totalPages}
+                    </button>
+                  </>
+                )}
+
+                <button
+                  className={`mx-1 px-3 py-2 rounded-lg font-semibold transition-all duration-300 ${
+                    currentPage === totalPages
+                      ? "bg-gray-200 text-gray-400 cursor-not-allowed"
+                      : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                  }`}
+                  onClick={() => setCurrentPage(currentPage + 1)}
+                  disabled={currentPage === totalPages}
+                >
+                  <i className="fas fa-chevron-right"></i>
+                </button>
               </div>
             )}
           </>

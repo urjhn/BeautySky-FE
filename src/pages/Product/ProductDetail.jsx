@@ -33,6 +33,7 @@ const ProductDetail = () => {
   const [tabValue, setTabValue] = useState(0);
   const [previewImage, setPreviewImage] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [relatedProducts, setRelatedProducts] = useState([]);
 
   // Sử dụng useCallback để tránh re-render không cần thiết
   const fetchData = useCallback(async () => {
@@ -49,6 +50,15 @@ const ProductDetail = () => {
         setProduct(foundProduct);
         setReviews(foundProduct.reviews || []);
         fetchReviews();
+        
+        // Tìm các sản phẩm liên quan (cùng danh mục hoặc loại da)
+        const related = products.filter(p => 
+          p.productId !== foundProduct.productId && 
+          (p.categoryName === foundProduct.categoryName || 
+           p.skinTypeName === foundProduct.skinTypeName)
+        ).slice(0, 4); // Giới hạn 4 sản phẩm
+        
+        setRelatedProducts(related);
       } else {
         console.log("Không tìm thấy sản phẩm với ID:", id);
       }
@@ -125,7 +135,7 @@ const ProductDetail = () => {
     Swal.fire({
       icon: "success",
       title: "Đã thêm vào giỏ hàng!",
-      text: `${product.productName} đã được thêm vào giỏ hàng.`,
+      text: `${product.productName} đã được thêm vào giỏ hàng với số lượng: ${quantity}.`,
     });
   };
 
@@ -148,6 +158,27 @@ const ProductDetail = () => {
           icon: "warning",
           title: "Cần đăng nhập",
           text: "Bạn cần đăng nhập để gửi đánh giá!",
+          showCancelButton: true,
+          confirmButtonText: "Đăng nhập ngay",
+          cancelButtonText: "Đóng"
+        }).then((result) => {
+          if (result.isConfirmed) {
+            navigate("/login", { state: { from: `/product/${id}` } });
+          }
+        });
+        setIsSubmitting(false);
+        return;
+      }
+
+      // Tìm thông tin chi tiết của người dùng từ users context
+      const userDetail = users.find(user => user.email === currentUser.email);
+      
+      if (!userDetail || !userDetail.userId) {
+        console.error("Không tìm thấy thông tin người dùng trong context:", currentUser, users);
+        Swal.fire({
+          icon: "error",
+          title: "Lỗi xác thực",
+          text: "Không thể xác định thông tin người dùng. Vui lòng đăng nhập lại.",
         });
         setIsSubmitting(false);
         return;
@@ -160,6 +191,7 @@ const ProductDetail = () => {
           title: "Thiếu nội dung",
           text: "Vui lòng nhập nội dung đánh giá!",
         });
+        setIsSubmitting(false);
         return;
       }
 
@@ -169,35 +201,41 @@ const ProductDetail = () => {
           title: "Thiếu đánh giá",
           text: "Vui lòng chọn số sao đánh giá!",
         });
+        setIsSubmitting(false);
         return;
       }
 
       // Tạo object review theo cấu trúc API
       const reviewData = {
-        productId: product.productId,
-        userId: currentUser.id,
+        productId: parseInt(product.productId),
+        userId: parseInt(userDetail.userId),
         rating: newRating,
         comment: newComment,
-        reviewDate: new Date().toISOString(),
+        reviewDate: new Date().toISOString()
       };
+
+      console.log("Thông tin người dùng từ context:", userDetail);
+      console.log("Đang gửi đánh giá:", reviewData);
 
       // Gọi API tạo review
       const response = await reviewsAPI.createReviews(reviewData);
+      console.log("Phản hồi từ API:", response);
 
       // Xử lý response thành công
       if (response.status === 200) {
-        // Thêm review mới vào state
+        // Tạo đối tượng review mới để thêm vào state
         const newReview = {
           ...reviewData,
-          reviewId: response.data.reviewId, // Lấy ID từ response nếu có
+          reviewId: Date.now(), // Tạm thời dùng timestamp làm ID vì API không trả về ID
+          userName: userDetail.fullName || userDetail.userName || currentUser.email || "Người dùng",
         };
-        setReviews((prevReviews) => [newReview, ...prevReviews]);
+        
+        // Cập nhật state reviews
+        setReviews(prevReviews => [newReview, ...prevReviews]);
 
         // Reset form
         setNewRating(0);
         setNewComment("");
-        setSelectedImage(null);
-        setPreviewImage(null);
 
         // Thông báo thành công
         Swal.fire({
@@ -205,6 +243,9 @@ const ProductDetail = () => {
           title: "Thành công!",
           text: "Đánh giá của bạn đã được gửi thành công!",
         });
+        
+        // Cập nhật lại danh sách đánh giá
+        fetchReviews();
       }
     } catch (error) {
       console.error("Lỗi khi gửi đánh giá:", error);
@@ -413,7 +454,7 @@ const ProductDetail = () => {
 
                       return (
                         <div
-                          key={review.id}
+                          key={review.reviewId || review.id}
                           className="border p-4 rounded-lg shadow-sm"
                         >
                           {/* Avatar & Tên người dùng */}
@@ -435,7 +476,7 @@ const ProductDetail = () => {
                             )}
                             <div>
                               <p className="text-lg font-semibold">
-                                {user.userName || "Người dùng ẩn danh"}
+                                {user.userName || review.userName || "Người dùng ẩn danh"}
                               </p>
                               <Rating
                                 value={review.rating}
@@ -446,7 +487,7 @@ const ProductDetail = () => {
                           </div>
                           {/* Nội dung đánh giá */}
                           <p className="mt-2 text-gray-700">{review.comment}</p>
-                          <p>
+                          <p className="text-sm text-gray-500 mt-1">
                             {dayjs(review.reviewDate).format(
                               "DD/MM/YYYY HH:mm"
                             )}
@@ -482,24 +523,6 @@ const ProductDetail = () => {
                     onChange={(e) => setNewComment(e.target.value)}
                   />
 
-                  {/* Chọn ảnh */}
-                  <input
-                    type="file"
-                    className="mt-2"
-                    onChange={handleImageChange}
-                  />
-
-                  {/* Hiển thị ảnh xem trước nếu có */}
-                  {previewImage && (
-                    <div className="mt-2">
-                      <img
-                        src={previewImage}
-                        alt="Ảnh xem trước"
-                        className="w-32 h-32 object-cover rounded-lg border"
-                      />
-                    </div>
-                  )}
-
                   {/* Nút gửi đánh giá */}
                   <button
                     className={`mt-4 px-6 py-2 rounded-lg text-white transition ${
@@ -517,6 +540,157 @@ const ProductDetail = () => {
             )}
           </div>
         </div>
+        
+        {/* Sản phẩm liên quan */}
+        {relatedProducts.length > 0 && (
+          <div className="w-full max-w-6xl mt-6 sm:mt-10 bg-white p-4 sm:p-8 rounded-lg shadow-lg border-0">
+            <h2 className="text-2xl font-bold mb-6 text-gray-800 border-b pb-2">Sản phẩm liên quan</h2>
+            
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+              {relatedProducts.map((relatedProduct) => (
+                <div 
+                  key={relatedProduct.productId} 
+                  className="border rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow duration-300 cursor-pointer"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    // Hiển thị modal so sánh sản phẩm
+                    Swal.fire({
+                      title: 'So sánh sản phẩm',
+                      html: `
+                        <div class="grid grid-cols-2 gap-4 text-left">
+                          <div class="border-r pr-4">
+                            <h3 class="font-bold text-lg mb-2">${product.productName}</h3>
+                            <img src="${images[0]}" class="w-full h-40 object-cover mb-2" />
+                            <p class="font-semibold text-blue-600">${formatCurrency(product.price)}</p>
+                            <p class="text-sm mt-2"><span class="font-semibold">Loại da:</span> ${product.skinTypeName || "Không xác định"}</p>
+                            <p class="text-sm"><span class="font-semibold">Danh mục:</span> ${product.categoryName || "Không xác định"}</p>
+                            <div class="mt-2">
+                              <span class="font-semibold">Đánh giá:</span> 
+                              <span>${product.rating || 0}/5 (${productReviews.length} đánh giá)</span>
+                            </div>
+                            <div class="mt-2 max-h-32 overflow-y-auto">
+                              <p class="text-sm"><span class="font-semibold">Mô tả:</span> ${product.description || "Không có mô tả"}</p>
+                            </div>
+                            <div class="mt-2 max-h-32 overflow-y-auto">
+                              <p class="text-sm"><span class="font-semibold">Thành phần:</span> ${product.ingredient || "Không có thông tin thành phần"}</p>
+                            </div>
+                          </div>
+                          <div class="pl-4">
+                            <h3 class="font-bold text-lg mb-2">${relatedProduct.productName}</h3>
+                            <img src="${relatedProduct.productsImages?.[0]?.imageUrl || relatedProduct.image}" class="w-full h-40 object-cover mb-2" />
+                            <p class="font-semibold text-blue-600">${formatCurrency(relatedProduct.price)}</p>
+                            <p class="text-sm mt-2"><span class="font-semibold">Loại da:</span> ${relatedProduct.skinTypeName || "Không xác định"}</p>
+                            <p class="text-sm"><span class="font-semibold">Danh mục:</span> ${relatedProduct.categoryName || "Không xác định"}</p>
+                            <div class="mt-2">
+                              <span class="font-semibold">Đánh giá:</span> 
+                              <span>${relatedProduct.rating || 0}/5 (${relatedProduct.reviews?.length || 0} đánh giá)</span>
+                            </div>
+                            <div class="mt-2 max-h-32 overflow-y-auto">
+                              <p class="text-sm"><span class="font-semibold">Mô tả:</span> ${relatedProduct.description || "Không có mô tả"}</p>
+                            </div>
+                            <div class="mt-2 max-h-32 overflow-y-auto">
+                              <p class="text-sm"><span class="font-semibold">Thành phần:</span> ${relatedProduct.ingredient || "Không có thông tin thành phần"}</p>
+                            </div>
+                          </div>
+                        </div>
+                      `,
+                      width: 800,
+                      showCancelButton: true,
+                      confirmButtonText: 'Xem sản phẩm này',
+                      cancelButtonText: 'Đóng',
+                    }).then((result) => {
+                      if (result.isConfirmed) {
+                        // Thay đổi ở đây: Sử dụng window.location.href thay vì navigate
+                        window.location.href = `/product/${relatedProduct.productId}`;
+                      }
+                    });
+                  }}
+                >
+                  <div className="relative h-48 overflow-hidden">
+                    <img 
+                      src={relatedProduct.productsImages?.[0]?.imageUrl || relatedProduct.image} 
+                      alt={relatedProduct.productName}
+                      className="w-full h-full object-cover hover:scale-110 transition-transform duration-300"
+                    />
+                    {relatedProduct.quantity === 0 && (
+                      <div className="absolute top-2 right-2 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded">
+                        Hết hàng
+                      </div>
+                    )}
+                  </div>
+                  
+                  <div className="p-4">
+                    <h3 className="font-semibold text-gray-800 mb-2 line-clamp-2 h-12">
+                      {relatedProduct.productName}
+                    </h3>
+                    
+                    <div className="flex items-center mb-2">
+                      <Rating value={parseFloat(relatedProduct.rating) || 0} readOnly size="small" precision={0.5} />
+                      <span className="text-sm text-gray-500 ml-1">
+                        ({relatedProduct.reviews?.length || 0})
+                      </span>
+                    </div>
+                    
+                    <div className="flex justify-between items-center">
+                      <p className="font-bold text-blue-600">
+                        {formatCurrency(relatedProduct.price)}
+                      </p>
+                      <button 
+                        className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded-full text-sm transition-colors"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          addToCart({
+                            id: relatedProduct.productId,
+                            name: relatedProduct.productName,
+                            price: relatedProduct.price,
+                            image: relatedProduct.productsImages?.[0]?.imageUrl || relatedProduct.image,
+                            quantity: 1,
+                          });
+                          Swal.fire({
+                            icon: "success",
+                            title: "Đã thêm vào giỏ hàng!",
+                            text: `${relatedProduct.productName} đã được thêm vào giỏ hàng với số lượng: 1.`,
+                            showConfirmButton: false,
+                            timer: 1500
+                          });
+                        }}
+                        disabled={relatedProduct.quantity === 0}
+                      >
+                        <FaShoppingCart />
+                      </button>
+                    </div>
+                    
+                    <div className="mt-2 flex flex-wrap gap-1">
+                      <Chip 
+                        label={relatedProduct.categoryName} 
+                        size="small" 
+                        className="text-xs"
+                        color="primary"
+                        variant="outlined"
+                      />
+                      <Chip 
+                        label={relatedProduct.skinTypeName} 
+                        size="small" 
+                        className="text-xs"
+                        color="secondary"
+                        variant="outlined"
+                      />
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+            
+            <div className="mt-4 text-center">
+              <button 
+                className="text-blue-500 hover:text-blue-700 font-medium"
+                onClick={() => navigate('/product')}
+              >
+                Xem tất cả sản phẩm
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Dialog xem ảnh lớn */}

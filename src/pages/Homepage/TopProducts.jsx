@@ -98,6 +98,18 @@ const TopProducts = () => {
     ],
   };
 
+  const handleAddToCart = (product) => {
+    // Chuyển đổi dữ liệu sản phẩm để phù hợp với cấu trúc trong CartContext
+    const cartProduct = {
+      id: product.productId,
+      name: product.productName,
+      image: product.productsImages?.[0]?.imageUrl || "https://via.placeholder.com/150",
+      price: product.price,
+    };
+    
+    addToCart(cartProduct);
+  };
+
   return (
     <div>
       <div className="container py-10 md:py-20 px-4 md:px-0">
@@ -188,7 +200,7 @@ const TopProducts = () => {
                       <div className="w-full pt-4">
                         <button
                           className="bg-primary hover:scale-105 duration-300 text-black py-2 px-4 rounded-full group-hover:bg-yellow-300 group-hover:text-primary w-full text-sm"
-                          onClick={() => addToCart(product)}
+                          onClick={() => handleAddToCart(product)}
                         >
                           Đặt hàng ngay
                         </button>

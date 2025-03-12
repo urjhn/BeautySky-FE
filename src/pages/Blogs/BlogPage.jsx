@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import Navbar from "../../components/Navbar/Navbar";
 import Footer from "../../components/Footer/Footer";
 import Pagination from "../../components/Pagination/Pagination";
@@ -12,6 +13,10 @@ const Blogs = () => {
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
+  
+  const location = useLocation();
+  const queryParams = new URLSearchParams(location.search);
+  const blogIdFromUrl = queryParams.get('blogId');
 
   // Fetch blogs với filter
   useEffect(() => {
@@ -27,6 +32,13 @@ const Blogs = () => {
           response = await blogsAPI.getAll();
         }
         setBlogs(response.data);
+        
+        if (blogIdFromUrl) {
+          const blogToShow = response.data.find(blog => blog.blogId.toString() === blogIdFromUrl);
+          if (blogToShow) {
+            setSelectedBlog(blogToShow);
+          }
+        }
       } catch (error) {
         console.error("Error fetching blogs:", error);
       } finally {
@@ -34,7 +46,7 @@ const Blogs = () => {
       }
     };
     fetchBlogs();
-  }, [selectedSkinType, selectedCategory]);
+  }, [selectedSkinType, selectedCategory, blogIdFromUrl]);
 
   // Filter blogs based on skin type and category
   const filteredBlogs = blogs.filter(
@@ -267,91 +279,106 @@ const Blogs = () => {
 
         {/* Modal được cải thiện */}
         {selectedBlog && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4">
-            <div
-              className="bg-white rounded-2xl shadow-2xl w-full max-w-5xl relative
-                        transform transition-all duration-300 scale-100
-                        max-h-[98vh] sm:max-h-[95vh] overflow-hidden flex flex-col"
-            >
-              {/* Header */}
-              <div className="p-4 sm:p-6 border-b border-gray-100 flex justify-between items-center sticky top-0 bg-white z-10">
-                <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-800 line-clamp-1">
-                  {selectedBlog.title}
-                </h2>
-                <button
-                  className="w-8 h-8 flex items-center justify-center rounded-full
-                            text-gray-500 hover:bg-gray-100 transition-colors"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setSelectedBlog(null);
-                  }}
-                >
-                  <svg
-                    className="w-5 h-5"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
+          <>
+            {/* Overlay để làm mờ nền */}
+            <div 
+              className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40"
+              onClick={() => setSelectedBlog(null)}
+            ></div>
+            
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4">
+              <div
+                className="bg-white rounded-2xl shadow-2xl w-full max-w-5xl relative
+                          transform transition-all duration-300 scale-100
+                          max-h-[98vh] sm:max-h-[95vh] overflow-hidden flex flex-col"
+              >
+                {/* Header */}
+                <div className="p-4 sm:p-6 border-b border-gray-100 flex justify-between items-center sticky top-0 bg-white z-10">
+                  <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-800 line-clamp-1">
+                    {selectedBlog.title}
+                  </h2>
+                  <button
+                    className="w-8 h-8 flex items-center justify-center rounded-full
+                              text-gray-500 hover:bg-gray-100 transition-colors"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setSelectedBlog(null);
+                    }}
                   >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M6 18L18 6M6 6l12 12"
-                    />
-                  </svg>
-                </button>
-              </div>
+                    <svg
+                      className="w-5 h-5"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M6 18L18 6M6 6l12 12"
+                      />
+                    </svg>
+                  </button>
+                </div>
 
-              {/* Content */}
-              <div className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
-                <img
-                  src={selectedBlog.imgURL}
-                  alt={selectedBlog.title}
-                  className="w-full h-[200px] sm:h-[300px] lg:h-[500px] object-cover rounded-xl mb-4 sm:mb-6 lg:mb-8 shadow-md"
-                />
-                <div className="space-y-4 mb-8">
-                  <div className="flex space-x-4 text-sm text-gray-600">
-                    <span className="flex items-center">
-                      <svg
-                        className="w-4 h-4 mr-1"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"
-                        />
-                      </svg>
-                      {selectedBlog.skinType}
-                    </span>
-                    <span className="flex items-center">
-                      <svg
-                        className="w-4 h-4 mr-1"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"
-                        />
-                      </svg>
-                      {selectedBlog.category}
-                    </span>
+                {/* Content */}
+                <div className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
+                  <img
+                    src={selectedBlog.imgURL}
+                    alt={selectedBlog.title}
+                    className="w-full h-[200px] sm:h-[300px] lg:h-[500px] object-cover rounded-xl mb-4 sm:mb-6 lg:mb-8 shadow-md"
+                  />
+                  <div className="space-y-4 mb-8">
+                    <div className="flex space-x-4 text-sm text-gray-600">
+                      <span className="flex items-center">
+                        <svg
+                          className="w-4 h-4 mr-1"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"
+                          />
+                        </svg>
+                        {selectedBlog.skinType}
+                      </span>
+                      <span className="flex items-center">
+                        <svg
+                          className="w-4 h-4 mr-1"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"
+                          />
+                        </svg>
+                        {selectedBlog.category}
+                      </span>
+                    </div>
+                  </div>
+                  <div 
+                    className="prose prose-blue prose-lg max-w-none text-gray-700 leading-relaxed"
+                  >
+                    {selectedBlog.content.split('\n').map((paragraph, index) => (
+                      paragraph.trim() ? (
+                        <p key={index} className="mb-4">{paragraph}</p>
+                      ) : (
+                        <br key={index} />
+                      )
+                    ))}
                   </div>
                 </div>
-                <div
-                  className="prose prose-blue prose-lg max-w-none text-gray-700 leading-relaxed"
-                  dangerouslySetInnerHTML={{ __html: selectedBlog.content }}
-                />
               </div>
             </div>
-          </div>
+          </>
         )}
       </div>
       <Footer />

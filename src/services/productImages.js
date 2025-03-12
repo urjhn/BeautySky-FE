@@ -23,7 +23,7 @@ const productImagesAPI = {
   uploadproductImages: async (file) => {
     try {
       const formData = new FormData();
-      formData.append("image", file); // Đảm bảo backend nhận đúng key "image"
+      formData.append("file", file);
 
       const response = await axiosInstance.post(
         `${endPoint}/UploadFile`,
@@ -35,17 +35,17 @@ const productImagesAPI = {
         }
       );
 
-      if (response.data && response.data.imageUrl) {
-        return response.data.imageUrl; // Đảm bảo trả về URL ảnh
+      if (response.data) {
+        return response.data;
       } else {
-        throw new Error("Không nhận được URL ảnh từ API!");
+        throw new Error("Không nhận được dữ liệu từ API!");
       }
     } catch (error) {
       console.error(
         "Lỗi khi upload ảnh:",
         error.response?.data || error.message
       );
-      throw error; // Ném lỗi để xử lý phía trên
+      throw error;
     }
   },
 };

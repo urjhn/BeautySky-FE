@@ -9,6 +9,7 @@ import Logo from "../../assets/logo.png";
 import Namebrand from "../../assets/namebrand.png";
 import { Menu, Popover, Avatar } from "antd";
 import productAPI from "../../services/product";
+import blogsAPI from "../../services/blogs"; // Thêm import blogsAPI
 import { HiMenu, HiX } from "react-icons/hi";
 
 const Navbar = () => {
@@ -20,6 +21,7 @@ const Navbar = () => {
 
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState([]);
+  const [searchType, setSearchType] = useState("products"); // Thêm state để theo dõi loại tìm kiếm
   const [showProductDropdown, setShowProductDropdown] = useState(false);
   const dropdownRef = useRef(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -58,9 +60,12 @@ const Navbar = () => {
         return;
       }
 
+      // Tìm kiếm cả sản phẩm và blog
       const products = await productAPI.searchProduct(searchQuery);
+      const blogs = await blogsAPI.searchBlogs(searchQuery);
 
-      const formattedResults = products.map((item) => ({
+      // Định dạng kết quả sản phẩm
+      const formattedProducts = products.map((item) => ({
         id: item.productId,
         title: item.productName,
         price: item.price,
@@ -69,9 +74,23 @@ const Navbar = () => {
         categoryName: item.categoryName,
         skinTypeName: item.skinTypeName,
         rating: item.rating,
+        type: "product", // Đánh dấu là sản phẩm
       }));
 
-      setSearchResults(formattedResults);
+      // Định dạng kết quả blog
+      const formattedBlogs = blogs.map((item) => ({
+        id: item.blogId,
+        title: item.title,
+        description: item.content?.substring(0, 100) || "",
+        image: item.imgURL,
+        categoryName: item.category,
+        skinTypeName: item.skinType,
+        type: "blog", // Đánh dấu là blog
+      }));
+
+      // Kết hợp kết quả
+      const combinedResults = [...formattedProducts, ...formattedBlogs];
+      setSearchResults(combinedResults);
       setShowProductDropdown(true);
     } catch (error) {
       console.error("Search error:", error);
@@ -215,78 +234,129 @@ const Navbar = () => {
                 ref={dropdownRef}
               >
                 <div className="sticky top-0 bg-gray-50 p-3 border-b border-gray-100">
+                  {/* Thêm tab để chuyển đổi giữa sản phẩm và blog */}
+                  <div className="flex mb-2">
+                    <button
+                      className={`flex-1 py-1 px-2 text-sm rounded-l-md ${
+                        searchType === "products"
+                          ? "bg-blue-500 text-white"
+                          : "bg-gray-200 text-gray-700"
+                      }`}
+                      onClick={() => setSearchType("products")}
+                    >
+                      Sản phẩm
+                    </button>
+                    <button
+                      className={`flex-1 py-1 px-2 text-sm rounded-r-md ${
+                        searchType === "blogs"
+                          ? "bg-blue-500 text-white"
+                          : "bg-gray-200 text-gray-700"
+                      }`}
+                      onClick={() => setSearchType("blogs")}
+                    >
+                      Bài viết
+                    </button>
+                  </div>
                   <p className="text-sm text-gray-500">
                     {searchResults.length > 0
-                      ? `Tìm thấy ${searchResults.length} sản phẩm`
-                      : "Không tìm thấy sản phẩm"}
+                      ? `Tìm thấy ${
+                          searchType === "products"
+                            ? searchResults.filter(
+                                (item) => item.type === "product"
+                              ).length
+                            : searchResults.filter(
+                                (item) => item.type === "blog"
+                              ).length
+                        } ${searchType === "products" ? "sản phẩm" : "bài viết"}`
+                      : `Không tìm thấy ${
+                          searchType === "products" ? "sản phẩm" : "bài viết"
+                        }`}
                   </p>
                 </div>
 
                 {searchResults.length > 0 ? (
                   <div className="divide-y divide-gray-100">
-                    {searchResults.map((item) => (
-                      <Link
-                        key={item.id}
-                        to={`/product/${item.id}`}
-                        className="flex items-start p-4 hover:bg-blue-50 transition-all duration-200 group cursor-pointer"
-                        onClick={() => {
-                          setShowProductDropdown(false);
-                          setSearchQuery("");
-                        }}
-                      >
-                        <div className="flex-shrink-0">
-                          {item.image ? (
-                            <img
-                              src={item.image}
-                              alt={item.title}
-                              className="w-20 h-20 object-cover rounded-lg shadow-sm 
+                    {searchResults
+                      .filter(
+                        (item) =>
+                          (searchType === "products" &&
+                            item.type === "product") ||
+                          (searchType === "blogs" && item.type === "blog")
+                      )
+                      .map((item) => (
+                        <Link
+                          key={`${item.type}-${item.id}`}
+                          to={
+                            item.type === "product"
+                              ? `/product/${item.id}`
+                              : `/blog?blogId=${item.id}`
+                          }
+                          className="flex items-start p-4 hover:bg-blue-50 transition-all duration-200 group cursor-pointer"
+                          onClick={() => {
+                            setShowProductDropdown(false);
+                            setSearchQuery("");
+                          }}
+                        >
+                          <div className="flex-shrink-0">
+                            {item.image ? (
+                              <img
+                                src={item.image}
+                                alt={item.title}
+                                className="w-20 h-20 object-cover rounded-lg shadow-sm 
                                        group-hover:shadow-md transition-shadow duration-200"
-                            />
-                          ) : (
-                            <div
-                              className="w-20 h-20 bg-gray-100 rounded-lg flex items-center 
+                              />
+                            ) : (
+                              <div
+                                className="w-20 h-20 bg-gray-100 rounded-lg flex items-center 
                                           justify-center"
-                            >
-                              <IoMdImage className="w-8 h-8 text-gray-400" />
-                            </div>
-                          )}
-                        </div>
-
-                        <div className="ml-4 flex-1">
-                          <div className="flex items-start justify-between">
-                            <div>
-                              <h3
-                                className="font-medium text-gray-900 group-hover:text-blue-600 
-                                           transition-colors duration-150 line-clamp-2"
                               >
-                                {item.title}
-                              </h3>
-                              <div className="flex flex-wrap gap-2 mt-1">
-                                {item.categoryName && (
-                                  <span className="text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full">
-                                    {item.categoryName}
-                                  </span>
-                                )}
-                                {item.skinTypeName && (
-                                  <span className="text-xs bg-green-100 text-green-800 px-2 py-0.5 rounded-full">
-                                    {item.skinTypeName}
-                                  </span>
-                                )}
+                                <IoMdImage className="w-8 h-8 text-gray-400" />
                               </div>
-                            </div>
-                            <p className="text-sm font-semibold text-blue-600">
-                              {item.price?.toLocaleString("vi-VN")}₫
-                            </p>
+                            )}
                           </div>
 
-                          {item.description && (
-                            <p className="mt-1 text-sm text-gray-500 line-clamp-2 leading-relaxed">
-                              {item.description}
-                            </p>
-                          )}
-                        </div>
-                      </Link>
-                    ))}
+                          <div className="ml-4 flex-1">
+                            <div className="flex items-start justify-between">
+                              <div>
+                                <h3
+                                  className="font-medium text-gray-900 group-hover:text-blue-600 
+                                           transition-colors duration-150 line-clamp-2"
+                                >
+                                  {item.title}
+                                </h3>
+                                <div className="flex flex-wrap gap-2 mt-1">
+                                  {item.categoryName && (
+                                    <span className="text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full">
+                                      {item.categoryName}
+                                    </span>
+                                  )}
+                                  {item.skinTypeName && (
+                                    <span className="text-xs bg-green-100 text-green-800 px-2 py-0.5 rounded-full">
+                                      {item.skinTypeName}
+                                    </span>
+                                  )}
+                                  {item.type === "blog" && (
+                                    <span className="text-xs bg-purple-100 text-purple-800 px-2 py-0.5 rounded-full">
+                                      Bài viết
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+                              {item.type === "product" && item.price && (
+                                <p className="text-sm font-semibold text-blue-600">
+                                  {item.price?.toLocaleString("vi-VN")}₫
+                                </p>
+                              )}
+                            </div>
+
+                            {item.description && (
+                              <p className="mt-1 text-sm text-gray-500 line-clamp-2 leading-relaxed">
+                                {item.description}
+                              </p>
+                            )}
+                          </div>
+                        </Link>
+                      ))}
                   </div>
                 ) : (
                   <div className="p-8 text-center">

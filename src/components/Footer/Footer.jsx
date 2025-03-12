@@ -5,7 +5,7 @@ import { FaFacebook, FaInstagram, FaLinkedin } from "react-icons/fa";
 
 const Footer = () => {
   return (
-    <div data-aos="fade-up" className="bg-white text-gray-700">
+    <div className="bg-white text-gray-700">
       <section className="max-w-[1500px] mx-auto px-4 sm:px-6 py-8 sm:py-10">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {/* Logo & Mô tả */}
