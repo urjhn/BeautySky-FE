@@ -29,28 +29,32 @@ const Products = () => {
     ingredient: "",
     categoryId: 0,
     skinTypeId: 0,
-    file: null,
+    productsImages: [],
   });
 
-  const handleImageUpload = async ({ file, onSuccess, onError }) => {
-    try {
-      // Gọi API upload ảnh trực tiếp với file
-      const response = await productImagesAPI.uploadproductImages(file);
+  const handleImageUpload = async ({ File}) => {
+     // Tạo đối tượng FormData
+     const formData = new FormData();
+     formData.append("File", File); // Thêm productsImages vào FormData
+   
+     try {
+       // Gọi API upload ảnh (Sử dụng formData để gửi ảnh)
+       const response = await productApi.uploadImage(formData); // Đảm bảo sử dụng formData
+   
+       // Giả sử server trả về URL của ảnh đã tải lên
+       const imageUrl = response.data.imageUrl; // Hoặc cấu trúc phù hợp với API của bạn
+       console.log("Ảnh đã được tải lên:", imageUrl);
+   
+       // Lưu URL này vào state hoặc xử lý theo nhu cầu của bạn
+       setNewProduct(prev => [...prev, imageUrl]); // Cập nhật lại state để lưu URL ảnh
+     } catch (error) {
+       console.error("Lỗi khi tải ảnh:", error);
+     }
+   };
 
-      if (response && response.imageUrl) {
-        // Nếu upload thành công, gọi onSuccess với response
-        onSuccess(response);
-        console.log("Upload thành công:", response);
-      } else {
-        throw new Error("Không nhận được URL ảnh từ API");
-      }
-    } catch (error) {
-      console.error("Lỗi khi upload ảnh:", error);
-      onError(error);
-      // Hiển thị thông báo lỗi cho người dùng
-      message.error("Không thể tải lên hình ảnh. Vui lòng thử lại!");
-    }
-  };
+
+
+
   const filteredProducts = React.useMemo(() => {
     let updatedProducts = [...products];
 
@@ -68,6 +72,9 @@ const Products = () => {
 
     return updatedProducts;
   }, [products, filter, sortOrder]);
+
+
+
 
   const displayedProducts = React.useMemo(
     () =>
@@ -120,125 +127,84 @@ const Products = () => {
     }
   };
 
-  const handleSaveEdit = async (values) => {
-    try {
-      setLoading(true);
-
-      if (!editingProduct || !editingProduct.productId) {
-        throw new Error("Missing product ID");
-      }
-
-      const formData = new FormData();
-      formData.append("ProductName", values.productName);
-      formData.append("Price", values.price);
-      formData.append("Quantity", values.quantity);
-      formData.append("Description", values.description);
-      formData.append("Ingredient", values.ingredient);
-      formData.append("CategoryId", values.categoryId);
-      formData.append("SkinTypeId", values.skinTypeId);
-
-      // Thêm danh sách URL hình ảnh vào formData
-      values.productsImages.forEach((url, index) => {
-        formData.append(`ProductsImages[${index}]`, url);
-      });
-
-      const response = await productApi.editProduct(
-        editingProduct.productId,
-        formData
-      );
-
-      if (response && response.status >= 200 && response.status < 300) {
-        const updatedProduct = response.data || response;
-        setProducts((prev) =>
-          prev.map((p) =>
-            p.productId === editingProduct.productId ? updatedProduct : p
-          )
-        );
-        setShowEditModal(false);
-        Swal.fire({
-          icon: "success",
-          title: "Thành công!",
-          text: `Sản phẩm "${values.productName}" đã được cập nhật thành công!`,
-        });
-        fetchProduct(response);
-      } else {
-        throw new Error("Edit failed");
-      }
-    } catch (error) {
-      console.error("Error updating product:", error);
+const handleAddProduct = async (formData) => {
+  try {
+    setLoading(true);
+    console.log("Adding product with formData");
+    
+    const response = await productApi.createProduct(formData);
+    
+    if (response && response.status >= 200 && response.status < 300) {
+      setShowAddModal(false);
+      
       Swal.fire({
-        icon: "error",
-        title: "Lỗi!",
-        text: "Cập nhật sản phẩm bị lỗi, vui lòng thử lại",
+        icon: "success",
+        title: "Thành công!",
+        text: "Sản phẩm đã được thêm thành công!",
+        confirmButtonColor: "#3085d6",
+        confirmButtonText: "OK",
       });
-    } finally {
-      setLoading(false);
+      
+      // Refresh product list
+      fetchProduct();
+    } else {
+      throw new Error("Add failed");
     }
-  };
+  } catch (error) {
+    console.error("Error adding product:", error);
+    
+    Swal.fire({
+      icon: "error",
+      title: "Lỗi!",
+      text: error.response?.data?.message || "Lỗi thêm sản phẩm, vui lòng thử lại",
+      confirmButtonColor: "#d33",
+      confirmButtonText: "Thử lại",
+    });
+  } finally {
+    setLoading(false);
+  }
+};
 
-  const handleAddProduct = async (values) => {
-    try {
-      setLoading(true);
-
-      const formData = new FormData();
-      formData.append("ProductName", values.productName);
-      formData.append("Price", values.price);
-      formData.append("Quantity", values.quantity);
-      formData.append("Description", values.description);
-      formData.append("Ingredient", values.ingredient);
-      formData.append("CategoryId", values.categoryId);
-      formData.append("SkinTypeId", values.skinTypeId);
-
-      // Thêm danh sách URL hình ảnh vào formData
-      values.productsImages.forEach((url, index) => {
-        formData.append(`ProductsImages[${index}]`, url);
-      });
-
-      const response = await productApi.createProduct(formData);
-
-      if (
-        response &&
-        ((response.status >= 200 && response.status < 300) ||
-          response.productId)
-      ) {
-        const newProductData = response.data || response;
-        setProducts((prev) => [...prev, newProductData]);
-        setShowAddModal(false);
-        setNewProduct({
-          productId: 0,
-          productName: "",
-          price: 0,
-          quantity: 1000,
-          description: "",
-          ingredient: "",
-          categoryId: 0,
-          skinTypeId: 0,
-          file: null,
-        });
-        Swal.fire({
-          icon: "success",
-          title: "Thành công!",
-          text: `Sản phẩm "${values.productName}" đã được thêm thành công!`,
-          confirmButtonColor: "#3085d6",
-          confirmButtonText: "OK",
-        });
-        fetchProduct(response);
-      } else {
-        throw new Error("Add failed");
-      }
-    } catch (error) {
-      console.error("Error adding product:", error);
+// Replace your existing handleSaveEdit with this:
+const handleSaveEdit = async (formData) => {
+  try {
+    setLoading(true);
+    
+    if (!editingProduct || !editingProduct.productId) {
+      throw new Error("Missing product ID");
+    }
+    
+    const response = await productApi.editProduct(
+      editingProduct.productId,
+      formData
+    );
+    
+    if (response && response.status >= 200 && response.status < 300) {
+      setShowEditModal(false);
+      
       Swal.fire({
-        icon: "error",
-        title: "Lỗi!",
-        text: "Lỗi thêm sản phẩm, vui lòng thử lại",
-        confirmButtonColor: "#d33",
-        confirmButtonText: "Thử lại",
+        icon: "success",
+        title: "Thành công!",
+        text: "Sản phẩm đã được cập nhật thành công!",
       });
-    } finally {
-      setLoading(false);
+      
+      // Refresh product list
+      fetchProduct();
+    } else {
+      throw new Error("Edit failed");
     }
-  };
+  } catch (error) {
+    console.error("Error updating product:", error);
+    
+    Swal.fire({
+      icon: "error",
+      title: "Lỗi!",
+      text: error.response?.data?.message || "Cập nhật sản phẩm bị lỗi, vui lòng thử lại",
+    });
+  } finally {
+    setLoading(false);
+  }
+};
 
   const columns = React.useMemo(
     () => [
@@ -256,7 +222,7 @@ const Products = () => {
             <img
               src={imageUrl}
               alt="Product"
-              className="w-14 h-14 object-cover rounded-lg shadow-sm border border-gray-200 transition-transform duration-300 hover:scale-105"
+              className="w-14 h-14 object-cover rounded-lg shadow-sm border border-gray-200"
             />
           );
         },
@@ -339,10 +305,10 @@ const Products = () => {
   );
 
   return (
-    <div className="p-4 md:p-8 bg-gradient-to-r from-gray-50 to-gray-100 min-h-screen">
+    <div className="p-4 md:p-8 bg-gray-50 min-h-screen">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 md:mb-8 gap-4">
         <h1 className="text-2xl md:text-3xl font-bold text-gray-800 flex items-center">
-          <span className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white p-2 rounded-lg mr-3 shadow-lg">
+          <span className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white p-2 rounded-lg mr-3">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               className="h-5 w-5 md:h-6 md:w-6"
@@ -364,7 +330,7 @@ const Products = () => {
           type="primary"
           onClick={() => setShowAddModal(true)}
           disabled={loading}
-          className="w-full md:w-auto flex items-center justify-center bg-indigo-600 hover:bg-indigo-700 border-0 h-10 px-5 rounded-lg shadow-md transition-transform duration-300 hover:scale-105"
+          className="w-full md:w-auto flex items-center justify-center bg-indigo-600 hover:bg-indigo-700 border-0 h-10 px-5 rounded-lg shadow-md"
         >
           <FaPlus className="mr-2" /> Thêm sản phẩm
         </Button>

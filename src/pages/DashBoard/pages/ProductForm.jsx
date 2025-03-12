@@ -1,18 +1,19 @@
 import React, { useState, useEffect } from "react";
 import {
-  Form,
-  Input,
-  InputNumber,
-  Select,
   Button,
-  Upload,
+  Table,
+  Space,
+  Modal,
+  Input,
+  Form,
+  Select,
+  InputNumber,
   message,
   Row,
   Col,
+  Upload,
 } from "antd";
-import { FaTrash } from "react-icons/fa";
 import { PlusOutlined } from "@ant-design/icons";
-import productImagesAPI from "../../../services/productImages";
 
 const ProductForm = ({
   item,
@@ -28,97 +29,67 @@ const ProductForm = ({
 
   useEffect(() => {
     if (item) {
+      // Set initial form values based on the item being edited
       form.setFieldsValue({
         productId: item.productId,
         productName: item.productName,
         price: item.price,
         quantity: item.quantity,
-        description: item.description,
-        ingredient: item.ingredient,
+        description: item.description || "",
+        ingredient: item.ingredient || "",
         categoryId: item.categoryId,
         skinTypeId: item.skinTypeId,
-        productsImages: item.productsImages,
       });
-      if (item.productsImages) {
-        setFileList(
-          item.productsImages.map((url, index) => ({
-            uid: `-img-${index}`,
-            name: `Image-${index + 1}`,
-            status: "done",
-            url,
-          }))
-        );
+
+      // Initialize preview images if editing an existing product
+      if (item.productsImages && item.productsImages.length > 0) {
+        const existingImages = item.productsImages.map((img, index) => ({
+          uid: `-${index}`,
+          name: `image-${index}`,
+          status: 'done',
+          url: img.imageUrl,
+          imageUrl: img.imageUrl,
+        }));
+
+        setFileList(existingImages);
       }
     } else {
+      // Reset form when no item is provided (for add mode)
       form.resetFields();
+      setFileList([]);
     }
   }, [item, form]);
 
-  const beforeUpload = (file) => {
-    const isJpgOrPng = file.type === "image/jpeg" || file.type === "image/png" || file.type === "image/webp";
-    if (!isJpgOrPng) {
-      message.error("Chỉ có thể tải lên file JPG/PNG/WEBP!");
-      return false;
-    }
-    const isLt2M = file.size / 1024 / 1024 < 2;
-    if (!isLt2M) {
-      message.error("Hình ảnh phải nhỏ hơn 2MB!");
-      return false;
-    }
-    return true;
-  };
-
-  const handleImageUpload = async ({ file, onSuccess, onError }) => {
-    try {
-      const formData = new FormData();
-      formData.append("file", file);
-
-      const response = await productImagesAPI.uploadproductImages(formData);
-
-      if (response && response.imageUrl) {
-        onSuccess({ imageUrl: response.imageUrl });
-        message.success(`${file.name} đã được tải lên thành công`);
-      } else {
-        throw new Error("Không nhận được URL ảnh từ API");
-      }
-    } catch (error) {
-      console.error("Lỗi khi upload ảnh:", error);
-      message.error(`${file.name} tải lên thất bại: ${error.message}`);
-      onError(error);
-    }
-  };
-
-  const handleFileChange = ({ file, fileList }) => {
-    if (file.status === "done") {
-      setFileList(
-        fileList.map((item) => ({
-          ...item,
-          url: item.response?.imageUrl || item.url,
-        }))
-      );
-
-      const imageUrls = fileList
-        .filter(item => item.status === "done")
-        .map(item => item.response?.imageUrl || item.url);
-
-      form.setFieldsValue({
-        productsImages: imageUrls
-      });
-    } else {
-      setFileList(fileList);
-    }
-  };
-
   const onFinish = (values) => {
-    const imageUrls = fileList
-      .filter(item => item.status === "done")
-      .map(item => item.response?.imageUrl || item.url);
-
-    const formData = isAddMode
-      ? { ...values, productsImages: imageUrls }
-      : { ...values, productId: item?.productId, productsImages: imageUrls };
-
+    // Create a FormData instance for the API call
+    const formData = new FormData();
+    
+    // Add all form fields to FormData
+    formData.append("productName", values.productName);
+    formData.append("price", values.price);
+    formData.append("quantity", values.quantity);
+    formData.append("description", values.description || "");
+    formData.append("ingredient", values.ingredient || "");
+    formData.append("categoryId", values.categoryId);
+    formData.append("skinTypeId", values.skinTypeId);
+    
+    // Add the image file if it exists
+    // Only add the first file in the list (as your backend seems to handle one image)
+    if (fileList.length > 0 && fileList[0].originFileObj) {
+      formData.append("File", fileList[0].originFileObj);
+      
+      // Add image description if needed
+      formData.append("imageDescription", values.productName || "Product Image");
+    }
+    
+    // Submit the form with the FormData
     onSubmit(formData);
+  };
+
+  const handleFileChange = ({ fileList: newFileList }) => {
+    // Limit to only one file in this example, remove this if you want multiple files
+    const limitedFileList = newFileList.slice(-1);
+    setFileList(limitedFileList);
   };
 
   return (
@@ -128,6 +99,10 @@ const ProductForm = ({
         layout="vertical"
         onFinish={onFinish}
         className="space-y-3 md:space-y-4"
+        initialValues={{
+          description: "",
+          ingredient: "",
+        }}
       >
         <Form.Item
           label="Tên sản phẩm"
@@ -142,9 +117,7 @@ const ProductForm = ({
             <Form.Item
               label="Giá"
               name="price"
-              rules={[
-                { required: true, message: "Vui lòng nhập giá sản phẩm!" },
-              ]}
+              rules={[{ required: true, message: "Vui lòng nhập giá sản phẩm!" }]}
             >
               <InputNumber
                 className="w-full"
@@ -158,9 +131,7 @@ const ProductForm = ({
             <Form.Item
               label="Số lượng"
               name="quantity"
-              rules={[
-                { required: true, message: "Vui lòng nhập số lượng sản phẩm!" },
-              ]}
+              rules={[{ required: true, message: "Vui lòng nhập số lượng sản phẩm!" }]}
             >
               <InputNumber
                 className="w-full"
@@ -224,52 +195,65 @@ const ProductForm = ({
         </Row>
 
         <Form.Item
-          label="Hình ảnh"
-          name="productsImages"
-          rules={[{ required: true, message: 'Vui lòng tải lên ít nhất 1 hình ảnh!' }]}
+          label={<span className="text-gray-700 font-medium">Hình ảnh</span>}
         >
           <Upload
-            disabled={loading}
             listType="picture-card"
             fileList={fileList}
             onChange={handleFileChange}
-            customRequest={handleImageUpload}
-            showUploadList={{
-              showPreviewIcon: true,
-              showRemoveIcon: true,
-              showDownloadIcon: false,
+            beforeUpload={(file) => {
+              // Only allow images
+              const isImage = file.type.startsWith('image/');
+              if (!isImage) {
+                message.error('Bạn chỉ có thể tải lên tập tin hình ảnh!');
+              }
+              
+              // Return false to stop auto upload behavior
+              return false;
             }}
-            accept=".jpg,.jpeg,.png,.webp"
-            multiple={true}
-            maxCount={5}
-            beforeUpload={beforeUpload}
+            onPreview={(file) => {
+              const preview = file.url || file.thumbUrl;
+              if (preview) {
+                const image = new Image();
+                image.src = preview;
+                const imgWindow = window.open(preview);
+                if (imgWindow) {
+                  imgWindow.document.write(image.outerHTML);
+                }
+              }
+            }}
           >
-            {fileList.length < 5 && (
-              <div>
-                <PlusOutlined />
-                <div style={{ marginTop: 8 }}>Thêm ảnh</div>
+            {fileList.length < 1 && (
+              <div className="flex flex-col items-center justify-center text-gray-500 hover:text-indigo-600">
+                <PlusOutlined className="text-xl mb-1" />
+                <div className="text-sm">Tải ảnh lên</div>
               </div>
             )}
           </Upload>
         </Form.Item>
 
-        <div className="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-4">
-          <Button 
-            onClick={onCancel} 
-            disabled={loading}
-            className="w-full sm:w-auto"
-          >
-            Hủy
-          </Button>
-          <Button 
-            type="primary" 
-            htmlType="submit" 
-            loading={loading}
-            className="w-full sm:w-auto"
-          >
-            {isAddMode ? "Thêm sản phẩm" : "Cập nhật sản phẩm"}
-          </Button>
-        </div>
+        <Form.Item className="border-t border-gray-200 pt-4 mb-0 flex justify-end">
+          <Space>
+            <Button
+              onClick={onCancel}
+              disabled={loading}
+              className="text-gray-700 border-gray-300 hover:text-gray-900 hover:border-gray-400"
+            >
+              Hủy
+            </Button>
+            <Button
+              type="primary"
+              htmlType="submit"
+              loading={loading}
+              disabled={loading}
+              className={`${
+                isAddMode ? "bg-green-600 hover:bg-green-700" : "bg-blue-600 hover:bg-blue-700"
+              } border-0`}
+            >
+              {isAddMode ? "Thêm mới" : "Lưu thay đổi"}
+            </Button>
+          </Space>
+        </Form.Item>
       </Form>
     </div>
   );

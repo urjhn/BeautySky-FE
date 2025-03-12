@@ -139,27 +139,25 @@ const Navbar = () => {
         </div>
 
         {/* Desktop & Tablet Menu */}
-        <ul className="hidden sm:flex items-center gap-2 lg:gap-4 text-gray-700 font-semibold text-sm lg:text-base">
+        <ul className="hidden sm:flex items-center space-x-6 lg:space-x-8">
           {NavbarMenu.map((item) => (
-            <li
-              key={item.id}
-              className="relative flex items-center gap-1 lg:gap-2"
-            >
-              {item.icon && (
-                <span className="text-base lg:text-lg">{item.icon}</span>
-              )}
+            <li key={item.id}>
               {item.submenu ? (
                 <button
                   onMouseEnter={() => setShowProductDropdown(true)}
                   onClick={() => setShowProductDropdown((prev) => !prev)}
-                  className="hover:text-[#6BBCFE] transition duration-300 flex items-center gap-1 lg:gap-2"
+                  className="text-sm lg:text-base text-gray-700 font-medium 
+                             hover:text-[#6BBCFE] active:scale-95 
+                             transition-all duration-200"
                 >
                   {item.title}
                 </button>
               ) : (
                 <Link
                   to={item.link}
-                  className="hover:text-[#6BBCFE] transition duration-300 flex items-center gap-1 lg:gap-2"
+                  className="text-sm lg:text-base text-gray-700 font-medium 
+                             hover:text-[#6BBCFE] active:scale-95 
+                             transition-all duration-200"
                 >
                   {item.title}
                 </Link>
@@ -206,7 +204,7 @@ const Navbar = () => {
             <div className="relative">
               <input
                 type="text"
-                placeholder="Tìm kiếm sản phẩm..."
+                placeholder="Tìm kiếm..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onFocus={() => {
@@ -214,15 +212,12 @@ const Navbar = () => {
                     setShowProductDropdown(true);
                   }
                 }}
-                className="w-32 sm:w-48 lg:w-64 border-2 border-gray-200 rounded-full 
-                           px-4 py-2 pr-10 focus:outline-none focus:border-blue-400 
-                           transition-all duration-300 text-sm placeholder-gray-400"
+                className="w-32 sm:w-40 lg:w-48 h-9 border-2 border-gray-200 rounded-full 
+                           px-3 pr-8 text-sm focus:outline-none focus:border-[#6BBCFE] 
+                           transition-all duration-200"
               />
-              <div
-                className="absolute right-3 top-1/2 transform -translate-y-1/2 
-                              text-gray-400 hover:text-blue-500 transition-colors duration-200"
-              >
-                <IoMdSearch className="w-5 h-5" />
+              <div className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400">
+                <IoMdSearch className="w-4 h-4" />
               </div>
             </div>
 
@@ -267,7 +262,9 @@ const Navbar = () => {
                             : searchResults.filter(
                                 (item) => item.type === "blog"
                               ).length
-                        } ${searchType === "products" ? "sản phẩm" : "bài viết"}`
+                        } ${
+                          searchType === "products" ? "sản phẩm" : "bài viết"
+                        }`
                       : `Không tìm thấy ${
                           searchType === "products" ? "sản phẩm" : "bài viết"
                         }`}

@@ -32,8 +32,9 @@ import ProfileAdmin from "./pages/DashBoard/pages/ProfileAdmin.jsx";
 import ProfileLayout from "./pages/Profile/ProfileLayout.jsx";
 import Security from "./pages/Profile/pages/Security2FA.jsx";
 import Notifications from "./pages/Profile/pages/Notifications.jsx";
-
 import Unauthorized from "./pages/Unauthorized/unauthorized.jsx";
+import UpdateProfile from './components/Google/UpdateProfile';
+import GoogleCallback from './components/Google/GoogleCallback';
 
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
@@ -60,6 +61,8 @@ const App = () => (
     <Route path="*" element={<Error />} />
     <Route path="/routine-builder" element={<RoutineBuilderPage />} />
     <Route path="/unauthorized" element={<Unauthorized />} />
+    <Route path="/update-profile" element={<UpdateProfile />} />
+    <Route path="/google-callback" element={<GoogleCallback />} />
     {/* Dashboard Routes (Chỉ Manager và Staff mới truy cập) */}
     <Route
       path="/dashboardlayout"
