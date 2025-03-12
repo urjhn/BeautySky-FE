@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import questionsAPI from "../services/questions";
 import answersAPI from "../services/answers";
 import resultAPI from "../services/result";
+import { useAuth } from "../../context/AuthContext";
 
 const QuizPage = () => {
   const [questions, setQuestions] = useState([]);
@@ -12,8 +13,9 @@ const QuizPage = () => {
   const [selectedAnswers, setSelectedAnswers] = useState({});
   const [result, setResult] = useState(null);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-  const [showLoginPopup, setShowLoginPopup] = useState(false);
+  const { user } = useAuth();
   const navigate = useNavigate();
+  const [showConfirmLoginPopup, setShowConfirmLoginPopup] = useState(false); // Thêm state cho popup xác nhận
 
   useEffect(() => {
     const fetchData = async () => {
@@ -53,8 +55,9 @@ const QuizPage = () => {
     fetchData();
   }, []);
 
+  // Hàm kiểm tra đăng nhập dùng context
   const isLoggedIn = () => {
-    return localStorage.getItem("token") !== null;
+    return user !== null;
   };
 
   const handleSelectAnswer = (questionId, answerId) => {
@@ -95,9 +98,23 @@ const QuizPage = () => {
 
   const handleViewRoutine = () => {
     if (isLoggedIn()) {
-      const userId = localStorage.getItem("userId"); // Nên dùng user context thay vì localStorage
-      navigate("/RoutineBuilderPage", { state: { userId } });
+      // Truyền user id từ context
+      navigate("/RoutineBuilderPage", { state: { userId: user.userId } });
+    } else {
+      // Hiển thị popup xác nhận đăng nhập
+      setShowConfirmLoginPopup(true);
     }
+  };
+
+  const handleConfirmLogin = () => {
+    // Chuyển hướng đến trang đăng nhập
+    navigate("/login");
+    setShowConfirmLoginPopup(false); // Đóng popup
+  };
+
+  const handleCancelLogin = () => {
+    // Đóng popup
+    setShowConfirmLoginPopup(false);
   };
 
   return (
@@ -223,26 +240,26 @@ const QuizPage = () => {
             <p>Không có câu hỏi nào!</p>
           )}
 
-          {/* Popup yêu cầu đăng nhập */}
-          {showLoginPopup && (
+          {/* Popup xác nhận đăng nhập */}
+          {showConfirmLoginPopup && (
             <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
               <div className="bg-white p-6 rounded-lg w-96 text-center">
-                <h2 className="text-xl font-bold">Vui lòng đăng nhập</h2>
+                <h2 className="text-xl font-bold">Bạn có muốn đăng nhập?</h2>
                 <p className="mt-4">
                   Bạn cần đăng nhập để xem lộ trình chăm sóc da.
                 </p>
                 <div className="mt-6 flex justify-center gap-4">
                   <button
-                    className="bg-blue-500 text-white px-4 py-2 rounded-lg"
-                    onClick={() => navigate("/login")}
+                    className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors"
+                    onClick={handleConfirmLogin}
                   >
-                    Đăng nhập
+                    Có, đăng nhập
                   </button>
                   <button
-                    className="bg-gray-500 text-white px-4 py-2 rounded-lg"
-                    onClick={() => setShowLoginPopup(false)}
+                    className="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition-colors"
+                    onClick={handleCancelLogin}
                   >
-                    Đóng
+                    Không, cảm ơn
                   </button>
                 </div>
               </div>
