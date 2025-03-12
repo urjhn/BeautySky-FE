@@ -9,6 +9,7 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
+  const savedUser = localStorage.getItem('user');
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -45,12 +46,14 @@ export const AuthProvider = ({ children }) => {
         email: decoded.email,
         role: decoded.role,
         token: data.token,
+        email: data.email,
         roleId: roleId,
         phone: decoded.phone,
         address: decoded.address,
       });
       localStorage.setItem("token", data.token);
       localStorage.setItem("roleId", roleId);
+      localStorage.setItem('user', JSON.stringify(userData)); 
     } catch (err) {
       console.error("Login failed", err);
     }
