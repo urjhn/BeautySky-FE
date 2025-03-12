@@ -9,6 +9,7 @@ import PaymentSuccess from "./pages/Checkout/PaymentSuccess.jsx";
 import ViewOrder from "./pages/Orders/ViewOrder.jsx";
 import Viewcart from "./pages/Product/Viewcart.jsx";
 import Quizz from "./features/quiz/QuizPage.jsx";
+import RoutineBuilderPage from "./features/skincare-routine/RoutineBuilderPage.jsx";
 import Error from "./pages/Errors/NotFoundPage.jsx";
 import Blog from "./pages/Blogs/BlogPage.jsx";
 import UserProfile from "./pages/Profile/pages/ProfileForm.jsx";
@@ -22,7 +23,6 @@ import Report from "./pages/DashBoard/pages/Report.jsx";
 import Setting from "./pages/DashBoard/pages/Setting.jsx";
 import BlogManagement from "./pages/DashBoard/pages/BlogManagement.jsx";
 import Promotion from "./pages/DashBoard/pages/Promotion.jsx";
-import RoutineBuilderPage from "./features/skincare-routine/RoutineBuilderPage.jsx";
 import AboutUs from "./pages/AboutUs/AboutUs.jsx";
 import Events from "./pages/DashBoard/pages/EventsControll.jsx";
 import HistoryOrder from "./pages/Orders/ViewHistoryOrder.jsx";
@@ -32,8 +32,9 @@ import ProfileAdmin from "./pages/DashBoard/pages/ProfileAdmin.jsx";
 import ProfileLayout from "./pages/Profile/ProfileLayout.jsx";
 import Security from "./pages/Profile/pages/Security2FA.jsx";
 import Notifications from "./pages/Profile/pages/Notifications.jsx";
-
 import Unauthorized from "./pages/Unauthorized/unauthorized.jsx";
+import UpdateProfile from './components/Google/UpdateProfile';
+import GoogleCallback from './components/Google/GoogleCallback';
 
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
@@ -55,10 +56,13 @@ const App = () => (
     <Route path="/viewcart" element={<Viewcart />} />
     <Route path="/contact" element={<Contact />} />
     <Route path="/quizz" element={<Quizz />} />
+    <Route path="/RoutineBuilderPage" element={<RoutineBuilderPage />} />
     <Route path="/blog" element={<Blog />} />
     <Route path="*" element={<Error />} />
     <Route path="/routine-builder" element={<RoutineBuilderPage />} />
     <Route path="/unauthorized" element={<Unauthorized />} />
+    <Route path="/update-profile" element={<UpdateProfile />} />
+    <Route path="/google-callback" element={<GoogleCallback />} />
     {/* Dashboard Routes (Chỉ Manager và Staff mới truy cập) */}
     <Route
       path="/dashboardlayout"

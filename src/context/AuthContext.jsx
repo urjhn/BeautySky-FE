@@ -51,6 +51,7 @@ export const AuthProvider = ({ children }) => {
       });
       localStorage.setItem("token", data.token);
       localStorage.setItem("roleId", roleId);
+      // navigate("/routine-builder");
     } catch (err) {
       console.error("Login failed", err);
     }

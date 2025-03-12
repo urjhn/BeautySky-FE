@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import questionsAPI from "../services/questions";
 import answersAPI from "../services/answers";
 import resultAPI from "../services/result";
+import { useAuth } from "../../context/AuthContext";
 
 const QuizPage = () => {
   const [questions, setQuestions] = useState([]);
@@ -12,7 +13,9 @@ const QuizPage = () => {
   const [selectedAnswers, setSelectedAnswers] = useState({});
   const [result, setResult] = useState(null);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const { user } = useAuth();
   const navigate = useNavigate();
+  const [showConfirmLoginPopup, setShowConfirmLoginPopup] = useState(false); // Thêm state cho popup xác nhận
 
   useEffect(() => {
     const fetchData = async () => {
@@ -37,7 +40,6 @@ const QuizPage = () => {
                 point: a.point,
               })),
           }));
-
           setQuestions(formattedQuestions);
         } else {
           setQuestions([]);
@@ -52,6 +54,11 @@ const QuizPage = () => {
 
     fetchData();
   }, []);
+
+  // Hàm kiểm tra đăng nhập dùng context
+  const isLoggedIn = () => {
+    return user !== null;
+  };
 
   const handleSelectAnswer = (questionId, answerId) => {
     setSelectedAnswers((prev) => ({
@@ -89,6 +96,27 @@ const QuizPage = () => {
     }
   };
 
+  const handleViewRoutine = () => {
+    if (isLoggedIn()) {
+      // Truyền user id từ context
+      navigate("/RoutineBuilderPage", { state: { userId: user.userId } });
+    } else {
+      // Hiển thị popup xác nhận đăng nhập
+      setShowConfirmLoginPopup(true);
+    }
+  };
+
+  const handleConfirmLogin = () => {
+    // Chuyển hướng đến trang đăng nhập
+    navigate("/login");
+    setShowConfirmLoginPopup(false); // Đóng popup
+  };
+
+  const handleCancelLogin = () => {
+    // Đóng popup
+    setShowConfirmLoginPopup(false);
+  };
+
   return (
     <>
       <Navbar />
@@ -123,7 +151,7 @@ const QuizPage = () => {
                 </button>
                 <button
                   className="bg-blue-400 text-white py-3 px-8 rounded-xl font-semibold shadow-md hover:bg-blue-500 transition-all w-full sm:w-auto"
-                  onClick={() => navigate("/routine-builder")}
+                  onClick={handleViewRoutine}
                 >
                   📍 Xem lộ trình
                 </button>
@@ -131,7 +159,6 @@ const QuizPage = () => {
             </div>
           ) : questions.length > 0 ? (
             <div>
-              {/* Progress indicators */}
               <div className="flex justify-center items-center my-4 space-x-2 flex-wrap gap-y-2">
                 {questions.map((_, index) => (
                   <div
@@ -146,8 +173,6 @@ const QuizPage = () => {
                   </div>
                 ))}
               </div>
-              
-              {/* Question display */}
               <h2 className="text-2xl sm:text-xl font-semibold text-blue-600 px-2">
                 {questions[currentQuestionIndex].question}
               </h2>
@@ -176,20 +201,19 @@ const QuizPage = () => {
                   </label>
                 ))}
               </div>
-
-              {/* Navigation buttons */}
               <div className="mt-6 flex justify-between items-center w-full flex-col sm:flex-row gap-4">
                 <div className="w-full sm:w-auto order-2 sm:order-1">
                   {currentQuestionIndex > 0 && (
                     <button
                       className="bg-gradient-to-r from-gray-400 to-gray-600 text-white py-3 px-6 rounded-xl font-semibold shadow-md hover:from-gray-500 hover:to-gray-700 transition-all w-full sm:w-auto"
-                      onClick={() => setCurrentQuestionIndex((prev) => prev - 1)}
+                      onClick={() =>
+                        setCurrentQuestionIndex((prev) => prev - 1)
+                      }
                     >
                       ⬅️ Quay lại
                     </button>
                   )}
                 </div>
-
                 <button
                   className={`py-3 px-8 rounded-xl font-semibold shadow-xl transition-all w-full sm:w-auto order-1 sm:order-2 ${
                     currentQuestionIndex < questions.length - 1
@@ -214,6 +238,32 @@ const QuizPage = () => {
             </div>
           ) : (
             <p>Không có câu hỏi nào!</p>
+          )}
+
+          {/* Popup xác nhận đăng nhập */}
+          {showConfirmLoginPopup && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+              <div className="bg-white p-6 rounded-lg w-96 text-center">
+                <h2 className="text-xl font-bold">Bạn có muốn đăng nhập?</h2>
+                <p className="mt-4">
+                  Bạn cần đăng nhập để xem lộ trình chăm sóc da.
+                </p>
+                <div className="mt-6 flex justify-center gap-4">
+                  <button
+                    className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors"
+                    onClick={handleConfirmLogin}
+                  >
+                    Có, đăng nhập
+                  </button>
+                  <button
+                    className="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition-colors"
+                    onClick={handleCancelLogin}
+                  >
+                    Không, cảm ơn
+                  </button>
+                </div>
+              </div>
+            </div>
           )}
         </div>
       </div>

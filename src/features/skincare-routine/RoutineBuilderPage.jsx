@@ -1,94 +1,227 @@
-import { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useAuth } from "../../context/AuthContext";
+import { useNavigate, useLocation } from "react-router-dom";
+import GetCarePlanAPI from "../services/getcareplan";
 import Navbar from "../../components/Navbar/Navbar";
 import Footer from "../../components/Footer/Footer";
-
-const routineSteps = [
-  {
-    step: "Tẩy trang",
-    product: { name: "Dầu tẩy trang DHC", image: "/images/dhc.jpg" },
-  },
-  {
-    step: "Sữa rửa mặt",
-    product: { name: "Sữa rửa mặt CeraVe", image: "/images/cerave.jpg" },
-  },
-  {
-    step: "Toner",
-    product: { name: "Toner Klairs", image: "/images/klairs.jpg" },
-  },
-  {
-    step: "Serum",
-    product: { name: "Serum Vitamin C", image: "/images/vitaminC.jpg" },
-  },
-  {
-    step: "Kem trị mụn",
-    product: {
-      name: "Kem trị mụn La Roche-Posay",
-      image: "/images/laroche.jpg",
-    },
-  },
-  {
-    step: "Kem chống nắng",
-    product: { name: "Kem chống nắng Anessa", image: "/images/anessa.jpg" },
-  },
-];
+import { formatCurrency } from "../../utils/formatCurrency";
 
 const RoutineBuilderPage = () => {
-  const [routineName, setRoutineName] = useState("");
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const [carePlan, setCarePlan] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [showLoginPopup, setShowLoginPopup] = useState(false);
 
-  const handleSaveRoutine = () => {
-    if (!routineName) {
-      alert("Vui lòng nhập tên lộ trình.");
+  useEffect(() => {
+    const fetchCarePlan = async () => {
+      if (user) {
+        const userId = user?.userId || location.state?.userId;
+        if (!userId) {
+          setError("Không tìm thấy userId. Vui lòng đăng nhập lại.");
+          setLoading(false);
+          return;
+        }
+
+        try {
+          const response = await GetCarePlanAPI.getCarePlanById(userId);
+          setCarePlan(response.data);
+          setError(null);
+        } catch (err) {
+          console.error("Error fetching care plan:", err);
+          setError("Không thể tải lộ trình. Vui lòng thử lại sau.");
+        } finally {
+          setLoading(false);
+        }
+      } else {
+        setShowLoginPopup(true);
+        setLoading(false);
+      }
+    };
+
+    fetchCarePlan();
+  }, [user, location.state]);
+
+  const handleLoginRedirect = () => {
+    navigate("/login");
+  };
+
+  const handleProductClick = (productId) => {
+    navigate(`/product/${productId}`, { state: { from: location } });
+  };
+
+  const saveCarePlan = async () => {
+    if (!user) {
+      setShowLoginPopup(true);
       return;
     }
 
-    const newRoutine = { name: routineName, steps: routineSteps };
-    console.log("Saved Routine:", newRoutine);
-    alert("Routine đã được lưu thành công!");
+    try {
+      const response = await GetCarePlanAPI.saveUserCarePlan(
+        user.userId,
+        carePlan.carePlanId,
+        carePlan.skinTypeId
+      );
+      if (response.status === 200) {
+        alert("Lộ trình đã được lưu thành công!");
+      } else {
+        alert("Không thể lưu lộ trình. Vui lòng thử lại sau.");
+      }
+    } catch (err) {
+      console.error("Error saving care plan:", err);
+      alert("Không thể lưu lộ trình. Vui lòng thử lại sau.");
+    }
   };
+
+  if (loading) {
+    return (
+      <>
+        <Navbar />
+        <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6">
+          <div className="bg-white shadow-xl p-10 sm:p-6 rounded-2xl w-full max-w-2xl text-center">
+            <p className="text-xl text-gray-600 animate-pulse">
+              Đang tải lộ trình...
+            </p>
+          </div>
+        </div>
+        <Footer />
+      </>
+    );
+  }
+
+  if (error) {
+    return (
+      <>
+        <Navbar />
+        <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6">
+          <div className="bg-white shadow-xl p-10 sm:p-6 rounded-2xl w-full max-w-2xl text-center">
+            <p className="text-xl text-red-500">{error}</p>
+          </div>
+        </div>
+        <Footer />
+      </>
+    );
+  }
+
+  if (showLoginPopup) {
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+        <div className="bg-white p-6 rounded-lg w-96 text-center">
+          <h2 className="text-xl font-bold">Vui lòng đăng nhập</h2>
+          <p className="mt-4">Bạn cần đăng nhập để xem lộ trình chăm sóc da.</p>
+          <div className="mt-6 flex justify-center gap-4">
+            <button
+              className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors"
+              onClick={handleLoginRedirect}
+            >
+              Đăng nhập
+            </button>
+            <button
+              className="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition-colors"
+              onClick={() => navigate("/quizz")}
+            >
+              Quay lại
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!carePlan) {
+    return (
+      <>
+        <Navbar />
+        <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6">
+          <div className="bg-white shadow-xl p-10 sm:p-6 rounded-2xl w-full max-w-2xl text-center">
+            <p className="text-xl text-gray-600">Không có lộ trình nào!</p>
+          </div>
+        </div>
+        <Footer />
+      </>
+    );
+  }
 
   return (
     <>
       <Navbar />
-      <div className="min-h-screen bg-gray-50 p-6 flex flex-col items-center">
-        <h1 className="text-4xl md:text-3xl sm:text-2xl font-bold text-[#6BBCFE] animate-pulse text-center px-4">
-          ✨ Lộ trình chăm sóc da của bạn ✨
-        </h1>
+      <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-6">
+        <div className="bg-white shadow-xl p-10 sm:p-6 rounded-2xl w-full max-w-4xl">
+          <div className="text-center mb-8">
+            <h2 className="text-5xl md:text-4xl sm:text-3xl font-bold text-[#6BBCFE] animate-pulse text-center mb-6 px-4">
+              {carePlan.planName}
+            </h2>
+            <p className="text-xl sm:text-lg text-gray-600">
+              {carePlan.description}
+            </p>
+          </div>
 
-        <input
-          type="text"
-          placeholder="Nhập tên lộ trình"
-          className="border p-3 mt-4 w-full md:w-3/4 max-w-lg rounded-lg shadow-lg focus:outline-none focus:ring-4 focus:ring-blue-400 transition"
-          value={routineName}
-          onChange={(e) => setRoutineName(e.target.value)}
-        />
-        <div className="flex flex-col mt-6 w-full md:w-3/4">
-          {routineSteps.map((item, index) => (
-            <div key={index} className="flex items-center mb-4 px-2">
-              <div className="flex items-center justify-center text-blue-600 font-bold text-lg mr-2 md:mr-4 border border-blue-600 rounded-full h-8 w-8 md:h-10 md:w-10 flex-shrink-0">
-                {index + 1}
+          <div className="space-y-6">
+            {carePlan.steps.map((step) => (
+              <div
+                key={step.stepOrder}
+                className="bg-gray-50 p-6 rounded-xl shadow-md hover:shadow-lg transition-shadow"
+              >
+                <div className="flex items-start mb-4">
+                  <div className="w-8 h-8 flex items-center justify-center bg-blue-500 text-white rounded-full mr-4">
+                    {step.stepOrder}
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="text-2xl sm:text-xl font-semibold text-blue-800 mb-2">
+                      {step.stepName}
+                    </h3>
+                    <ul className="space-y-3">
+                      {step.products.map((product) => (
+                        <li
+                          key={product.productId}
+                          className="flex items-center bg-white p-4 rounded-lg shadow-md hover:shadow-lg transition-shadow cursor-pointer"
+                          onClick={() => handleProductClick(product.productId)}
+                        >
+                          <img
+                            src={product.productImage}
+                            alt={product.productName}
+                            className="w-16 h-16 rounded-full mr-4"
+                          />
+                          <div className="flex-1">
+                            <span className="text-lg sm:text-xl text-gray-800">
+                              {product.productName}
+                            </span>
+                            <p className="text-md text-gray-600">
+                              {formatCurrency(product.price)}
+                            </p>
+                          </div>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
               </div>
-              <div className="flex-grow flex items-center flex-wrap sm:flex-nowrap border rounded-lg p-2 md:p-4 shadow-lg shadow-blue-300 bg-white transition transform hover:scale-105 hover:bg-gray-100">
-                <span className="text-blue-600 font-bold text-base md:text-lg mr-2 md:mr-4 w-full sm:w-auto mb-2 sm:mb-0">
-                  {item.step}:
-                </span>
-                <img
-                  src={item.product.image}
-                  alt={item.product.name}
-                  className="h-16 w-16 md:h-20 md:w-20 object-cover rounded-md"
-                />
-                <h3 className="text-base md:text-lg font-semibold text-gray-700 ml-2 md:ml-4 w-full sm:w-auto mt-2 sm:mt-0">
-                  {item.product.name}
-                </h3>
-              </div>
-            </div>
-          ))}
+            ))}
+          </div>
+
+          <div className="mt-8 flex justify-center gap-4">
+            <button
+              className="bg-gradient-to-r from-blue-400 to-blue-600 text-white py-3 px-8 rounded-xl font-semibold shadow-md hover:from-blue-500 hover:to-blue-700 transition-all"
+              onClick={() => navigate("/quizz")}
+            >
+              🔄 Làm lại bài kiểm tra
+            </button>
+            <button
+              className="bg-gradient-to-r from-green-400 to-green-600 text-white py-3 px-8 rounded-xl font-semibold shadow-md hover:from-green-500 hover:to-green-700 transition-all"
+              onClick={() => navigate("/")}
+            >
+              🏠 Về trang chủ
+            </button>
+            <button
+              className="bg-gradient-to-r from-yellow-400 to-yellow-600 text-white py-3 px-8 rounded-xl font-semibold shadow-md hover:from-yellow-500 hover:to-yellow-700 transition-all"
+              onClick={saveCarePlan}
+            >
+              💾 Lưu lộ trình
+            </button>
+          </div>
         </div>
-        <button
-          className="bg-gradient-to-r from-[#6BBCFE] to-blue-500 text-white px-4 md:px-6 py-2 md:py-3 mt-6 rounded-lg font-semibold hover:from-blue-600 hover:to-blue-800 transition shadow-lg hover:shadow-xl text-sm md:text-base"
-          onClick={handleSaveRoutine}
-        >
-          💾 Lưu Routine
-        </button>
       </div>
       <Footer />
     </>
