@@ -1,6 +1,6 @@
 import axiosInstance from "../../config/axios/axiosInstance";
 
-const endPoint = "/TestSkinType/SubmitQuiz";
+const endPoint = "/TestSkinType/submit-quiz";
 
 const resultAPI = {
   createQuiz: async (payload) => {
