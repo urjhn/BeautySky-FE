@@ -7,23 +7,65 @@ const productAPI = {
     const response = await axiosInstance.get(endPoint);
     return response;
   },
-  createProduct: async (payload) => {
-    const response = await axiosInstance.post(endPoint, payload);
-    if (response.status >= 200 && response.status < 300) {
-      return response;
-    }
+  
+  getById: async (id) => {
+    const response = await axiosInstance.get(`${endPoint}/${id}`);
     return response;
   },
-  editProduct: async (id, payload) => {
-    return await axiosInstance.put(`${endPoint}/${id}`, payload);
+  
+  createProduct: async (formData) => {
+    try {
+      const response = await axiosInstance.post(
+        `${endPoint}`,
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data"
+          }
+        }
+      );
+      return response;
+    } catch (error) {
+      console.error("Error creating product:", error.response?.data || error.message);
+      throw error;
+    }
   },
+  
+  editProduct: async (id, formData) => {
+    try {
+      const response = await axiosInstance.put(
+        `${endPoint}/${id}`,
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data"
+          }
+        }
+      );
+      return response;
+    } catch (error) {
+      console.error("Error updating product:", error.response?.data || error.message);
+      throw error;
+    }
+  },
+  
+  deleteProduct: async (id) => {
+    try {
+      const response = await axiosInstance.delete(`${endPoint}/${id}`);
+      return response;
+    } catch (error) {
+      console.error("Error deleting product:", error.response?.data || error.message);
+      throw error;
+    }
+  },
+  
   searchProduct: async (keyword) => {
     const response = await axiosInstance.get(`${endPoint}?name=${keyword}`);
     return response.data;
-  },
-  deleteProduct: async (id) => {
-    return await axiosInstance.delete(`${endPoint}/${id}`);
-  },
+  }
+  
+  // Removing the separate uploadImage function since it's not needed
+  // Images are uploaded as part of product creation/update
 };
 
 export default productAPI;
