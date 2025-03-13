@@ -38,6 +38,8 @@ import GoogleCallback from './components/Google/GoogleCallback';
 
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
+import QuizController from "./pages/DashBoard/pages/QuizController.jsx";
+import RoutineController from "./pages/DashBoard/pages/RoutineController.jsx";
 
 // Main Application
 const App = () => (
@@ -90,6 +92,8 @@ const App = () => (
       <Route path="products" element={<Products />} />
       <Route path="reports" element={<Report />} />
       <Route path="events" element={<Events />} />
+      <Route path="quizzes" element={<QuizController/>} />
+      <Route path="routines" element={<RoutineController/>} />
       <Route path="settings" element={<Setting />} />
       <Route path="profileadmin" element={<ProfileAdmin />} />
     </Route>
