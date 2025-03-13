@@ -5,6 +5,7 @@ import {
   FaCreditCard,
   FaShieldAlt,
   FaBell,
+  FaSpa,
 } from "react-icons/fa";
 import { NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "../../../../context/AuthContext";
@@ -97,9 +98,9 @@ const Sidebar = () => {
               to="/profilelayout/historyorder"
             />
             <NavItem
-              icon={<FaCreditCard />}
-              title="Quản lý thanh toán"
-              to="/profilelayout/payment"
+              icon={<FaSpa />}
+              title="Lộ trình của bạn"
+              to="/profilelayout/my-routines"
             />
             <NavItem
               icon={<FaShieldAlt />}

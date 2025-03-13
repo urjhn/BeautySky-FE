@@ -35,6 +35,7 @@ import Notifications from "./pages/Profile/pages/Notifications.jsx";
 import Unauthorized from "./pages/Unauthorized/unauthorized.jsx";
 import UpdateProfile from './components/Google/UpdateProfile';
 import GoogleCallback from './components/Google/GoogleCallback';
+import UserRoutinePage from "./pages/Profile/pages/UserRoutinePage.jsx";
 
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
@@ -99,6 +100,7 @@ const App = () => (
       <Route path="historyorder" element={<HistoryOrder />} />
       <Route path="security" element={<Security />} />
       <Route path="notifications" element={<Notifications />} />
+      <Route path="my-routines" element={<UserRoutinePage />} />
     </Route>
   </Routes>
 );
