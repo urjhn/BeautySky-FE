@@ -91,19 +91,6 @@ const ProductDetail = () => {
     );
   }
 
- 
-const ProductDetail = () => {
-  const auth = useUsersContext(AuthContext);
-  
-  const handleReviewSubmit = async () => {
-    // Sử dụng auth ở đây
-    console.log("Auth từ context:", auth);
-    // ...
-  }
-  
-  // ...
-}
-
   const handleQuantityChange = (value) => {
     setQuantity(Math.max(1, value)); // Đảm bảo số lượng không nhỏ hơn 1
   };
@@ -160,68 +147,13 @@ const ProductDetail = () => {
     }
   };
 
-
-
   const handleReviewSubmit = async () => {
     if (isSubmitting) return;
     setIsSubmitting(true);
 
     try {
-      // In ra tất cả các key trong localStorage để debug
-      console.log("Tất cả các keys trong localStorage:", Object.keys(localStorage));
-      console.log("Tất cả các keys trong sessionStorage:", Object.keys(sessionStorage));
-      
-      // Kiểm tra thử token hoặc các key khác
-      const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-      console.log("Token hiện tại:", token);
-      
-      // Lấy thông tin người dùng từ AuthContext
-      const auth = useUsersContext(AuthContext); // Đảm bảo import AuthContext
-      console.log("Auth từ context:", auth);
-      
-      // Lấy thông tin từ tất cả các nguồn có thể
-      let user = currentUser;
-      
-      // Nếu không có currentUser, thử lấy từ auth context
-      if (!user && auth && auth.user) {
-        user = auth.user;
-        console.log("Đã lấy user từ AuthContext:", user);
-      }
-      
-      // Nếu vẫn không có, thử các key khác trong localStorage
-      if (!user) {
-        // Thử các key thông dụng
-        const possibleKeys = ['user', 'userData', 'currentUser', 'userInfo', 'authUser'];
-        for (const key of possibleKeys) {
-          const data = localStorage.getItem(key) || sessionStorage.getItem(key);
-          if (data && data !== 'undefined') {
-            try {
-              user = JSON.parse(data);
-              console.log(`Đã tìm thấy user trong key '${key}':`, user);
-              break;
-            } catch (error) {
-              console.log(`Không thể parse dữ liệu từ key '${key}':`, data);
-            }
-          }
-        }
-      }
-      
-      // Nếu đã có token nhưng không có thông tin user - gọi API lấy thông tin
-      if (!user && token) {
-        try {
-          // Giả sử bạn có API để lấy thông tin người dùng
-          // const userResponse = await authAPI.getUserInfo();
-          // user = userResponse.data;
-          // console.log("Đã lấy user từ API:", user);
-          
-          console.log("Có token nhưng không có thông tin user, cần gọi API lấy thông tin user");
-        } catch (error) {
-          console.error("Không thể lấy thông tin người dùng từ API:", error);
-        }
-      }
-
       // Kiểm tra user đã đăng nhập chưa
-      if (!user && !token) {
+      if (!currentUser) {
         Swal.fire({
           icon: "warning",
           title: "Cần đăng nhập",
@@ -237,28 +169,19 @@ const ProductDetail = () => {
         setIsSubmitting(false);
         return;
       }
+
+      // Tìm thông tin chi tiết của người dùng từ users context
+      const userDetail = users.find(user => user.email === currentUser.email);
       
-      // Nếu có token nhưng không có thông tin user, tạo một user giả định
-      if (!user && token) {
-        // Giải mã token JWT nếu có thể để lấy thông tin
-        try {
-          // Giả sử token là JWT
-          const base64Url = token.split('.')[1];
-          const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-          const payload = JSON.parse(window.atob(base64));
-          console.log("Payload từ token:", payload);
-          
-          user = {
-            userId: payload.userId || payload.sub || payload.id || 1,
-            email: payload.email || "user@example.com",
-            userName: payload.name || "Người dùng"
-          };
-          console.log("Đã tạo user từ token:", user);
-        } catch (error) {
-          console.error("Không thể giải mã token:", error);
-          // Tạo user mặc định
-          user = { userId: 1, userName: "Người dùng" };
-        }
+      if (!userDetail || !userDetail.userId) {
+        console.error("Không tìm thấy thông tin người dùng trong context:", currentUser, users);
+        Swal.fire({
+          icon: "error",
+          title: "Lỗi xác thực",
+          text: "Không thể xác định thông tin người dùng. Vui lòng đăng nhập lại.",
+        });
+        setIsSubmitting(false);
+        return;
       }
 
       // Validate dữ liệu đầu vào
@@ -285,12 +208,13 @@ const ProductDetail = () => {
       // Tạo object review theo cấu trúc API
       const reviewData = {
         productId: parseInt(product.productId),
-        userId: parseInt(user.userId || user.id || user.user_id || 1),
+        userId: parseInt(userDetail.userId),
         rating: newRating,
         comment: newComment,
         reviewDate: new Date().toISOString()
       };
 
+      console.log("Thông tin người dùng từ context:", userDetail);
       console.log("Đang gửi đánh giá:", reviewData);
 
       // Gọi API tạo review
@@ -298,12 +222,12 @@ const ProductDetail = () => {
       console.log("Phản hồi từ API:", response);
 
       // Xử lý response thành công
-      if (response && (response.status === 200 || response.status === 201)) {
+      if (response.status === 200) {
         // Tạo đối tượng review mới để thêm vào state
         const newReview = {
           ...reviewData,
-          reviewId: response.data?.reviewId || Date.now(),
-          userName: user.fullName || user.userName || user.email || "Người dùng",
+          reviewId: Date.now(), // Tạm thời dùng timestamp làm ID vì API không trả về ID
+          userName: userDetail.fullName || userDetail.userName || currentUser.email || "Người dùng",
         };
         
         // Cập nhật state reviews
@@ -322,8 +246,6 @@ const ProductDetail = () => {
         
         // Cập nhật lại danh sách đánh giá
         fetchReviews();
-      } else {
-        throw new Error("Phản hồi từ API không thành công");
       }
     } catch (error) {
       console.error("Lỗi khi gửi đánh giá:", error);
@@ -335,9 +257,7 @@ const ProductDetail = () => {
     } finally {
       setIsSubmitting(false);
     }
-};
-
-
+  };
 
   const images = product.productsImages?.map((img) => img.imageUrl) || [
     product.image,

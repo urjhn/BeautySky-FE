@@ -50,10 +50,7 @@ const RoutineController = () => {
         )
       );
     } else {
-      setRoutines([
-        ...routines,
-        { ...formData, id: routines.length + 1 },
-      ]);
+      setRoutines([ ...routines, { ...formData, id: routines.length + 1 } ]);
     }
     setIsModalOpen(false);
     setFormData({ name: "", steps: [] });
@@ -63,21 +60,21 @@ const RoutineController = () => {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 p-6">
       <header className="text-center mb-10">
         <div className="flex items-center justify-center gap-3 mb-4">
-          <BiSpa className="text-4xl text-blue-600" />
-          <h1 className="text-3xl font-bold text-gray-800">
+          <BiSpa className="text-5xl text-blue-600" />
+          <h1 className="text-3xl font-semibold text-gray-800">
             Quản Lý Chế Độ Chăm Sóc Da
           </h1>
         </div>
       </header>
 
-      <div className="max-w-6xl mx-auto bg-white rounded-xl shadow-lg p-6">
+      <div className="max-w-6xl mx-auto bg-white rounded-xl shadow-xl p-6">
         <div className="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
           <div className="relative flex-1 w-full">
             <FiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
             <input
               type="text"
               placeholder="Tìm kiếm routine..."
-              className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
@@ -91,18 +88,12 @@ const RoutineController = () => {
         </div>
 
         <div className="overflow-x-auto">
-          <table className="w-full">
+          <table className="w-full table-auto border-separate border-spacing-0">
             <thead>
-              <tr className="bg-gray-50">
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Tên Routine
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Các Bước Chính
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Hành Động
-                </th>
+              <tr className="bg-blue-600 text-white">
+                <th className="px-6 py-3 text-left text-sm font-medium">Tên Routine</th>
+                <th className="px-6 py-3 text-left text-sm font-medium">Các Bước Chính</th>
+                <th className="px-6 py-3 text-left text-sm font-medium">Hành Động</th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
@@ -128,17 +119,17 @@ const RoutineController = () => {
                           setFormData(routine);
                           setIsModalOpen(true);
                         }}
-                        className="text-blue-600 hover:text-blue-800"
+                        className="text-blue-600 hover:text-blue-800 transition-all"
                       >
                         <FiEdit2 />
                       </button>
                       <button
                         onClick={() => handleDelete(routine.id)}
-                        className="text-red-600 hover:text-red-800"
+                        className="text-red-600 hover:text-red-800 transition-all"
                       >
                         <FiTrash2 />
                       </button>
-                      <button className="text-gray-600 hover:text-gray-800">
+                      <button className="text-gray-600 hover:text-gray-800 transition-all">
                         <BsShare />
                       </button>
                     </div>
@@ -163,7 +154,7 @@ const RoutineController = () => {
               <button
                 key={i}
                 onClick={() => setCurrentPage(i + 1)}
-                className={`px-3 py-1 rounded ${currentPage === i + 1
+                className={`px-3 py-1 rounded-md text-sm font-semibold transition-all ${currentPage === i + 1
                   ? "bg-blue-600 text-white"
                   : "bg-gray-200 text-gray-700 hover:bg-gray-300"
                   }`}
@@ -178,7 +169,7 @@ const RoutineController = () => {
       {isModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-xl p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <h2 className="text-2xl font-bold mb-6">
+            <h2 className="text-2xl font-bold mb-6 text-center text-gray-800">
               {formData.id ? "Chỉnh Sửa" : "Thêm"} Routine
             </h2>
             <form onSubmit={handleSubmit} className="space-y-6">
@@ -193,7 +184,7 @@ const RoutineController = () => {
                   onChange={(e) =>
                     setFormData({ ...formData, name: e.target.value })
                   }
-                  className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
                 />
               </div>
 
