@@ -10,6 +10,7 @@ import {
   FaBlog,
   FaCalendarAlt,
   FaBars,
+  FaQuestion,
 } from "react-icons/fa";
 import { NavLink } from "react-router-dom";
 import { useState } from "react";
@@ -26,9 +27,9 @@ const Sidebar = () => {
         <FaBars size={24} />
       </button>
 
-      <aside 
+      <aside
         className={`fixed lg:relative w-64 bg-gray-900 p-5 flex flex-col space-y-6 h-screen shadow-lg transition-all duration-300
-          ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'} z-10`}
+          ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'} z-10 overflow-y-auto`}
       >
         {/* Header */}
         <h2 className="text-2xl font-bold text-center text-white lg:block md:hidden sm:hidden">Admin Panel</h2>
@@ -36,53 +37,18 @@ const Sidebar = () => {
         {/* Navigation */}
         <nav>
           <ul className="space-y-2">
-            <NavItem
-              icon={<FaUsers />}
-              title="Khách hàng"
-              to="/dashboardlayout"
-            />
-            <NavItem
-              icon={<FaChartBar />}
-              title="Doanh thu"
-              to="/dashboardlayout/dashboard"
-            />
+            <NavItem icon={<FaUsers />} title="Khách hàng" to="/dashboardlayout" />
+            <NavItem icon={<FaChartBar />} title="Doanh thu" to="/dashboardlayout/dashboard" />
             <NavItem icon={<FaHome />} title="Cửa hàng" to="/" />
-
-            <NavItem
-              icon={<FaShoppingCart />}
-              title="Orders"
-              to="/dashboardlayout/orders"
-            />
-            <NavItem
-              icon={<FaBox />}
-              title="Sản phẩm"
-              to="/dashboardlayout/products"
-            />
-            <NavItem
-              icon={<FaBlog />}
-              title="Blogs"
-              to="/dashboardlayout/blogs"
-            />
-            <NavItem
-              icon={<FaTags />}
-              title="Khuyến mãi"
-              to="/dashboardlayout/promotions"
-            />
-            <NavItem
-              icon={<FaFileAlt />}
-              title="Báo cáo"
-              to="/dashboardlayout/reports"
-            />
-            <NavItem
-              icon={<FaCalendarAlt />}
-              title="Sự kiện"
-              to="/dashboardlayout/events"
-            />
-            <NavItem
-              icon={<FaCog />}
-              title="Cài đặt"
-              to="/dashboardlayout/settings"
-            />
+            <NavItem icon={<FaShoppingCart />} title="Orders" to="/dashboardlayout/orders" />
+            <NavItem icon={<FaBox />} title="Sản phẩm" to="/dashboardlayout/products" />
+            <NavItem icon={<FaBlog />} title="Blogs" to="/dashboardlayout/blogs" />
+            <NavItem icon={<FaTags />} title="Khuyến mãi" to="/dashboardlayout/promotions" />
+            <NavItem icon={<FaFileAlt />} title="Báo cáo" to="/dashboardlayout/reports" />
+            <NavItem icon={<FaCalendarAlt />} title="Routine" to="/dashboardlayout/routines" />
+            <NavItem icon={<FaQuestion />} title="Bộ câu hỏi" to="/dashboardlayout/quizzes" />
+            <NavItem icon={<FaCalendarAlt />} title="Sự kiện" to="/dashboardlayout/events" />
+            <NavItem icon={<FaCog />} title="Cài đặt" to="/dashboardlayout/settings" />
           </ul>
         </nav>
       </aside>
