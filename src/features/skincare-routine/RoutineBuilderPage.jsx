@@ -5,6 +5,7 @@ import GetCarePlanAPI from "../services/getcareplan";
 import Navbar from "../../components/Navbar/Navbar";
 import Footer from "../../components/Footer/Footer";
 import { formatCurrency } from "../../utils/formatCurrency";
+import Swal from "sweetalert2";
 
 const RoutineBuilderPage = () => {
   const { user } = useAuth();
@@ -36,16 +37,19 @@ const RoutineBuilderPage = () => {
           setLoading(false);
         }
       } else {
-        setShowLoginPopup(true);
+        const isFromQuizz = location.pathname === "/quizz" || location.state?.from?.pathname === "/quizz";
+        if (!isFromQuizz) {
+          setShowLoginPopup(true);
+        }
         setLoading(false);
       }
     };
 
     fetchCarePlan();
-  }, [user, location.state]);
+  }, [user, location.state, location.pathname]);
 
   const handleLoginRedirect = () => {
-    navigate("/login");
+    navigate("/login", { state: { returnUrl: location.pathname } });
   };
 
   const handleProductClick = (productId) => {
@@ -59,19 +63,34 @@ const RoutineBuilderPage = () => {
     }
 
     try {
-      const response = await GetCarePlanAPI.saveUserCarePlan(
-        user.userId,
-        carePlan.carePlanId,
-        carePlan.skinTypeId
-      );
+      const response = await GetCarePlanAPI.saveUserCarePlan(user.userId);
+
       if (response.status === 200) {
-        alert("Lộ trình đã được lưu thành công!");
+        Swal.fire({
+          title: "Thành công!",
+          text: "Lộ trình đã được lưu thành công!",
+          icon: "success",
+          confirmButtonText: "Đóng",
+          confirmButtonColor: "#3085d6"
+        });
       } else {
-        alert("Không thể lưu lộ trình. Vui lòng thử lại sau.");
+        Swal.fire({
+          title: "Lỗi!",
+          text: "Không thể lưu lộ trình. Vui lòng thử lại sau.",
+          icon: "error",
+          confirmButtonText: "Đóng",
+          confirmButtonColor: "#d33"
+        });
       }
     } catch (err) {
       console.error("Error saving care plan:", err);
-      alert("Không thể lưu lộ trình. Vui lòng thử lại sau.");
+      Swal.fire({
+        title: "Lỗi!",
+        text: "Không thể lưu lộ trình. Vui lòng thử lại sau.",
+        icon: "error",
+        confirmButtonText: "Đóng",
+        confirmButtonColor: "#d33"
+      });
     }
   };
 
@@ -107,26 +126,30 @@ const RoutineBuilderPage = () => {
 
   if (showLoginPopup) {
     return (
-      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-        <div className="bg-white p-6 rounded-lg w-96 text-center">
-          <h2 className="text-xl font-bold">Vui lòng đăng nhập</h2>
-          <p className="mt-4">Bạn cần đăng nhập để xem lộ trình chăm sóc da.</p>
-          <div className="mt-6 flex justify-center gap-4">
-            <button
-              className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors"
-              onClick={handleLoginRedirect}
-            >
-              Đăng nhập
-            </button>
-            <button
-              className="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition-colors"
-              onClick={() => navigate("/quizz")}
-            >
-              Quay lại
-            </button>
+      <>
+        <Navbar />
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg w-96 text-center">
+            <h2 className="text-xl font-bold">Vui lòng đăng nhập</h2>
+            <p className="mt-4">Bạn cần đăng nhập để xem lộ trình chăm sóc da.</p>
+            <div className="mt-6 flex justify-center gap-4">
+              <button
+                className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors"
+                onClick={handleLoginRedirect}
+              >
+                Đăng nhập
+              </button>
+              <button
+                className="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition-colors"
+                onClick={() => navigate("/quizz")}
+              >
+                Quay lại
+              </button>
+            </div>
           </div>
         </div>
-      </div>
+        <Footer />
+      </>
     );
   }
 

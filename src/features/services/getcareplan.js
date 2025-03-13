@@ -25,13 +25,9 @@ const GetCarePlanAPI = {
     }
   },
 
-  saveUserCarePlan: async (userId, carePlanId, skinTypeId) => {
+  saveUserCarePlan: async (userId) => {
     try {
-      const response = await axiosInstance.post(`${endPoint}/SaveUserCarePlan`, {
-        userId,
-        carePlanId,
-        skinTypeId,
-      });
+      const response = await axiosInstance.post(`${endPoint}/SaveUserCarePlan`, { userId } );
       return response;
     } catch (error) {
       console.error("Error saving user care plan:", error);
