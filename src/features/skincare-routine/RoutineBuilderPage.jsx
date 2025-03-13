@@ -5,6 +5,7 @@ import GetCarePlanAPI from "../services/getcareplan";
 import Navbar from "../../components/Navbar/Navbar";
 import Footer from "../../components/Footer/Footer";
 import { formatCurrency } from "../../utils/formatCurrency";
+import Swal from "sweetalert2";
 
 const RoutineBuilderPage = () => {
   const { user } = useAuth();
@@ -59,19 +60,34 @@ const RoutineBuilderPage = () => {
     }
 
     try {
-      const response = await GetCarePlanAPI.saveUserCarePlan(
-        user.userId,
-        carePlan.carePlanId,
-        carePlan.skinTypeId
-      );
+      const response = await GetCarePlanAPI.saveUserCarePlan(user.userId);
+
       if (response.status === 200) {
-        alert("Lộ trình đã được lưu thành công!");
+        Swal.fire({
+          title: "Thành công!",
+          text: "Lộ trình đã được lưu thành công!",
+          icon: "success",
+          confirmButtonText: "Đóng",
+          confirmButtonColor: "#3085d6"
+        });
       } else {
-        alert("Không thể lưu lộ trình. Vui lòng thử lại sau.");
+        Swal.fire({
+          title: "Lỗi!",
+          text: "Không thể lưu lộ trình. Vui lòng thử lại sau.",
+          icon: "error",
+          confirmButtonText: "Đóng",
+          confirmButtonColor: "#d33"
+        });
       }
     } catch (err) {
       console.error("Error saving care plan:", err);
-      alert("Không thể lưu lộ trình. Vui lòng thử lại sau.");
+      Swal.fire({
+        title: "Lỗi!",
+        text: "Không thể lưu lộ trình. Vui lòng thử lại sau.",
+        icon: "error",
+        confirmButtonText: "Đóng",
+        confirmButtonColor: "#d33"
+      });
     }
   };
 

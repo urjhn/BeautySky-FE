@@ -10,6 +10,7 @@ import Footer from "../../components/Footer/Footer";
 import Testimonials from "./Testimonials";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom"; // Import Link từ react-router-dom
+import ChatBox from "./ChatBox"; 
 
 const SkincareQuizPopup = ({ onClose }) => {
   return (
@@ -97,6 +98,7 @@ const Homepage = () => {
       <Banner />
       <Testimonials />
       <Footer />
+      <ChatBox />
     </div>
   );
 };
