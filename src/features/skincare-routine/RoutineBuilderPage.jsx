@@ -63,7 +63,22 @@ const RoutineBuilderPage = () => {
     }
 
     try {
-      const response = await GetCarePlanAPI.saveUserCarePlan(user.userId);
+      const productsToSave = carePlan.steps.flatMap(step => 
+        step.products.map(product => ({
+          productId: product.productId,
+          productName: product.productName,
+          stepId: step.stepOrder,
+          productImage: product.productImage,
+          productPrice: product.productPrice || product.price
+        }))
+      );
+
+      const saveData = {
+        userId: user.userId,
+        products: productsToSave
+      };
+
+      const response = await GetCarePlanAPI.saveUserCarePlan(saveData);
 
       if (response.status === 200) {
         Swal.fire({
@@ -71,25 +86,30 @@ const RoutineBuilderPage = () => {
           text: "Lộ trình đã được lưu thành công!",
           icon: "success",
           confirmButtonText: "Đóng",
-          confirmButtonColor: "#3085d6"
+          confirmButtonColor: "#3085d6",
         });
+
+        const updatedResponse = await GetCarePlanAPI.getUserCarePlan(user.userId);
+        if (updatedResponse.data) {
+          setCarePlan(updatedResponse.data);
+        }
       } else {
         Swal.fire({
           title: "Lỗi!",
           text: "Không thể lưu lộ trình. Vui lòng thử lại sau.",
           icon: "error",
           confirmButtonText: "Đóng",
-          confirmButtonColor: "#d33"
+          confirmButtonColor: "#d33",
         });
       }
     } catch (err) {
       console.error("Error saving care plan:", err);
       Swal.fire({
         title: "Lỗi!",
-        text: "Không thể lưu lộ trình. Vui lòng thử lại sau.",
+        text: err.response?.data || "Không thể lưu lộ trình. Vui lòng thử lại sau.",
         icon: "error",
         confirmButtonText: "Đóng",
-        confirmButtonColor: "#d33"
+        confirmButtonColor: "#d33",
       });
     }
   };
@@ -172,57 +192,65 @@ const RoutineBuilderPage = () => {
       <Navbar />
       <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-6">
         <div className="bg-white shadow-xl p-10 sm:p-6 rounded-2xl w-full max-w-4xl">
-          <div className="text-center mb-8">
-            <h2 className="text-5xl md:text-4xl sm:text-3xl font-bold text-[#6BBCFE] animate-pulse text-center mb-6 px-4">
-              {carePlan.planName}
-            </h2>
-            <p className="text-xl sm:text-lg text-gray-600">
-              {carePlan.description}
-            </p>
-          </div>
-
-          <div className="space-y-6">
-            {carePlan.steps.map((step) => (
-              <div
-                key={step.stepOrder}
-                className="bg-gray-50 p-6 rounded-xl shadow-md hover:shadow-lg transition-shadow"
-              >
-                <div className="flex items-start mb-4">
-                  <div className="w-8 h-8 flex items-center justify-center bg-blue-500 text-white rounded-full mr-4">
-                    {step.stepOrder}
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="text-2xl sm:text-xl font-semibold text-blue-800 mb-2">
-                      {step.stepName}
-                    </h3>
-                    <ul className="space-y-3">
-                      {step.products.map((product) => (
-                        <li
-                          key={product.productId}
-                          className="flex items-center bg-white p-4 rounded-lg shadow-md hover:shadow-lg transition-shadow cursor-pointer"
-                          onClick={() => handleProductClick(product.productId)}
-                        >
-                          <img
-                            src={product.productImage}
-                            alt={product.productName}
-                            className="w-16 h-16 rounded-full mr-4"
-                          />
-                          <div className="flex-1">
-                            <span className="text-lg sm:text-xl text-gray-800">
-                              {product.productName}
-                            </span>
-                            <p className="text-md text-gray-600">
-                              {formatCurrency(product.price)}
-                            </p>
-                          </div>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                </div>
+          {carePlan && (
+            <>
+              <div className="text-center mb-8">
+                <h2 className="text-5xl md:text-4xl sm:text-3xl font-bold text-[#6BBCFE] animate-pulse text-center mb-6 px-4">
+                  {carePlan.planName}
+                </h2>
+                <p className="text-xl sm:text-lg text-gray-600">
+                  {carePlan.description}
+                </p>
               </div>
-            ))}
-          </div>
+
+              <div className="space-y-6">
+                {carePlan.steps.map((step) => (
+                  <div
+                    key={step.stepOrder}
+                    className="bg-gray-50 p-6 rounded-xl shadow-md hover:shadow-lg transition-shadow"
+                  >
+                    <div className="flex items-start mb-4">
+                      <div className="w-8 h-8 flex items-center justify-center bg-blue-500 text-white rounded-full mr-4">
+                        {step.stepOrder}
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="text-2xl sm:text-xl font-semibold text-blue-800 mb-2">
+                          {step.stepName}
+                        </h3>
+                        <ul className="space-y-3">
+                          {step.products.map((product) => (
+                            <li
+                              key={product.productId}
+                              className="flex items-center bg-white p-4 rounded-lg shadow-md hover:shadow-lg transition-shadow cursor-pointer"
+                              onClick={() => handleProductClick(product.productId)}
+                            >
+                              <img
+                                src={product.productImage || '/default-product-image.jpg'}
+                                alt={product.productName}
+                                className="w-16 h-16 rounded-full mr-4 object-cover"
+                                onError={(e) => {
+                                  e.target.onerror = null;
+                                  e.target.src = '/default-product-image.jpg';
+                                }}
+                              />
+                              <div className="flex-1">
+                                <span className="text-lg sm:text-xl text-gray-800">
+                                  {product.productName}
+                                </span>
+                                <p className="text-md text-gray-600">
+                                  {formatCurrency(product.productPrice || product.price)}
+                                </p>
+                              </div>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
 
           <div className="mt-8 flex justify-center gap-4">
             <button

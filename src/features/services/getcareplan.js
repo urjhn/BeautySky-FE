@@ -2,14 +2,19 @@ import axiosInstance from "../../config/axios/axiosInstance";
 
 const endPoint = "/CarePlan";
 
-
 const GetCarePlanAPI = {
-
   getUserCarePlan: async (userId) => {
-    const response = await axiosInstance.get(`${endPoint}/GetUserCarePlan/${userId}`);
-    return response;
+    try {
+      const response = await axiosInstance.get(
+        `${endPoint}/GetUserCarePlan/${userId}`
+      );
+      return response;
+    } catch (error) {
+      console.error("Error fetching user care plan:", error);
+      throw error;
+    }
   },
-  
+
   getCarePlanById: async (userId) => {
     try {
       // Sửa phương thức từ GET sang POST và truyền params đúng cách
@@ -25,16 +30,18 @@ const GetCarePlanAPI = {
     }
   },
 
-  saveUserCarePlan: async (userId) => {
+  saveUserCarePlan: async (data) => {
     try {
-      const response = await axiosInstance.post(`${endPoint}/SaveUserCarePlan`, { userId } );
+      const response = await axiosInstance.post(
+        `${endPoint}/SaveUserCarePlan`,
+        data
+      );
       return response;
     } catch (error) {
       console.error("Error saving user care plan:", error);
       throw error;
     }
   },
-
 };
 
 export default GetCarePlanAPI;
