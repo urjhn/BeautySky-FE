@@ -58,10 +58,11 @@ const QuizController = () => {
   const filteredSets = qaSets.filter((set) =>
     set.QuizName && set.QuizName.toLowerCase().includes(searchTerm.toLowerCase())
   );
-
+  
   const totalPages = Math.ceil(filteredSets.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const displayedSets = filteredSets.slice(startIndex, startIndex + itemsPerPage);
+  
 
   const handleAddQuestion = () => {
     setNewSet({
@@ -74,26 +75,21 @@ const QuizController = () => {
   };
 
   const handleSaveSet = async () => {
-    if (!newSet.name.trim()) {
-      Swal.fire({
-        icon: 'warning',
-        title: 'Chưa nhập tên bộ câu hỏi',
-        text: 'Vui lòng nhập tên bộ câu hỏi trước khi lưu.',
-      });
-      return;
-    }
-
+  
     try {
       if (editingSet) {
+        // Cập nhật bộ câu hỏi hiện tại
         await questionsAPI.editQuestions(editingSet.id, {
           quizId: editingSet.id,
           quizName: newSet.name,
           description: editingSet.description || ""
         });
-
+  
+        // Cập nhật câu hỏi và câu trả lời
         for (const question of newSet.questions) {
           let questionId = question.id;
-
+          
+          // Nếu câu hỏi đã tồn tại, cập nhật nó
           if (questions.some(q => q.questionId === questionId)) {
             await questionsAPI.editQuestions(questionId, {
               questionId: questionId,
@@ -101,18 +97,20 @@ const QuizController = () => {
               quizId: editingSet.id
             });
           } else {
+            // Nếu câu hỏi mới, tạo mới câu hỏi
             const newQuestionResponse = await questionsAPI.createQuestions({
               questionText: question.text,
               quizId: editingSet.id
             });
             questionId = newQuestionResponse.data.questionId;
           }
-
+  
+          // Cập nhật hoặc tạo mới câu trả lời cho mỗi câu hỏi
           for (let i = 0; i < question.answers.length; i++) {
             const answerText = question.answers[i];
             const existingAnswer = answers.find(a =>
               a.questionId === questionId && (a.order === i || a.orderNumber === i));
-
+  
             if (existingAnswer) {
               await answersAPI.editAnswers(existingAnswer.answerId, {
                 answerId: existingAnswer.answerId,
@@ -130,22 +128,24 @@ const QuizController = () => {
           }
         }
       } else {
+        // Thêm bộ câu hỏi mới
         const newQuizResponse = await questionsAPI.createQuestions({
-          quizName: newSet.name,
+         
           description: "",
           dateCreated: new Date().toISOString()
         });
-
+  
         const quizId = newQuizResponse.data.quizId;
-
+  
         for (const question of newSet.questions) {
           const newQuestionResponse = await questionsAPI.createQuestions({
             questionText: question.text,
             quizId: quizId
           });
-
+  
           const questionId = newQuestionResponse.data.questionId;
-
+  
+          // Tạo câu trả lời cho mỗi câu hỏi mới
           for (let i = 0; i < question.answers.length; i++) {
             await answersAPI.createAnswers({
               answerText: question.answers[i],
@@ -155,14 +155,14 @@ const QuizController = () => {
           }
         }
       }
-
+  
       fetchQuestions();
       fetchAnswers();
-
+  
       setIsModalOpen(false);
-      setNewSet({ name: "", questions: [{ id: 1, text: "", answers: ["", "", "", ""] }] });
+      setNewSet({ questions: [{ id: 1, text: "", answers: ["", "", "", "", ""] }] });
       setEditingSet(null);
-
+  
       Swal.fire({
         icon: 'success',
         title: 'Lưu thành công',
@@ -177,6 +177,7 @@ const QuizController = () => {
       });
     }
   };
+  
 
   const handleDelete = async (id) => {
     const result = await Swal.fire({
@@ -187,26 +188,26 @@ const QuizController = () => {
       confirmButtonText: 'Xóa',
       cancelButtonText: 'Hủy',
     });
-
+  
     if (result.isConfirmed) {
       try {
         const setQuestions = questions.filter(q => q.quizId === id);
-
+  
         for (const question of setQuestions) {
           const questionAnswers = answers.filter(a => a.questionId === question.questionId);
-
+  
           for (const answer of questionAnswers) {
             await answersAPI.deleteAnswers(answer.answerId);
           }
-
+  
           await questionsAPI.deleteQuestions(question.questionId);
         }
-
+  
         await questionsAPI.deleteQuestions(id);
-
+  
         fetchQuestions();
         fetchAnswers();
-
+  
         Swal.fire({
           icon: 'success',
           title: 'Xóa thành công',
@@ -222,11 +223,10 @@ const QuizController = () => {
       }
     }
   };
-
+  
   const handleEdit = (set) => {
     setEditingSet(set);
     setNewSet({
-      name: set.QuizName,
       questions: set.questions.map(q => ({
         ...q,
         answers: [...q.answers]
@@ -234,6 +234,7 @@ const QuizController = () => {
     });
     setIsModalOpen(true);
   };
+  
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-100 via-purple-50 to-pink-100 p-8">
@@ -260,7 +261,7 @@ const QuizController = () => {
             onClick={() => {
               setIsModalOpen(true);
               setEditingSet(null);
-              setNewSet({ name: "", questions: [{ id: 1, text: "", answers: ["", "", "", ""] }] });
+              setNewSet({  questions: [{ id: 1, text: "", answers: ["", "", "", "", ""] }] });
             }}
             className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-8 py-3 rounded-xl flex items-center gap-3 hover:from-blue-700 hover:to-purple-700 transition-all duration-300 shadow-md hover:shadow-lg transform hover:scale-105"
           >
@@ -343,17 +344,7 @@ const QuizController = () => {
             </div>
 
             <div className="space-y-8">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Tên bộ câu hỏi</label>
-                <input
-                  type="text"
-                  value={newSet.name}
-                  onChange={(e) => setNewSet({ ...newSet, name: e.target.value })}
-                  className="w-full p-3 border-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300"
-                  placeholder="Nhập tên bộ câu hỏi"
-                />
-              </div>
-
+              
               {newSet.questions.map((question, qIndex) => (
                 <div key={question.id} className="space-y-4 p-4 border rounded-lg">
                   <div className="flex justify-between items-center">
