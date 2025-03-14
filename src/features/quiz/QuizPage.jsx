@@ -1,7 +1,7 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import Navbar from "../../components/Navbar/Navbar";
 import Footer from "../../components/Footer/Footer";
-import { useNavigate } from "react-router-dom";
 import questionsAPI from "../services/questions";
 import answersAPI from "../services/answers";
 import resultAPI from "../services/result";
@@ -15,7 +15,8 @@ const QuizPage = () => {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const { user } = useAuth();
   const navigate = useNavigate();
-  const [showConfirmLoginPopup, setShowConfirmLoginPopup] = useState(false); // Thêm state cho popup xác nhận
+  const location = useLocation();
+  const [showConfirmLoginPopup, setShowConfirmLoginPopup] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -53,12 +54,7 @@ const QuizPage = () => {
     };
 
     fetchData();
-  }, []);
-
-  // Hàm kiểm tra đăng nhập dùng context
-  const isLoggedIn = () => {
-    return user !== null;
-  };
+  }, [location.key]);
 
   const handleSelectAnswer = (questionId, answerId) => {
     setSelectedAnswers((prev) => ({
@@ -97,23 +93,25 @@ const QuizPage = () => {
   };
 
   const handleViewRoutine = () => {
-    if (isLoggedIn()) {
-      // Truyền user id từ context
-      navigate("/RoutineBuilderPage", { state: { userId: user.userId } });
+    if (user) {
+      navigate("/RoutineBuilderPage", {
+        state: {
+          userId: user.userId,
+          skinTypeId: result.bestSkinType.skinTypeId, // Loại da mới từ quiz
+          isNewPlan: true, // Đánh dấu đây là lộ trình mới
+        },
+      });
     } else {
-      // Hiển thị popup xác nhận đăng nhập
       setShowConfirmLoginPopup(true);
     }
   };
 
   const handleConfirmLogin = () => {
-    // Chuyển hướng đến trang đăng nhập
     navigate("/login");
-    setShowConfirmLoginPopup(false); // Đóng popup
+    setShowConfirmLoginPopup(false);
   };
 
   const handleCancelLogin = () => {
-    // Đóng popup
     setShowConfirmLoginPopup(false);
   };
 
@@ -240,7 +238,6 @@ const QuizPage = () => {
             <p>Không có câu hỏi nào!</p>
           )}
 
-          {/* Popup xác nhận đăng nhập */}
           {showConfirmLoginPopup && (
             <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
               <div className="bg-white p-6 rounded-lg w-96 text-center">
