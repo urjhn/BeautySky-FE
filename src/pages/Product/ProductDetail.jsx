@@ -257,17 +257,19 @@ const ProductDetail = () => {
   // Thêm hàm hiển thị đánh giá
   const renderReviews = () => {
     return productReviews.map((review) => {
-      const user = users?.find((u) => u.userId === review.userId) || {};
+      const reviewUser = users?.find((u) => u.userId === review.userId) || {};
+      
+      // Kiểm tra xem người dùng hiện tại có phải là người viết review không
+      const isReviewOwner = user && user.userId === review.userId;
       
       return (
         <div
           key={review.reviewId}
           className="border p-4 rounded-lg shadow-sm hover:shadow-md transition-shadow"
         >
-          {/* Avatar & Tên người dùng */}
           <div className="flex items-center gap-3">
             <img
-              src={user.avatar || `https://api.dicebear.com/9.x/adventurer/svg?seed=${review.userName}`}
+              src={reviewUser.avatar || `https://api.dicebear.com/9.x/adventurer/svg?seed=${review.userName}`}
               alt={review.userName}
               className="w-10 h-10 rounded-full object-cover border"
             />
@@ -281,18 +283,18 @@ const ProductDetail = () => {
               />
             </div>
             
-            {/* Hiển thị nút xóa nếu là review của user hiện tại */}
-            {user && parseInt(user.userId) === review.userId && (
+            {/* Chỉ hiển thị nút xóa nếu là chủ của review */}
+            {isReviewOwner && (
               <button
                 onClick={() => handleDeleteReview(review.reviewId)}
                 className="ml-auto text-red-500 hover:text-red-700 transition-colors"
+                title="Xóa đánh giá"
               >
                 <FaTrash />
               </button>
             )}
           </div>
 
-          {/* Nội dung đánh giá */}
           <p className="mt-2 text-gray-700">{review.comment}</p>
           <p className="text-sm text-gray-500 mt-1">
             {dayjs(review.reviewDate).format("DD/MM/YYYY HH:mm")}
@@ -305,6 +307,29 @@ const ProductDetail = () => {
   // Thêm hàm xóa đánh giá
   const handleDeleteReview = async (reviewId) => {
     try {
+      // Kiểm tra xem người dùng đã đăng nhập chưa
+      if (!user) {
+        Swal.fire({
+          icon: 'error',
+          title: 'Lỗi!',
+          text: 'Bạn cần đăng nhập để thực hiện thao tác này.',
+        });
+        return;
+      }
+
+      // Tìm review cần xóa
+      const reviewToDelete = reviews.find(review => review.reviewId === reviewId);
+      
+      // Kiểm tra xem review có tồn tại và người dùng có quyền xóa không
+      if (!reviewToDelete || reviewToDelete.userId !== user.userId) {
+        Swal.fire({
+          icon: 'error',
+          title: 'Lỗi!',
+          text: 'Bạn không có quyền xóa đánh giá này.',
+        });
+        return;
+      }
+
       const result = await Swal.fire({
         title: 'Xác nhận xóa',
         text: "Bạn có chắc chắn muốn xóa đánh giá này?",
@@ -320,7 +345,6 @@ const ProductDetail = () => {
         const response = await reviewsAPI.deleteReviews(reviewId);
         
         if (response.status === 200) {
-          // Cập nhật state reviews
           setReviews(prevReviews => prevReviews.filter(review => review.reviewId !== reviewId));
           
           Swal.fire({
@@ -331,7 +355,6 @@ const ProductDetail = () => {
             timer: 1500
           });
 
-          // Cập nhật lại danh sách đánh giá
           await fetchReviews();
         }
       }
