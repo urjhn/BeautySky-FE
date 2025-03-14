@@ -2,29 +2,20 @@ import axiosInstance from "../../config/axios/axiosInstance";
 
 const endPoint = "/CarePlan";
 
-
 const GetCarePlanAPI = {
-
+  // Lấy lộ trình đã lưu của người dùng
   getUserCarePlan: async (userId) => {
     const response = await axiosInstance.get(`${endPoint}/GetUserCarePlan/${userId}`);
     return response;
   },
-  
-  getCarePlanById: async (userId) => {
-    try {
-      // Sửa phương thức từ GET sang POST và truyền params đúng cách
-      const response = await axiosInstance.post(
-        `${endPoint}/GetCarePlan`,
-        null, // Body trống (nếu API không yêu cầu body)
-        { params: { userId: userId } } 
-      );
-      return response;
-    } catch (error) {
-      console.error(`Error fetching care plan with ID ${userId}:`, error);
-      throw error;
-    }
+
+  // Thêm phương thức mới: Lấy lộ trình dựa trên skinTypeId
+  getCarePlanBySkinType: async (skinTypeId) => {
+    const response = await axiosInstance.get(`${endPoint}/GetCarePlanBySkinType/${skinTypeId}`);
+    return response;
   },
 
+  // Lưu lộ trình của người dùng
   saveUserCarePlan: async (userId, carePlanId, skinTypeId) => {
     try {
       const response = await axiosInstance.post(`${endPoint}/SaveUserCarePlan`, {
@@ -38,7 +29,6 @@ const GetCarePlanAPI = {
       throw error;
     }
   },
-
 };
 
 export default GetCarePlanAPI;
