@@ -175,7 +175,7 @@ const Blogs = () => {
                   >
                     <div className="relative overflow-hidden">
                       <img
-                        src={post.imgURL}
+                        src={post.imgUrl}
                         alt={post.title}
                         className="w-full h-48 sm:h-56 lg:h-64 object-cover transform group-hover:scale-110 transition-transform duration-300"
                       />
