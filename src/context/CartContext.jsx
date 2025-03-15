@@ -1,187 +1,128 @@
-import { createContext, useContext, useState, useEffect } from "react";
-import orderAPI from "../services/order";
-import { useAuth } from "./AuthContext";
-import { debounce } from "lodash";
+import React, { createContext, useContext, useState, useEffect } from 'react';
+import cartsAPI from '../services/cart';
+import Swal from 'sweetalert2';
 
 const CartContext = createContext();
 
 export const CartProvider = ({ children }) => {
-  const [cartItems, setCartItems] = useState(() => {
-    // Khởi tạo từ localStorage nếu chưa đăng nhập
-    const savedCart = localStorage.getItem('cart');
-    return savedCart ? JSON.parse(savedCart) : [];
-  });
-  const [cartId, setCartId] = useState(null);
-  const { user } = useAuth();
+  const [cartItems, setCartItems] = useState([]);
+  const [totalPrice, setTotalPrice] = useState(0);
+  const [isLoading, setIsLoading] = useState(false);
 
-  // Đồng bộ với localStorage khi cartItems thay đổi
   useEffect(() => {
-    if (!user) {
-      localStorage.setItem('cart', JSON.stringify(cartItems));
-    }
-  }, [cartItems, user]);
-
-  // Fetch giỏ hàng từ server khi đăng nhập
-  useEffect(() => {
-    const fetchCart = async () => {
-      if (!user) {
-        // Nếu logout, lấy dữ liệu từ localStorage
-        const savedCart = localStorage.getItem('cart');
-        setCartItems(savedCart ? JSON.parse(savedCart) : []);
-        setCartId(null);
-        return;
-      }
-
-      try {
-        const response = await orderAPI.getInCartOrder();
-        if (response) {
-          setCartId(response.orderId);
-          const items = response.orderProducts.map(item => ({
-            id: item.productId,
-            name: item.productName, // Thêm tên sản phẩm
-            image: item.productImage, // Thêm hình ảnh
-            quantity: item.quantity,
-            price: item.unitPrice,
-            totalPrice: item.totalPrice
-          }));
-          setCartItems(items);
-          // Xóa localStorage khi đã đồng bộ với server
-          localStorage.removeItem('cart');
-        }
-      } catch (error) {
-        console.error("Error fetching cart:", error);
-      }
-    };
-
     fetchCart();
-  }, [user]);
+  }, []);
 
-  // Thay đổi hàm syncCartWithServer thành addToCart API
-  const syncCartWithServer = debounce(async (updatedCart) => {
-    if (!user) return;
-
+  const fetchCart = async () => {
     try {
-      const orderProducts = updatedCart.map(item => ({
-        productID: item.id,
-        quantity: item.quantity,
-        productName: item.name, // Thêm tên sản phẩm
-        productImage: item.image // Thêm hình ảnh
-      }));
-
-      const response = await orderAPI.createOrderAddCart(user.userId, orderProducts);
-      setCartId(response.orderId);
-      
-      // Cập nhật lại cartItems từ response nếu có
-      if (response.orderProducts) {
-        const items = response.orderProducts.map(item => ({
-          id: item.productId,
-          name: item.productName,
-          image: item.productImage,
+      setIsLoading(true);
+      const response = await cartsAPI.getAll();
+      if (response.data && response.data.items) {
+        const items = response.data.items.map(item => ({
+          productId: item.productId,
+          productName: item.productName || item.product?.productName,
+          price: item.price || item.product?.price,
           quantity: item.quantity,
-          price: item.unitPrice,
+          productImage: item.productImage || item.product?.productsImages?.[0]?.imageUrl,
           totalPrice: item.totalPrice
         }));
         setCartItems(items);
+        setTotalPrice(response.data.totalPrice);
       }
     } catch (error) {
-      console.error("Error syncing cart:", error);
+      console.error("Lỗi khi tải giỏ hàng:", error);
+    } finally {
+      setIsLoading(false);
     }
-  }, 500);
+  };
 
   const addToCart = async (product) => {
-    const updatedCart = [...cartItems];
-    const existingItem = updatedCart.find(item => item.id === product.id);
-
-    if (existingItem) {
-      existingItem.quantity += 1;
-      existingItem.totalPrice = existingItem.quantity * existingItem.price;
-    } else {
-      updatedCart.push({
-        id: product.id,
-        name: product.name,
-        image: product.image,
-        quantity: 1,
-        price: product.price,
-        totalPrice: product.price
-      });
+    try {
+      setIsLoading(true);
+      const payload = {
+        productId: product.productId,
+        quantity: 1
+      };
+      
+      await cartsAPI.createCarts(payload);
+      await fetchCart(); // Fetch lại giỏ hàng sau khi thêm
+    } catch (error) {
+      console.error("Lỗi khi thêm vào giỏ hàng:", error);
+      throw error;
+    } finally {
+      setIsLoading(false);
     }
+  };
 
-    setCartItems(updatedCart);
-    
-    if (user) {
-      await syncCartWithServer(updatedCart);
+  const updateQuantity = async (productId, newQuantity) => {
+    try {
+      setIsLoading(true);
+      const payload = {
+        productId: productId,
+        quantity: newQuantity
+      };
+      await cartsAPI.editCarts(payload);
+      await fetchCart();
+    } catch (error) {
+      console.error("Lỗi khi cập nhật số lượng:", error);
+      Swal.fire({
+        icon: 'error',
+        title: 'Lỗi',
+        text: 'Không thể cập nhật số lượng sản phẩm',
+      });
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const removeFromCart = async (productId) => {
-    const updatedCart = cartItems.filter(item => item.id !== productId);
-    setCartItems(updatedCart);
-
-    if (user) {
-      if (updatedCart.length === 0 && cartId) {
-        try {
-          await orderAPI.deleteOrder(cartId);
-          setCartId(null);
-        } catch (error) {
-          console.error("Error deleting empty cart:", error);
-        }
-      } else {
-        await syncCartWithServer(updatedCart);
-      }
-    }
-  };
-
-  const updateQuantity = async (productId, quantity) => {
-    if (quantity < 1) return;
-    
-    const updatedCart = cartItems.map(item =>
-      item.id === productId
-        ? {
-            ...item,
-            quantity: quantity,
-            totalPrice: quantity * item.price
-          }
-        : item
-    );
-
-    setCartItems(updatedCart);
-    
-    if (user) {
-      await syncCartWithServer(updatedCart);
-    }
-  };
-
-  const checkout = async (promotionId = null) => {
-    if (!user || !cartId) return;
-
     try {
-      const response = await orderAPI.createOrderCheckout(cartId, promotionId);
-      setCartItems([]);
-      setCartId(null);
-      return response;
+      setIsLoading(true);
+      await cartsAPI.deleteCarts(productId);
+      await fetchCart();
+      
+      Swal.fire({
+        icon: 'success',
+        title: 'Đã xóa',
+        text: 'Sản phẩm đã được xóa khỏi giỏ hàng',
+        showConfirmButton: false,
+        timer: 1500
+      });
     } catch (error) {
-      console.error("Error during checkout:", error);
-      throw error;
+      console.error("Lỗi khi xóa sản phẩm:", error);
+      Swal.fire({
+        icon: 'error',
+        title: 'Lỗi',
+        text: 'Không thể xóa sản phẩm khỏi giỏ hàng',
+      });
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  const totalPrice = cartItems.reduce((acc, item) => acc + (item.totalPrice || 0), 0);
+  // Tính toán tổng số lượng sản phẩm trong giỏ hàng
+  const cartCount = cartItems.reduce((total, item) => total + item.quantity, 0);
 
   return (
-    <CartContext.Provider
-      value={{
-        cartItems,
-        cartId,
-        addToCart,
-        removeFromCart,
-        updateQuantity,
-        totalPrice,
-        checkout
-      }}
-    >
+    <CartContext.Provider value={{
+      cartItems,
+      totalPrice,
+      isLoading,
+      cartCount,
+      addToCart,
+      updateQuantity,
+      removeFromCart,
+      fetchCart
+    }}>
       {children}
     </CartContext.Provider>
   );
 };
 
-export const useCart = () => useContext(CartContext);
+export const useCart = () => {
+  const context = useContext(CartContext);
+  if (!context) {
+    throw new Error('useCart must be used within a CartProvider');
+  }
+  return context;
+};

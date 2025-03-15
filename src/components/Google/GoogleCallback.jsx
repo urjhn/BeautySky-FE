@@ -32,7 +32,9 @@ const GoogleCallback = () => {
             roleId: parseInt(roleId),
             userId: decodedToken.id,
             name: decodedToken.name,
-            userName: decodedToken.name
+            userName: decodedToken.name,
+            phone: decodedToken.phone,
+            address: decodedToken.address,
           }
         };
 

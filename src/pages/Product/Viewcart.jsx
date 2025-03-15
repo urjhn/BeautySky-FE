@@ -14,31 +14,33 @@ import Swal from "sweetalert2";
 const Viewcart = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const { 
-    cartItems, 
-    removeFromCart, 
-    updateQuantity, 
-    totalPrice,
-    checkout
-  } = useCart();
-  const [errorMessage, setErrorMessage] = useState("");
+  const { cartItems, removeFromCart, updateQuantity, totalPrice } = useCart();
   const [selectedVoucher, setSelectedVoucher] = useState(null);
   const [paymentMethod, setPaymentMethod] = useState("VNPay");
   const [promotions, setPromotions] = useState([]);
+  const [formData, setFormData] = useState(() => ({
+    name: user?.name || "",
+    email: user?.email || "",
+    phone: user?.phone || "",
+    address: user?.address || "",
+  }));
 
-  const [formData, setFormData] = useState(() => {
-    const savedGuestData = localStorage.getItem("guestInfo");
-    return user
-      ? {
-          name: user.name || "",
-          email: user.email || "",
-          phone: user.phone || "",
-          address: user.address || "",
+  useEffect(() => {
+    const fetchPromotions = async () => {
+      try {
+        const response = await promotionsAPI.getAll();
+        if (response.status === 200) {
+          setPromotions(response.data);
         }
-      : savedGuestData
-      ? JSON.parse(savedGuestData)
-      : { name: "", email: "", phone: "", address: "" };
-  });
+      } catch (error) {
+        console.error("Lỗi khi tải danh sách khuyến mãi:", error);
+      }
+    };
+
+    if (user) {
+      fetchPromotions();
+    }
+  }, [user]);
 
   useEffect(() => {
     if (user) {
@@ -48,40 +50,38 @@ const Viewcart = () => {
         phone: user.phone || "",
         address: user.address || "",
       });
-      const fetchPromotions = async () => {
-        try {
-          const response = await promotionsAPI.getAll();
-          if (response.status === 200) {
-            setPromotions(response.data); // Lưu danh sách khuyến mãi vào state
-          }
-        } catch (error) {
-          console.error("Lỗi khi tải danh sách khuyến mãi:", error);
-        }
-      };
-
-      fetchPromotions();
     }
   }, [user]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => {
-      const newFormData = { ...prev, [name]: value };
-      if (!user) {
-        localStorage.setItem("guestInfo", JSON.stringify(newFormData));
-      }
-      return newFormData;
-    });
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
   };
 
   const discountedPrice = selectedVoucher
-    ? (
-        totalPrice -
-        (totalPrice * selectedVoucher.discountPercentage) / 100
-      ).toFixed(2)
-    : totalPrice.toFixed(2);
+    ? totalPrice - (totalPrice * selectedVoucher.discountPercentage) / 100
+    : totalPrice;
 
   const handleProceedToPayment = async () => {
+    if (!user) {
+      Swal.fire({
+        title: 'Bạn cần đăng nhập',
+        text: 'Vui lòng đăng nhập để thanh toán',
+        icon: 'info',
+        showCancelButton: true,
+        confirmButtonText: 'Đăng nhập',
+        cancelButtonText: 'Hủy'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          navigate('/login');
+        }
+      });
+      return;
+    }
+
     if (!formData.name || !formData.email || !formData.phone || !formData.address) {
       Swal.fire({
         icon: "error",
@@ -103,13 +103,13 @@ const Viewcart = () => {
       });
 
       const orderProducts = cartItems.map(item => ({
-        productID: item.id,
+        productID: item.productId,
         quantity: item.quantity
       }));
 
       const response = await orderAPI.createOrder(
         user.userId,
-        selectedVoucher ? selectedVoucher.promotionId : null,
+        selectedVoucher?.promotionId || null,
         orderProducts
       );
 
@@ -119,13 +119,7 @@ const Viewcart = () => {
           totalAmount: response.totalAmount,
           discountAmount: response.discountAmount,
           finalAmount: response.finalAmount,
-          products: cartItems.map(item => ({
-            id: item.id,
-            name: item.name,
-            price: item.price,
-            quantity: item.quantity,
-            image: item.image
-          }))
+          products: cartItems
         };
 
         await Swal.fire({
@@ -142,8 +136,6 @@ const Viewcart = () => {
           confirmButtonColor: "#28a745",
         });
 
-        checkout();
-
         navigate("/paymentsuccess", {
           state: {
             orderDetails: orderInfo
@@ -155,9 +147,38 @@ const Viewcart = () => {
       Swal.fire({
         icon: "error",
         title: "Lỗi!",
-        text: error.message || "Đã xảy ra lỗi khi xử lý đơn hàng. Vui lòng thử lại.",
+        text: error.response?.data || "Đã xảy ra lỗi khi xử lý đơn hàng. Vui lòng thử lại.",
         confirmButtonColor: "#d33",
       });
+    }
+  };
+
+  const handleQuantityChange = async (productId, newQuantity) => {
+    try {
+      if (newQuantity < 1) {
+        await handleRemoveItem(productId);
+        return;
+      }
+      await updateQuantity(productId, newQuantity);
+    } catch (error) {
+      console.error("Lỗi khi cập nhật số lượng:", error);
+    }
+  };
+
+  const handleRemoveItem = async (productId) => {
+    const result = await Swal.fire({
+      title: "Xác nhận xóa?",
+      text: "Bạn có chắc chắn muốn xóa sản phẩm này khỏi giỏ hàng?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "Xóa",
+      cancelButtonText: "Hủy"
+    });
+
+    if (result.isConfirmed) {
+      await removeFromCart(productId);
     }
   };
 
@@ -190,14 +211,14 @@ const Viewcart = () => {
               <div className="space-y-4">
                 {cartItems.map((item) => (
                   <div
-                    key={item.id}
+                    key={item.productId}
                     className="flex flex-col sm:flex-row items-start sm:items-center justify-between border-b pb-4 hover:bg-gray-50 transition-colors rounded-lg p-2"
                   >
                     <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-4 sm:space-y-0 sm:space-x-4 w-full sm:w-auto">
                       <div className="relative">
                         <img
-                          src={item.image}
-                          alt={item.name}
+                          src={item.productImage}
+                          alt={item.productName}
                           className="w-full sm:w-24 h-40 sm:h-24 object-cover rounded-lg border shadow-sm"
                         />
                         <span className="absolute -top-2 -right-2 bg-blue-500 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs">
@@ -205,21 +226,23 @@ const Viewcart = () => {
                         </span>
                       </div>
                       <div className="w-full sm:w-auto">
-                        <h2 className="text-lg font-semibold text-gray-800">{item.name}</h2>
+                        <h2 className="text-lg text-gray-800">
+                          {item.productName}
+                        </h2>
                         <p className="text-blue-600 font-medium">
                           {formatCurrency(item.price)}
                         </p>
                         <div className="flex items-center mt-3 space-x-2">
                           <button
                             className="px-3 py-1 bg-gray-200 hover:bg-gray-300 rounded-lg text-lg transition-colors"
-                            onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                            onClick={() => handleQuantityChange(item.productId, item.quantity - 1)}
                           >
                             −
                           </button>
                           <span className="text-lg w-8 text-center font-medium">{item.quantity}</span>
                           <button
                             className="px-3 py-1 bg-gray-200 hover:bg-gray-300 rounded-lg text-lg transition-colors"
-                            onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                            onClick={() => handleQuantityChange(item.productId, item.quantity + 1)}
                           >
                             +
                           </button>
@@ -232,7 +255,7 @@ const Viewcart = () => {
                       </p>
                       <button
                         className="text-red-500 hover:text-red-700 hover:bg-red-50 p-2 rounded-full transition-colors"
-                        onClick={() => removeFromCart(item.id)}
+                        onClick={() => handleRemoveItem(item.productId)}
                       >
                         <FaTrash size={18} />
                       </button>
@@ -363,10 +386,6 @@ const Viewcart = () => {
                   ))}
                 </div>
               </div>
-
-              {errorMessage && (
-                <p className="text-red-500 mt-3 bg-red-50 p-2 rounded-lg">{errorMessage}</p>
-              )}
 
               <button
                 onClick={handleProceedToPayment}

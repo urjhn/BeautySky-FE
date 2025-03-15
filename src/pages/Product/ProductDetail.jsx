@@ -114,31 +114,72 @@ const ProductDetail = () => {
     setActiveImage((prev) => (prev === images.length - 1 ? 0 : prev + 1));
   };
 
-  const handleAddToCart = (productToAdd, quantityToAdd = 1) => {
-    if (!productToAdd || productToAdd.quantity === 0) {
+  const handleAddToCart = async (productToAdd, quantityToAdd = 1) => {
+    if (productToAdd.quantity === 0) {
       Swal.fire({
-        icon: "error",
-        title: "Hết hàng!",
-        text: "Sản phẩm này hiện đã hết hàng.",
+        icon: 'error',
+        title: 'Hết hàng',
+        text: 'Sản phẩm này hiện đã hết hàng!',
+        confirmButtonColor: '#3085d6'
       });
       return;
     }
+
+    try {
+      const cartItem = {
+        productId: productToAdd.productId,
+        quantity: quantityToAdd,
+        price: productToAdd.price,
+        productName: productToAdd.productName,
+        productImage: productToAdd.productsImages?.[0]?.imageUrl || productToAdd.image
+      };
+
+      await addToCart(cartItem);
+      
+    } catch (error) {
+      console.error("Error adding to cart:", error);
+      Swal.fire({
+        icon: 'error',
+        title: 'Lỗi',
+        text: error.response?.data || 'Không thể thêm sản phẩm vào giỏ hàng',
+        confirmButtonColor: '#3085d6'
+      });
+    }
+  };
+
+  const handleRelatedProductAddToCart = async (relatedProduct, e) => {
+    e.stopPropagation(); // Ngăn chặn sự kiện click lan ra ngoài
     
-    addToCart({
-      id: productToAdd.productId,
-      name: productToAdd.productName,
-      price: productToAdd.price,
-      image: productToAdd.productsImages?.[0]?.imageUrl || productToAdd.image,
-      quantity: quantityToAdd,
-    });
-    
-    Swal.fire({
-      icon: "success",
-      title: "Đã thêm vào giỏ hàng!",
-      text: `${productToAdd.productName} đã được thêm vào giỏ hàng với số lượng: ${quantityToAdd}.`,
-      showConfirmButton: false,
-      timer: 1500
-    });
+    if (relatedProduct.quantity === 0) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Hết hàng',
+        text: 'Sản phẩm này hiện đã hết hàng!',
+        confirmButtonColor: '#3085d6'
+      });
+      return;
+    }
+
+    try {
+      const cartItem = {
+        productId: relatedProduct.productId,
+        quantity: 1,
+        price: relatedProduct.price,
+        productName: relatedProduct.productName,
+        productImage: relatedProduct.productsImages?.[0]?.imageUrl || relatedProduct.image
+      };
+
+      await addToCart(cartItem);
+      
+    } catch (error) {
+      console.error("Error adding to cart:", error);
+      Swal.fire({
+        icon: 'error',
+        title: 'Lỗi',
+        text: error.response?.data || 'Không thể thêm sản phẩm vào giỏ hàng',
+        confirmButtonColor: '#3085d6'
+      });
+    }
   };
 
   const handleImageChange = (e) => {
@@ -703,10 +744,7 @@ const ProductDetail = () => {
                       <button 
                         className={`bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded-full text-sm transition-colors
                           ${relatedProduct.quantity === 0 ? "opacity-50 cursor-not-allowed" : ""}`}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleAddToCart(relatedProduct, 1);
-                        }}
+                        onClick={(e) => handleRelatedProductAddToCart(relatedProduct, e)}
                         disabled={relatedProduct.quantity === 0}
                       >
                         <FaShoppingCart />

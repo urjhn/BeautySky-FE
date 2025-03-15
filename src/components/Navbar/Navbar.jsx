@@ -17,7 +17,7 @@ const Navbar = () => {
   const { cartItems } = useCart();
   const { user, logout } = useAuth();
 
-  const cartCount = cartItems.reduce((acc, item) => acc + item.quantity, 0);
+  const cartCount = cartItems ? cartItems.reduce((total, item) => total + item.quantity, 0) : 0;
 
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState([]);
@@ -375,15 +375,24 @@ const Navbar = () => {
             )}
           </div>
 
-          {/* Cart */}
+          {/* Cart Icon with Count */}
           <Link
             to="/viewcart"
-            className="relative flex items-center bg-gradient-to-r from-[#6BBCFE] to-[#0272cd] text-white py-1.5 px-3 lg:py-2 lg:px-4 rounded-full"
+            className="relative flex items-center bg-gradient-to-r from-[#6BBCFE] to-[#0272cd] 
+                       text-white py-1.5 px-3 lg:py-2 lg:px-4 rounded-full 
+                       hover:shadow-lg transition-all duration-300 
+                       active:scale-95"
           >
             <FaShoppingCart className="text-base lg:text-xl" />
             {cartCount > 0 && (
-              <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs px-2 py-1 rounded-full">
-                {cartCount}
+              <span className="absolute -top-2 -right-2 
+                             bg-red-500 text-white text-xs 
+                             min-w-[20px] h-5 
+                             flex items-center justify-center
+                             rounded-full px-1
+                             border-2 border-white
+                             animate-bounce">
+                {cartCount > 99 ? '99+' : cartCount}
               </span>
             )}
           </Link>

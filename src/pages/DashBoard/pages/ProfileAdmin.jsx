@@ -400,114 +400,103 @@ const ProfileAdmin = () => {
               />
             </Form.Item>
 
-            {/* Tỉnh/Thành phố */}
+            {/* Địa chỉ hiện tại - Luôn hiển thị */}
             <Form.Item
-              label={<span className="text-gray-700 font-medium">Tỉnh/Thành phố</span>}
-              name="province"
-              rules={[{ required: true, message: "Vui lòng chọn tỉnh/thành phố!" }]}
-            >
-              <Select
-                disabled={!isEditing}
-                loading={loadingProvinces}
-                placeholder="Chọn tỉnh/thành phố"
-                onChange={handleProvinceChange}
-                className={`rounded-lg ${
-                  !isEditing
-                    ? "bg-gray-50"
-                    : "hover:border-[#6BBCFE] focus:border-[#0272cd]"
-                }`}
-                showSearch
-                optionFilterProp="children"
-                filterOption={(input, option) =>
-                  option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                }
-              >
-                {provinces.map((province) => (
-                  <Select.Option key={province.code} value={province.name}>
-                    {province.name}
-                  </Select.Option>
-                ))}
-              </Select>
-            </Form.Item>
-
-            {/* Quận/Huyện */}
-            <Form.Item
-              label={<span className="text-gray-700 font-medium">Quận/Huyện</span>}
-              name="district"
-              rules={[{ required: true, message: "Vui lòng chọn quận/huyện!" }]}
-            >
-              <Select
-                disabled={!isEditing || !selectedProvince}
-                loading={loadingDistricts}
-                placeholder={selectedProvince ? "Chọn quận/huyện" : "Vui lòng chọn tỉnh/thành phố trước"}
-                onChange={handleDistrictChange}
-                className={`rounded-lg ${
-                  !isEditing || !selectedProvince
-                    ? "bg-gray-50"
-                    : "hover:border-[#6BBCFE] focus:border-[#0272cd]"
-                }`}
-                showSearch
-                optionFilterProp="children"
-                filterOption={(input, option) =>
-                  option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                }
-              >
-                {districts.map((district) => (
-                  <Select.Option key={district.code} value={district.name}>
-                    {district.name}
-                  </Select.Option>
-                ))}
-              </Select>
-            </Form.Item>
-
-            {/* Xã/Phường */}
-            <Form.Item
-              label={<span className="text-gray-700 font-medium">Xã/Phường</span>}
-              name="ward"
-              rules={[{ required: true, message: "Vui lòng chọn xã/phường!" }]}
-            >
-              <Select
-                disabled={!isEditing || !selectedDistrict}
-                loading={loadingWards}
-                placeholder={selectedDistrict ? "Chọn xã/phường" : "Vui lòng chọn quận/huyện trước"}
-                onChange={handleWardChange}
-                className={`rounded-lg ${
-                  !isEditing || !selectedDistrict
-                    ? "bg-gray-50"
-                    : "hover:border-[#6BBCFE] focus:border-[#0272cd]"
-                }`}
-                showSearch
-                optionFilterProp="children"
-                filterOption={(input, option) =>
-                  option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                }
-              >
-                {wards.map((ward) => (
-                  <Select.Option key={ward.code} value={ward.name}>
-                    {ward.name}
-                  </Select.Option>
-                ))}
-              </Select>
-            </Form.Item>
-
-            {/* Địa chỉ đầy đủ (ẩn) */}
-            <Form.Item
+              label={<span className="text-gray-700 font-medium">Địa chỉ hiện tại</span>}
               name="address"
-              hidden
-            >
-              <Input />
-            </Form.Item>
-
-            {/* Hiển thị địa chỉ đầy đủ */}
-            <Form.Item
-              label={<span className="text-gray-700 font-medium">Địa chỉ đầy đủ</span>}
             >
               <Input
-                disabled
-                value={fullAddress}
+                disabled={true}
                 className="rounded-lg bg-gray-50"
               />
             </Form.Item>
+
+            {/* Chỉ hiển thị các trường địa chỉ và địa chỉ đầy đủ khi đang chỉnh sửa */}
+            {isEditing && (
+              <>
+                {/* Tỉnh/Thành phố */}
+                <Form.Item
+                  label={<span className="text-gray-700 font-medium">Tỉnh/Thành phố</span>}
+                  name="province"
+                  rules={[{ required: true, message: "Vui lòng chọn tỉnh/thành phố!" }]}
+                >
+                  <Select
+                    placeholder="Chọn tỉnh/thành phố"
+                    onChange={handleProvinceChange}
+                    className="rounded-lg hover:border-[#6BBCFE] focus:border-[#0272cd]"
+                    loading={loadingProvinces}
+                    showSearch
+                    optionFilterProp="children"
+                  >
+                    {provinces.map((province) => (
+                      <Select.Option key={province.code} value={province.name}>
+                        {province.name}
+                      </Select.Option>
+                    ))}
+                  </Select>
+                </Form.Item>
+
+                {/* Quận/Huyện */}
+                <Form.Item
+                  label={<span className="text-gray-700 font-medium">Quận/Huyện</span>}
+                  name="district"
+                  rules={[{ required: true, message: "Vui lòng chọn quận/huyện!" }]}
+                >
+                  <Select
+                    disabled={!selectedProvince}
+                    loading={loadingDistricts}
+                    placeholder={selectedProvince ? "Chọn quận/huyện" : "Vui lòng chọn tỉnh/thành phố trước"}
+                    onChange={handleDistrictChange}
+                    className="rounded-lg hover:border-[#6BBCFE] focus:border-[#0272cd]"
+                    showSearch
+                    optionFilterProp="children"
+                  >
+                    {districts.map((district) => (
+                      <Select.Option key={district.code} value={district.name}>
+                        {district.name}
+                      </Select.Option>
+                    ))}
+                  </Select>
+                </Form.Item>
+
+                {/* Xã/Phường */}
+                <Form.Item
+                  label={<span className="text-gray-700 font-medium">Xã/Phường</span>}
+                  name="ward"
+                  rules={[{ required: true, message: "Vui lòng chọn xã/phường!" }]}
+                >
+                  <Select
+                    disabled={!selectedDistrict}
+                    loading={loadingWards}
+                    placeholder={selectedDistrict ? "Chọn xã/phường" : "Vui lòng chọn quận/huyện trước"}
+                    onChange={handleWardChange}
+                    className="rounded-lg hover:border-[#6BBCFE] focus:border-[#0272cd]"
+                    showSearch
+                    optionFilterProp="children"
+                  >
+                    {wards.map((ward) => (
+                      <Select.Option key={ward.code} value={ward.name}>
+                        {ward.name}
+                      </Select.Option>
+                    ))}
+                  </Select>
+                </Form.Item>
+
+                {/* Địa chỉ đầy đủ - Chỉ hiển thị khi đang chỉnh sửa và đã chọn đủ thông tin */}
+                {fullAddress && (
+                  <Form.Item
+                    label={<span className="text-gray-700 font-medium">Địa chỉ mới</span>}
+                    className="col-span-2"
+                  >
+                    <Input
+                      disabled
+                      value={fullAddress}
+                      className="rounded-lg bg-gray-50 text-blue-600 font-medium"
+                    />
+                  </Form.Item>
+                )}
+              </>
+            )}
 
             {/* Trạng thái */}
             <Form.Item
