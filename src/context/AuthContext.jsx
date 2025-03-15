@@ -12,17 +12,18 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     const token = localStorage.getItem("token");
-    const roleId = localStorage.getItem("roleId");
-    if (token && roleId) {
+    if (token) {
       try {
         const decoded = jwtDecode(token);
         setUser({
-          userId: decoded.userId,
+          userId: decoded.id,
           name: decoded.name,
           email: decoded.email,
           role: decoded.role,
           token: token,
-          roleId: parseInt(roleId, 10),
+          roleId: decoded.role === "Customer" ? 1 : 
+                 decoded.role === "Staff" ? 2 : 
+                 decoded.role === "Manager" ? 3 : 1,
           phone: decoded.phone,
           address: decoded.address,
         });
@@ -36,24 +37,42 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (userData) => {
     try {
-      const data = await authAPI.login(userData, navigate);
-      const roleId = parseInt(data.roleId, 10);
-      const decoded = jwtDecode(data.token);
-      setUser({
-        userId: decoded.userId,
-        name: decoded.name,
-        email: decoded.email,
-        role: decoded.role,
-        token: data.token,
-        roleId: roleId,
-        phone: decoded.phone,
-        address: decoded.address,
-      });
-      localStorage.setItem("token", data.token);
-      localStorage.setItem("roleId", roleId);
-      // navigate("/routine-builder");
+      if (userData.token) {
+        const decoded = jwtDecode(userData.token);
+        const userInfo = {
+          userId: decoded.id,
+          name: decoded.name,
+          email: decoded.email,
+          role: decoded.role,
+          token: userData.token,
+          roleId: userData.user.roleId,
+          phone: decoded.phone || "",
+          address: decoded.address || "",
+        };
+
+        setUser(userInfo);
+        localStorage.setItem("token", userData.token);
+        localStorage.setItem("roleId", userData.user.roleId);
+      } else {
+        const data = await authAPI.login(userData, navigate);
+        const roleId = parseInt(data.roleId, 10);
+        const decoded = jwtDecode(data.token);
+        setUser({
+          userId: decoded.userId,
+          name: decoded.name,
+          email: decoded.email,
+          role: decoded.role,
+          token: data.token,
+          roleId: roleId,
+          phone: decoded.phone,
+          address: decoded.address,
+        });
+        localStorage.setItem("token", data.token);
+        localStorage.setItem("roleId", roleId);
+      }
     } catch (err) {
       console.error("Login failed", err);
+      throw err;
     }
   };
 
@@ -62,6 +81,7 @@ export const AuthProvider = ({ children }) => {
       await authAPI.register(userData, navigate);
     } catch (err) {
       console.error("Register failed", err);
+      throw err;
     }
   };
 

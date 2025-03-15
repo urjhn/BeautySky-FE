@@ -94,7 +94,7 @@ const Viewcart = () => {
 
     try {
       Swal.fire({
-        title: "Đang xử lý thanh toán...",
+        title: "Đang xử lý đơn hàng...",
         text: "Vui lòng đợi trong giây lát.",
         allowOutsideClick: false,
         didOpen: () => {
@@ -102,23 +102,60 @@ const Viewcart = () => {
         }
       });
 
-      const promotionId = selectedVoucher ? selectedVoucher.promotionId : null;
-      await checkout(promotionId);
+      const orderProducts = cartItems.map(item => ({
+        productID: item.id,
+        quantity: item.quantity
+      }));
 
-      Swal.fire({
-        icon: "success",
-        title: "Thanh toán thành công!",
-        text: "Đơn hàng của bạn đã được xử lý.",
-        confirmButtonColor: "#28a745",
-      }).then(() => {
-        navigate("/paymentsuccess");
-      });
+      const response = await orderAPI.createOrder(
+        user.userId,
+        selectedVoucher ? selectedVoucher.promotionId : null,
+        orderProducts
+      );
+
+      if (response.orderId) {
+        const orderInfo = {
+          orderId: response.orderId,
+          totalAmount: response.totalAmount,
+          discountAmount: response.discountAmount,
+          finalAmount: response.finalAmount,
+          products: cartItems.map(item => ({
+            id: item.id,
+            name: item.name,
+            price: item.price,
+            quantity: item.quantity,
+            image: item.image
+          }))
+        };
+
+        await Swal.fire({
+          icon: "success",
+          title: "Đặt hàng thành công!",
+          html: `
+            <div class="text-left">
+              <p>Mã đơn hàng: #${response.orderId}</p>
+              <p>Tổng tiền: ${formatCurrency(response.totalAmount)}</p>
+              <p>Giảm giá: ${formatCurrency(response.discountAmount)}</p>
+              <p>Thành tiền: ${formatCurrency(response.finalAmount)}</p>
+            </div>
+          `,
+          confirmButtonColor: "#28a745",
+        });
+
+        checkout();
+
+        navigate("/paymentsuccess", {
+          state: {
+            orderDetails: orderInfo
+          }
+        });
+      }
     } catch (error) {
-      console.error("Lỗi khi xử lý thanh toán:", error);
+      console.error("Lỗi khi tạo đơn hàng:", error);
       Swal.fire({
         icon: "error",
-        title: "Lỗi hệ thống!",
-        text: "Đã xảy ra lỗi khi xử lý thanh toán. Vui lòng thử lại.",
+        title: "Lỗi!",
+        text: error.message || "Đã xảy ra lỗi khi xử lý đơn hàng. Vui lòng thử lại.",
         confirmButtonColor: "#d33",
       });
     }
