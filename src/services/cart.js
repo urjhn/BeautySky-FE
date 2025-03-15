@@ -10,6 +10,10 @@ const cartsAPI = {
     const response = await axiosInstance.post(endPoint, payload);
     return response;
   },
+  createCartSync: async (payload) => {
+    const response = await axiosInstance.post(`${endPoint}/sync`, payload);
+    return response;
+  },
   deleteCarts: async (productId) => {
     await axiosInstance.delete(`${endPoint}/${productId}`);
   },
