@@ -12,109 +12,181 @@ const PaymentSuccess = () => {
   const location = useLocation();
   const { addNotification } = useNotifications();
   const [orderDetails, setOrderDetails] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const state = location.state;
-    if (state && state.orderDetails) {
-      setOrderDetails(state.orderDetails);
-      addNotification("Bạn đã thanh toán thành công! 🎉");
-    }
-  }, [location, addNotification]);
+    const checkOrderDetails = async () => {
+      try {
+        const state = location.state;
+        
+        if (!state || !state.orderDetails) {
+          // Không có thông tin đơn hàng
+          setTimeout(() => {
+            navigate('/', { replace: true });
+          }, 2000);
+          return;
+        }
+
+        if (state.orderDetails.paymentMethod !== "Cash") {
+          // Không phải thanh toán tiền mặt
+          setTimeout(() => {
+            navigate('/', { replace: true });
+          }, 2000);
+          return;
+        }
+
+        // Có thông tin đơn hàng hợp lệ
+        setOrderDetails(state.orderDetails);
+        addNotification("Đặt hàng thành công! 🎉");
+      } catch (error) {
+        console.error("Error processing order details:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    checkOrderDetails();
+  }, [location, addNotification, navigate]);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex flex-col">
+        <Navbar />
+        <div className="flex-grow flex items-center justify-center">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-500 mx-auto mb-4"></div>
+            <p className="text-gray-600">Đang xử lý thông tin đơn hàng...</p>
+          </div>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
 
   return (
-    <>
+    <div className="min-h-screen flex flex-col">
       <Navbar />
-      <div className="flex items-center justify-center min-h-screen bg-gradient-to-r from-green-100 to-blue-200 px-4 py-8 sm:px-6 lg:px-8">
-        <motion.div
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.5 }}
-          className="bg-white shadow-lg rounded-lg p-4 sm:p-6 lg:p-8 text-center w-full max-w-md mx-auto"
-        >
-          {orderDetails ? (
-            <>
-              <CheckCircleIcon className="w-12 h-12 sm:w-16 sm:h-16 text-green-500 mx-auto mb-3 sm:mb-4" />
-              <h1 className="text-xl sm:text-2xl font-bold text-green-600 mb-4">
-                Thanh toán thành công!
-              </h1>
-              <div className="text-left bg-gray-50 p-4 rounded-lg mb-4">
-                <p className="text-gray-700 mb-2">
-                  <span className="font-medium">Mã đơn hàng:</span> #{orderDetails.orderId}
-                </p>
-                
-                {/* Danh sách sản phẩm */}
-                <div className="mt-4 mb-4">
-                  <p className="font-medium text-gray-700 mb-2">Sản phẩm đã mua:</p>
-                  <div className="space-y-3">
-                    {orderDetails.products.map((item) => (
-                      <div key={item.id} className="flex items-center space-x-3 bg-white p-2 rounded-lg">
-                        <img
-                          src={item.image}
-                          alt={item.name}
-                          className="w-16 h-16 object-cover rounded-lg border"
-                        />
-                        <div className="flex-1">
-                          <p className="font-medium text-gray-800">{item.name}</p>
-                          <p className="text-sm text-gray-600">
-                            {formatCurrency(item.price)} x {item.quantity}
-                          </p>
+      <div className="flex-grow bg-gray-50 py-10">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            className="bg-white shadow-xl rounded-2xl overflow-hidden"
+          >
+            {orderDetails ? (
+              <>
+                {/* Header Section */}
+                <div className="bg-gradient-to-r from-green-500 to-emerald-600 px-6 py-8 text-center">
+                  <CheckCircleIcon className="w-20 h-20 text-white mx-auto mb-4" />
+                  <h1 className="text-3xl font-bold text-white mb-2">
+                    Đặt hàng thành công!
+                  </h1>
+                  <p className="text-green-100">
+                    Mã đơn hàng: #{orderDetails.orderId}
+                  </p>
+                </div>
+
+                {/* Order Details Section */}
+                <div className="p-6">
+                  {/* Products List */}
+                  <div className="mb-8">
+                    <h2 className="text-xl font-semibold text-gray-800 mb-4">
+                      Chi tiết đơn hàng
+                    </h2>
+                    <div className="space-y-4">
+                      {orderDetails.products.map((item) => (
+                        <div
+                          key={item.id}
+                          className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                        >
+                          <div className="flex-shrink-0">
+                            <img
+                              src={item.productImage}
+                              alt={item.name}
+                              className="w-24 h-24 object-cover rounded-lg shadow-sm"
+                            />
+                          </div>
+                          <div className="flex-grow">
+                            <h3 className="font-medium text-gray-900">
+                              {item.productName}
+                            </h3>
+                            <p className="text-sm text-gray-600 mt-1">
+                              Số lượng: {item.quantity}
+                            </p>
+                            <p className="text-sm text-gray-600">
+                              Đơn giá: {formatCurrency(item.price)}
+                            </p>
+                          </div>
+                          <div className="text-right">
+                            <p className="font-semibold text-gray-900">
+                              {formatCurrency(item.price * item.quantity)}
+                            </p>
+                          </div>
                         </div>
-                        <p className="font-medium text-blue-600">
-                          {formatCurrency(item.price * item.quantity)}
-                        </p>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Price Summary */}
+                  <div className="border-t border-gray-200 pt-6">
+                    <div className="space-y-3">
+                      <div className="flex justify-between text-gray-600">
+                        <span>Tổng tiền hàng:</span>
+                        <span>{formatCurrency(orderDetails.totalAmount)}</span>
                       </div>
-                    ))}
+                      {orderDetails.discountAmount > 0 && (
+                        <div className="flex justify-between text-green-600">
+                          <span>Giảm giá:</span>
+                          <span>- {formatCurrency(orderDetails.discountAmount)}</span>
+                        </div>
+                      )}
+                      <div className="flex justify-between text-lg font-semibold text-gray-900 pt-3 border-t">
+                        <span>Thành tiền:</span>
+                        <span>{formatCurrency(orderDetails.finalAmount)}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Action Buttons */}
+                  <div className="mt-8 flex gap-4 justify-center">
+                    <button
+                      onClick={() => navigate("/vieworder")}
+                      className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                    >
+                      Xem đơn hàng
+                    </button>
+                    <button
+                      onClick={() => navigate("/")}
+                      className="px-6 py-3 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
+                    >
+                      Về trang chủ
+                    </button>
                   </div>
                 </div>
-
-                <div className="border-t pt-3 mt-3">
-                  <p className="text-gray-700 mb-2">
-                    <span className="font-medium">Tổng tiền:</span> {formatCurrency(orderDetails.totalAmount)}
-                  </p>
-                  {orderDetails.discountAmount > 0 && (
-                    <p className="text-green-600 mb-2">
-                      <span className="font-medium">Giảm giá:</span> {formatCurrency(orderDetails.discountAmount)}
-                    </p>
-                  )}
-                  <p className="text-blue-600 font-bold mt-2">
-                    <span className="font-medium text-gray-700">Thành tiền:</span> {formatCurrency(orderDetails.finalAmount)}
-                  </p>
-                </div>
+              </>
+            ) : (
+              <div className="p-8 text-center">
+                <XCircleIcon className="w-20 h-20 text-red-500 mx-auto mb-4" />
+                <h1 className="text-2xl font-bold text-red-600 mb-2">
+                  Không tìm thấy thông tin đơn hàng
+                </h1>
+                <p className="text-gray-600 mb-6">
+                  Bạn sẽ được chuyển về trang chủ trong giây lát...
+                </p>
+                <button
+                  onClick={() => navigate("/")}
+                  className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                >
+                  Về trang chủ ngay
+                </button>
               </div>
-              <p className="text-sm sm:text-base text-gray-600 mb-4">
-                Cảm ơn bạn đã mua hàng. Đơn hàng của bạn đã được xác nhận và đang được xử lý.
-              </p>
-            </>
-          ) : (
-            <>
-              <XCircleIcon className="w-12 h-12 sm:w-16 sm:h-16 text-red-500 mx-auto mb-3 sm:mb-4" />
-              <h1 className="text-xl sm:text-2xl font-bold text-red-600">
-                Không tìm thấy thông tin đơn hàng
-              </h1>
-              <p className="text-sm sm:text-base text-gray-600 mt-2">
-                Có lỗi xảy ra trong quá trình xử lý đơn hàng.
-              </p>
-            </>
-          )}
-
-          <div className="mt-4 sm:mt-6 flex flex-col sm:flex-row justify-center gap-3 sm:gap-4">
-            <button
-              onClick={() => navigate("/vieworder")}
-              className="w-full sm:w-auto px-4 py-2 bg-blue-500 text-white text-sm sm:text-base rounded-lg shadow hover:bg-blue-600 transition"
-            >
-              Xem đơn hàng
-            </button>
-            <button
-              onClick={() => navigate("/")}
-              className="w-full sm:w-auto px-4 py-2 bg-gray-500 text-white text-sm sm:text-base rounded-lg shadow hover:bg-gray-600 transition"
-            >
-              Trang chủ
-            </button>
-          </div>
-        </motion.div>
+            )}
+          </motion.div>
+        </div>
       </div>
       <Footer />
-    </>
+    </div>
   );
 };
 

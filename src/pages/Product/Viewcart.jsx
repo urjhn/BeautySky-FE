@@ -66,89 +66,89 @@ const Viewcart = () => {
     : totalPrice;
 
   const handleProceedToPayment = async () => {
-    if (!user) {
-      Swal.fire({
-        title: 'Bạn cần đăng nhập',
-        text: 'Vui lòng đăng nhập để thanh toán',
-        icon: 'info',
-        showCancelButton: true,
-        confirmButtonText: 'Đăng nhập',
-        cancelButtonText: 'Hủy'
-      }).then((result) => {
-        if (result.isConfirmed) {
-          navigate('/login');
-        }
-      });
-      return;
-    }
-
-    if (!formData.name || !formData.email || !formData.phone || !formData.address) {
-      Swal.fire({
-        icon: "error",
-        title: "Thiếu thông tin!",
-        text: "Vui lòng nhập đầy đủ thông tin trước khi tiếp tục.",
-        confirmButtonColor: "#d33",
-      });
-      return;
-    }
-
     try {
+      if (!cartItems || cartItems.length === 0) {
+        Swal.fire({
+          icon: "error",
+          title: "Giỏ hàng trống!",
+          text: "Vui lòng thêm sản phẩm vào giỏ hàng.",
+        });
+        return;
+      }
+
+      // Format dữ liệu sản phẩm
+      const orderProducts = cartItems.map(item => ({
+        productID: Number(item.productId),
+        quantity: Number(item.quantity)
+      }));
+
+      const promotionId = selectedVoucher ? Number(selectedVoucher.promotionId) : null;
+
+      // Hiển thị loading
       Swal.fire({
-        title: "Đang xử lý đơn hàng...",
-        text: "Vui lòng đợi trong giây lát.",
+        title: 'Đang xử lý...',
         allowOutsideClick: false,
         didOpen: () => {
           Swal.showLoading();
         }
       });
 
-      const orderProducts = cartItems.map(item => ({
-        productID: item.productId,
-        quantity: item.quantity
-      }));
-
-      const response = await orderAPI.createOrder(
-        user.userId,
-        selectedVoucher?.promotionId || null,
-        orderProducts
-      );
+      const response = await orderAPI.createOrder(promotionId, orderProducts);
 
       if (response.orderId) {
-        const orderInfo = {
-          orderId: response.orderId,
-          totalAmount: response.totalAmount,
-          discountAmount: response.discountAmount,
-          finalAmount: response.finalAmount,
-          products: cartItems
-        };
+        // Xử lý dựa trên phương thức thanh toán
+        if (paymentMethod === "Cash") {
+          // Thanh toán tiền mặt
+          await Promise.all(cartItems.map(item => 
+            removeFromCart(item.productId)
+          ));
 
-        await Swal.fire({
-          icon: "success",
-          title: "Đặt hàng thành công!",
-          html: `
-            <div class="text-left">
-              <p>Mã đơn hàng: #${response.orderId}</p>
-              <p>Tổng tiền: ${formatCurrency(response.totalAmount)}</p>
-              <p>Giảm giá: ${formatCurrency(response.discountAmount)}</p>
-              <p>Thành tiền: ${formatCurrency(response.finalAmount)}</p>
-            </div>
-          `,
-          confirmButtonColor: "#28a745",
-        });
+          const orderInfo = {
+            orderId: response.orderId,
+            totalAmount: response.totalAmount,
+            discountAmount: response.discountAmount,
+            finalAmount: response.finalAmount,
+            products: cartItems,
+            paymentMethod: "Cash"
+          };
 
-        navigate("/paymentsuccess", {
-          state: {
-            orderDetails: orderInfo
+          navigate("/paymentsuccess", {
+            state: {
+              orderDetails: orderInfo
+            }
+          });
+        } else {
+          // Thanh toán VNPay
+          try {
+            // Giả sử bạn có API để tạo URL thanh toán VNPay
+            const vnpayResponse = await orderAPI.createVNPayUrl({
+              orderId: response.orderId,
+              amount: response.finalAmount,
+              orderInfo: `Thanh toan don hang #${response.orderId}`
+            });
+            
+            // Chuyển hướng đến trang thanh toán VNPay
+            if (vnpayResponse.paymentUrl) {
+              window.location.href = vnpayResponse.paymentUrl;
+            } else {
+              throw new Error("Không thể tạo URL thanh toán");
+            }
+          } catch (error) {
+            console.error("Lỗi khi tạo URL VNPay:", error);
+            Swal.fire({
+              icon: "error",
+              title: "Lỗi thanh toán",
+              text: "Không thể kết nối đến cổng thanh toán VNPay. Vui lòng thử lại sau.",
+            });
           }
-        });
+        }
       }
     } catch (error) {
-      console.error("Lỗi khi tạo đơn hàng:", error);
+      console.error("Error details:", error);
       Swal.fire({
         icon: "error",
         title: "Lỗi!",
-        text: error.response?.data || "Đã xảy ra lỗi khi xử lý đơn hàng. Vui lòng thử lại.",
-        confirmButtonColor: "#d33",
+        text: error.message || "Đã có lỗi xảy ra khi đặt hàng.",
       });
     }
   };

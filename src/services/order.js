@@ -6,71 +6,56 @@ const orderAPI = {
   getAll: async () => {
     try {
       const response = await axiosInstance.get(endPoint);
-      return response.data;
+      // Kiểm tra và format dữ liệu trước khi trả về
+      if (response.data) {
+        return response.data.map(order => ({
+          orderId: order.orderId,
+          orderDate: order.orderDate,
+          totalAmount: order.totalAmount,
+          finalAmount: order.finalAmount,
+          status: order.status || 'Pending',
+          user: order.user || {},
+          orderProducts: order.orderProducts || []
+        }));
+      }
+      return [];
     } catch (error) {
       console.error("Lỗi khi lấy danh sách đơn hàng:", error);
-      throw error;
-    }
-  },
-
-  updateOrder: async (id, orderData) => {
-    try {
-      const response = await axiosInstance.put(`${endPoint}/${id}`, orderData);
-      return response.data;
-    } catch (error) {
-      if (error.response) {
-        if (error.response.status === 400) {
-          throw new Error("ID đơn hàng không khớp");
-        } else if (error.response.status === 404) {
-          throw new Error("Đơn hàng không tồn tại");
-        }
+      if (error.response?.status === 500) {
+        throw new Error("Lỗi server, vui lòng thử lại sau");
       }
-      console.error(`Lỗi khi cập nhật đơn hàng ${id}:`, error);
       throw error;
     }
   },
-
-  deleteOrder: async (id) => {
+  
+  createOrder: async (promotionID, products) => {
     try {
-      const response = await axiosInstance.delete(`${endPoint}/${id}`);
-      return response.data;
-    } catch (error) {
-      if (error.response && error.response.status === 404) {
-        throw new Error("Đơn hàng không tồn tại");
+      // Kiểm tra dữ liệu đầu vào
+      if (!Array.isArray(products) || products.length === 0) {
+        throw new Error("Danh sách sản phẩm không hợp lệ");
       }
-      console.error(`Lỗi khi xóa đơn hàng ${id}:`, error);
-      throw error;
-    }
-  },
 
-  createOrder: async (userID, promotionID, products) => {
-    try {
-      const response = await axiosInstance.post(`${endPoint}/order-products`, {
-        userID,
-        promotionID,
-        products: products.map(product => ({
-          productID: product.productID,
-          quantity: product.quantity
-        }))
-      });
+      // Format lại products theo đúng model
+      const formattedProducts = products.map(item => ({
+        productID: Number(item.productID),
+        quantity: Number(item.quantity)
+      }));
+
+
+      // Gửi request với body đúng format
+      const response = await axiosInstance.post(
+        `${endPoint}/order-products?promotionID=${promotionID || ''}`, 
+        formattedProducts  // Gửi trực tiếp mảng products
+      );
       
-      return {
-        orderId: response.data.orderId,
-        status: response.data.status,
-        totalAmount: response.data.totalAmount,
-        discountAmount: response.data.discountAmount,
-        finalAmount: response.data.finalAmount
-      };
+      return response.data;
     } catch (error) {
-      if (error.response) {
-        if (error.response.status === 400) {
-          throw new Error("Danh sách sản phẩm trống");
-        } else if (error.response.status === 404) {
-          throw new Error("Sản phẩm không tồn tại");
-        }
+      console.error('Order creation error:', error.response?.data || error);
+      if (error.response?.data) {
+        // Log chi tiết lỗi từ server
+        console.log('Detailed error:', JSON.stringify(error.response.data, null, 2));
       }
-      console.error("Lỗi khi tạo đơn hàng:", error);
-      throw error;
+      throw new Error(error.response?.data?.message || "Lỗi khi tạo đơn hàng");
     }
   }
 };
