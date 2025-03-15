@@ -321,7 +321,17 @@ const ProductDetail = () => {
       const reviewToDelete = reviews.find(review => review.reviewId === reviewId);
       
       // Kiểm tra xem review có tồn tại và người dùng có quyền xóa không
-      if (!reviewToDelete || reviewToDelete.userId !== user.userId) {
+      if (!reviewToDelete) {
+        Swal.fire({
+          icon: 'error',
+          title: 'Lỗi!',
+          text: 'Không tìm thấy đánh giá này.',
+        });
+        return;
+      }
+
+      // Kiểm tra quyền xóa
+      if (reviewToDelete.userId !== user.userId) {
         Swal.fire({
           icon: 'error',
           title: 'Lỗi!',
