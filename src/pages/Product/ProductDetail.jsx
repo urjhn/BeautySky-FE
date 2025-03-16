@@ -190,73 +190,40 @@ const ProductDetail = () => {
     }
   };
 
-  const handleReviewSubmit = async () => {
-    if (isSubmitting) return;
-    setIsSubmitting(true);
-
+  const handleSubmitReview = async (reviewData) => {
     try {
-      // Kiểm tra user đã đăng nhập chưa
-      const token = localStorage.getItem("token");
-      if (!token || !user) {
-        console.log("Auth state:", { token, user }); // Debug info
+      // Kiểm tra và đảm bảo userId là số
+      const userId = user?.userId;
+      
+      // Debug để kiểm tra giá trị
+      console.log('User object:', user);
+      console.log('Raw userId:', userId);
+      console.log('Type of userId:', typeof userId);
+
+      if (!userId || isNaN(userId)) {
         Swal.fire({
-          icon: "warning",
-          title: "Cần đăng nhập",
-          text: "Bạn cần đăng nhập để gửi đánh giá!",
-          showCancelButton: true,
-          confirmButtonText: "Đăng nhập ngay",
-          cancelButtonText: "Đóng"
-        }).then((result) => {
-          if (result.isConfirmed) {
-            const returnUrl = `/product/${id}`;
-            navigate("/login", { 
-              state: { returnUrl },
-              replace: true 
-            });
-          }
+          icon: 'error',
+          title: 'Lỗi!',
+          text: 'Không thể xác định người dùng. Vui lòng đăng nhập lại.'
         });
-        setIsSubmitting(false);
         return;
       }
 
-      // Validate dữ liệu đầu vào
-      if (!newComment.trim()) {
-        Swal.fire({
-          icon: "warning",
-          title: "Thiếu nội dung",
-          text: "Vui lòng nhập nội dung đánh giá!",
-        });
-        setIsSubmitting(false);
-        return;
-      }
-
-      if (newRating === 0) {
-        Swal.fire({
-          icon: "warning",
-          title: "Thiếu đánh giá",
-          text: "Vui lòng chọn số sao đánh giá!",
-        });
-        setIsSubmitting(false);
-        return;
-      }
-
-      // Tạo object review với thông tin user
-      const reviewData = {
-        reviewId: 0,
-        productId: parseInt(product.productId),
-        userId: parseInt(user.userId),
-        rating: parseInt(newRating),
-        comment: newComment.trim(),
+      const reviewPayload = {
+        ...reviewData,
+        // Đảm bảo userId là số
+        userId: Number(userId),
+        productId: Number(id),
         reviewDate: new Date().toISOString()
       };
 
-      console.log("Sending review data:", reviewData);
+      console.log('Review payload:', reviewPayload);
 
-      const response = await reviewsAPI.createReviews(reviewData);
+      const response = await reviewsAPI.createReviews(reviewPayload);
 
       if (response.status === 200) {
         const newReviewDisplay = {
-          ...reviewData,
+          ...reviewPayload,
           productName: product.productName,
           userName: user.name || "Người dùng",
         };
@@ -276,14 +243,12 @@ const ProductDetail = () => {
         await fetchReviews();
       }
     } catch (error) {
-      console.error("Lỗi khi gửi đánh giá:", error);
+      console.error('Error submitting review:', error);
       Swal.fire({
-        icon: "error",
-        title: "Lỗi!",
-        text: "Có lỗi xảy ra khi gửi đánh giá. Vui lòng thử lại sau.",
+        icon: 'error',
+        title: 'Lỗi!',
+        text: 'Không thể gửi đánh giá. Vui lòng thử lại sau.'
       });
-    } finally {
-      setIsSubmitting(false);
     }
   };
 
@@ -636,7 +601,10 @@ const ProductDetail = () => {
                         ? "bg-gray-400 cursor-not-allowed"
                         : "bg-blue-500 hover:bg-blue-600"
                     }`}
-                    onClick={handleReviewSubmit}
+                    onClick={() => handleSubmitReview({
+                      rating: newRating,
+                      comment: newComment.trim()
+                    })}
                     disabled={isSubmitting}
                   >
                     {isSubmitting ? "Đang gửi..." : "Gửi đánh giá"}

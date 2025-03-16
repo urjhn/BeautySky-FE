@@ -14,18 +14,18 @@ export const AuthProvider = ({ children }) => {
     const token = localStorage.getItem("token");
     if (token) {
       try {
-        const decoded = jwtDecode(token);
+        const decodedToken = jwtDecode(token);
         setUser({
-          userId: decoded.id,
-          name: decoded.name,
-          email: decoded.email,
-          role: decoded.role,
+          userId: Number(decodedToken.userId) || parseInt(decodedToken.userId),
+          name: decodedToken.name,
+          email: decodedToken.email,
+          role: decodedToken.role,
           token: token,
-          roleId: decoded.role === "Customer" ? 1 : 
-                 decoded.role === "Staff" ? 2 : 
-                 decoded.role === "Manager" ? 3 : 1,
-          phone: decoded.phone,
-          address: decoded.address,
+          roleId: decodedToken.role === "Customer" ? 1 : 
+                 decodedToken.role === "Staff" ? 2 : 
+                 decodedToken.role === "Manager" ? 3 : 1,
+          phone: decodedToken.phone,
+          address: decodedToken.address,
         });
       } catch (err) {
         console.error("Invalid token:", err);
