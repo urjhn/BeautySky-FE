@@ -254,7 +254,7 @@ const OrderHistory = () => {
                         <motion.button
                           whileHover={{ scale: 1.05 }}
                           whileTap={{ scale: 0.95 }}
-                          onClick={() => navigate(`/orderdetail/${order.orderId}`)}
+                          onClick={() => navigate(`/profilelayout/orderdetail/${order.orderId}`)}
                           className="inline-flex items-center px-6 py-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-full shadow-md hover:shadow-lg transition-all duration-300"
                         >
                           <EyeIcon className="w-5 h-5 mr-2" />

@@ -15,10 +15,17 @@ const orderAPI = {
 
   getOrderDetail: async (orderId) => {
     try {
-      const response = await axiosInstance.get(`${endPoint}/${orderId}`);
+      const response = await axiosInstance.get(`${endPoint}/orders/${orderId}`);
       return response.data;
     } catch (error) {
-      throw error;
+      if (error.response) {
+        if (error.response.status === 401) {
+          throw new Error('Bạn không có quyền xem đơn hàng này');
+        } else if (error.response.status === 404) {
+          throw new Error('Không tìm thấy đơn hàng');
+        }
+      }
+      throw new Error('Có lỗi xảy ra khi lấy thông tin đơn hàng');
     }
   },
 
