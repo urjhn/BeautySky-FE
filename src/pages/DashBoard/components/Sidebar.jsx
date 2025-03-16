@@ -14,10 +14,44 @@ import {
   FaClock,
 } from "react-icons/fa";
 import { NavLink } from "react-router-dom";
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 
 const Sidebar = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const navRef = useRef(null);
+  const [isHovering, setIsHovering] = useState(false);
+  const [startPosition, setStartPosition] = useState(0);
+  const [scrollPosition, setScrollPosition] = useState(0);
+
+  // Xử lý sự kiện di chuột vào vùng menu
+  const handleMouseEnter = () => {
+    setIsHovering(true);
+  };
+
+  // Xử lý sự kiện di chuột ra khỏi vùng menu
+  const handleMouseLeave = () => {
+    setIsHovering(false);
+  };
+
+  // Xử lý di chuyển chuột trong vùng menu
+  const handleMouseMove = (e) => {
+    if (!isHovering || !navRef.current) return;
+    
+    const { height } = navRef.current.getBoundingClientRect();
+    const navHeight = navRef.current.scrollHeight;
+    const mouseY = e.clientY;
+    const containerTop = navRef.current.getBoundingClientRect().top;
+    const relativeY = mouseY - containerTop;
+    
+    // Tính toán vị trí cuộn dựa trên vị trí chuột
+    const scrollRatio = relativeY / height;
+    const maxScroll = navHeight - height;
+    const newScrollPosition = Math.max(0, Math.min(maxScroll, scrollRatio * maxScroll));
+    
+    // Áp dụng hiệu ứng mượt mà cho việc cuộn
+    navRef.current.scrollTop = newScrollPosition;
+    setScrollPosition(newScrollPosition);
+  };
 
   return (
     <>
@@ -40,7 +74,7 @@ const Sidebar = () => {
         <div className="p-6 border-b border-gray-700/50">
           <div className="text-center space-y-3">
             <h2 className="text-3xl font-bold bg-gradient-to-r from-blue-400 to-purple-500 
-              text-transparent bg-clip-text tracking-wider lg:block md:hidden sm:hidden">
+              text-transparent bg-clip-text tracking-wider">
               Admin Panel
             </h2>
             <div className="h-1 bg-gradient-to-r from-blue-400 to-purple-500 rounded-full 
@@ -48,7 +82,13 @@ const Sidebar = () => {
           </div>
         </div>
 
-        <nav className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800">
+        <nav 
+          ref={navRef}
+          className="flex-1 overflow-hidden" 
+          onMouseEnter={handleMouseEnter}
+          onMouseLeave={handleMouseLeave}
+          onMouseMove={handleMouseMove}
+        >
           <div className="p-6">
             <ul className="space-y-3">
               <NavItem
@@ -123,27 +163,14 @@ const Sidebar = () => {
       </aside>
 
       <style jsx>{`
-        .scrollbar-thin::-webkit-scrollbar {
-          width: 5px;
+        /* Ẩn thanh cuộn nhưng vẫn cho phép cuộn nội dung */
+        nav::-webkit-scrollbar {
+          display: none;
         }
-
-        .scrollbar-thin::-webkit-scrollbar-track {
-          background: #1f2937;
-          border-radius: 10px;
-        }
-
-        .scrollbar-thin::-webkit-scrollbar-thumb {
-          background: #4b5563;
-          border-radius: 10px;
-        }
-
-        .scrollbar-thin::-webkit-scrollbar-thumb:hover {
-          background: #6b7280;
-        }
-
-        .scrollbar-thin {
-          scrollbar-width: thin;
-          scrollbar-color: #4b5563 #1f2937;
+        
+        nav {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
         }
       `}</style>
     </>
@@ -169,7 +196,7 @@ const NavItem = ({ icon, title, to }) => (
         {icon}
       </div>
 
-      <span className="text-base font-medium tracking-wide lg:block md:hidden sm:hidden">
+      <span className="text-base font-medium tracking-wide">
         {title}
       </span>
 
