@@ -4,7 +4,7 @@ const endPoint = "/Answers";
 
 const answersAPI = {
   getAll: async () => {
-    const response = await axiosInstance.get(`${endPoint}?ts=${Date.now()}`);
+    const response = await axiosInstance.get(endPoint);
     return response;
   },
   createAnswers: async (payload) => {
