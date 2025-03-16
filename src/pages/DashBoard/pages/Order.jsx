@@ -6,7 +6,7 @@ import {
   FaSearch,
   FaFilter,
   FaShoppingBag,
-  FaEye
+  FaEye,
 } from "react-icons/fa";
 import { formatCurrency } from "../../../utils/formatCurrency";
 import { useOrdersContext } from "../../../context/OrdersContext";
@@ -17,18 +17,19 @@ import paymentsAPI from "../../../services/payment";
 import dayjs from "dayjs";
 import { useNavigate } from "react-router-dom";
 
+// Chuẩn hóa ORDER_STATUS thành chữ thường
 const ORDER_STATUS = {
-  PENDING: 'Pending',
-  PROCESSING: 'Processing',
-  COMPLETED: 'Completed',
-  CANCELLED: 'Cancelled'
+  PENDING: "pending",
+  PROCESSING: "processing",
+  COMPLETED: "completed",
+  CANCELLED: "cancelled",
 };
 
 const STATUS_MAP = {
   [ORDER_STATUS.PENDING]: "Chờ xử lý",
   [ORDER_STATUS.PROCESSING]: "Đang xử lý",
   [ORDER_STATUS.COMPLETED]: "Đã hoàn thành",
-  [ORDER_STATUS.CANCELLED]: "Đã hủy"
+  [ORDER_STATUS.CANCELLED]: "Đã hủy",
 };
 
 const Order = () => {
@@ -41,191 +42,179 @@ const Order = () => {
   const ordersPerPage = 5;
   const navigate = useNavigate();
 
+  // Hàm lấy dữ liệu đơn hàng từ API
   const fetchOrdersData = async () => {
     setIsLoading(true);
     try {
       const ordersData = await orderAPI.getAll();
-      console.log('Raw orders data:', ordersData); // Debug log
-      
-      if (ordersData && ordersData.length > 0) {
-        try {
-          const paymentsData = await paymentsAPI.getAllPaymentDetails();
-          console.log('Payments data:', paymentsData); // Debug log
-          
-          const combinedData = ordersData.map(order => {
-            const payment = paymentsData?.find(p => 
-              p.orderId === order.orderId || (p.order && p.order.orderId === order.orderId)
-            );
-            
-            // Chuẩn hóa status
-            let orderStatus = (order.status || 'pending').toLowerCase();
-            
-            // Đảm bảo status hợp lệ
-            if (!Object.values(ORDER_STATUS).includes(orderStatus)) {
-              orderStatus = ORDER_STATUS.PENDING;
-            }
-            
-            const userData = order.user || {};
-            
-            return {
-              ...order,
-              status: orderStatus,
-              paymentStatus: payment ? "Confirmed" : "Pending",
-              userFullName: userData.fullName || userData.name || "Không xác định",
-              userPhone: userData.phone || userData.phoneNumber || "Không có",
-              userAddress: userData.address || "Không có",
-              userId: userData.userId || userData.id,
-              paymentType: payment?.paymentType || "Chưa có",
-              paymentDate: payment?.paymentDate || null,
-              totalAmount: order.finalAmount || order.totalAmount || 0
-            };
-          });
+      console.log("Dữ liệu thô từ API Orders:", ordersData);
 
-          console.log('Processed orders:', combinedData); // Debug log
-          setOrders(combinedData);
-        } catch (error) {
-          console.error("Lỗi khi xử lý dữ liệu:", error);
-          handleErrorWithSwal(error);
-        }
+      if (ordersData && ordersData.length > 0) {
+        const processedOrders = ordersData.map((order) => {
+          const userData = order.user || {};
+          const orderStatus = (order.status || "pending").toLowerCase();
+
+          return {
+            ...order,
+            status: orderStatus,
+            userFullName: userData.fullName || "Không xác định",
+            userPhone: userData.phone || "Không có",
+            userAddress: userData.address || "Không có",
+            userId: userData.userId || null,
+            totalAmount: order.totalAmount || 0,
+          };
+        });
+
+        console.log("Dữ liệu đơn hàng sau khi xử lý:", processedOrders);
+        setOrders(processedOrders);
       } else {
+        console.log("Không có dữ liệu đơn hàng nào từ API");
         setOrders([]);
       }
     } catch (error) {
       console.error("Lỗi khi tải dữ liệu:", error);
-      handleErrorWithSwal(error);
+      Swal.fire({
+        icon: "error",
+        title: "Lỗi",
+        text: "Có lỗi xảy ra khi tải dữ liệu đơn hàng",
+      });
     } finally {
       setIsLoading(false);
     }
   };
 
-  useEffect(() => {
-    fetchOrdersData();
-    fetchUsers();
-  }, []);
-
+  // Hàm duyệt một đơn hàng
   const handleApproveOrder = async (orderId) => {
     try {
       const result = await Swal.fire({
-        title: 'Xác nhận duyệt đơn',
+        title: "Xác nhận duyệt đơn",
         text: `Bạn có chắc muốn duyệt đơn hàng #${orderId}?`,
-        icon: 'question',
+        icon: "question",
         showCancelButton: true,
-        confirmButtonText: 'Duyệt',
-        cancelButtonText: 'Hủy',
-        confirmButtonColor: '#10B981',
-        cancelButtonColor: '#EF4444'
+        confirmButtonText: "Duyệt",
+        cancelButtonText: "Hủy",
+        confirmButtonColor: "#10B981",
+        cancelButtonColor: "#EF4444",
       });
 
       if (result.isConfirmed) {
         Swal.fire({
-          title: 'Đang xử lý...',
-          text: 'Vui lòng chờ trong giây lát',
+          title: "Đang xử lý...",
+          text: "Vui lòng chờ trong giây lát",
           allowOutsideClick: false,
-          didOpen: () => Swal.showLoading()
+          didOpen: () => Swal.showLoading(),
         });
 
         const response = await paymentsAPI.processAndConfirmPayment(orderId);
 
         if (response && response.data) {
-          setOrders(prevOrders =>
-            prevOrders.map(order =>
+          setOrders((prevOrders) =>
+            prevOrders.map((order) =>
               order.orderId === orderId
                 ? {
                     ...order,
                     status: ORDER_STATUS.COMPLETED,
                     paymentStatus: "Confirmed",
                     paymentId: response.data.paymentId,
-                    paymentDate: response.data.paymentDate
+                    paymentDate: response.data.paymentDate,
                   }
                 : order
             )
           );
 
           await Swal.fire({
-            icon: 'success',
-            title: 'Thành công',
-            text: 'Đã duyệt và thanh toán đơn hàng thành công',
-            timer: 1500
+            icon: "success",
+            title: "Thành công",
+            text: "Đã duyệt và thanh toán đơn hàng thành công",
+            timer: 1500,
           });
         }
       }
     } catch (error) {
       console.error("Lỗi khi duyệt đơn:", error);
       Swal.fire({
-        icon: 'error',
-        title: 'Lỗi',
-        text: error.response?.data || error.message || 'Có lỗi xảy ra khi duyệt đơn hàng'
+        icon: "error",
+        title: "Lỗi",
+        text:
+          error.response?.data ||
+          error.message ||
+          "Có lỗi xảy ra khi duyệt đơn hàng",
       });
     }
   };
 
+  // Hàm duyệt tất cả đơn hàng "Chờ xử lý"
   const handleApproveAllOrders = async () => {
-    const pendingOrders = orders.filter(order => 
-      order.status === ORDER_STATUS.PENDING && !order.paymentId
+    const pendingOrders = orders.filter(
+      (order) => order.status === ORDER_STATUS.PENDING && !order.paymentId
     );
 
     if (pendingOrders.length === 0) {
       Swal.fire({
-        icon: 'info',
-        title: 'Thông báo',
-        text: 'Không có đơn hàng nào cần duyệt.'
+        icon: "info",
+        title: "Thông báo",
+        text: "Không có đơn hàng nào cần duyệt.",
       });
       return;
     }
 
     try {
       const result = await Swal.fire({
-        title: 'Xác nhận duyệt tất cả',
+        title: "Xác nhận duyệt tất cả",
         text: `Bạn có chắc muốn duyệt ${pendingOrders.length} đơn hàng đang chờ?`,
-        icon: 'question',
+        icon: "question",
         showCancelButton: true,
-        confirmButtonText: 'Duyệt tất cả',
-        cancelButtonText: 'Hủy',
-        confirmButtonColor: '#10B981',
-        cancelButtonColor: '#EF4444'
+        confirmButtonText: "Duyệt tất cả",
+        cancelButtonText: "Hủy",
+        confirmButtonColor: "#10B981",
+        cancelButtonColor: "#EF4444",
       });
 
       if (!result.isConfirmed) return;
 
       Swal.fire({
-        title: 'Đang xử lý...',
+        title: "Đang xử lý...",
         html: `Đang duyệt ${pendingOrders.length} đơn hàng...<br>Vui lòng chờ trong giây lát`,
         allowOutsideClick: false,
-        didOpen: () => Swal.showLoading()
+        didOpen: () => Swal.showLoading(),
       });
 
       const results = await Promise.allSettled(
-        pendingOrders.map(async order => {
+        pendingOrders.map(async (order) => {
           try {
-            const response = await paymentsAPI.processAndConfirmPayment(order.orderId);
+            const response = await paymentsAPI.processAndConfirmPayment(
+              order.orderId
+            );
             return {
               orderId: order.orderId,
               success: true,
-              data: response.data
+              data: response.data,
             };
           } catch (error) {
             return {
               orderId: order.orderId,
               success: false,
-              error: error.response?.data || error.message
+              error: error.response?.data || error.message,
             };
           }
         })
       );
 
-      const successful = results.filter(r => r.value?.success).length;
-      const failed = results.filter(r => !r.value?.success).length;
+      const successful = results.filter((r) => r.value?.success).length;
+      const failed = results.filter((r) => !r.value?.success).length;
 
-      setOrders(prevOrders =>
-        prevOrders.map(order => {
-          const result = results.find(r => r.value?.orderId === order.orderId);
+      setOrders((prevOrders) =>
+        prevOrders.map((order) => {
+          const result = results.find(
+            (r) => r.value?.orderId === order.orderId
+          );
           if (result?.value?.success) {
             return {
               ...order,
               status: ORDER_STATUS.COMPLETED,
               paymentStatus: "Confirmed",
               paymentId: result.value.data.paymentId,
-              paymentDate: result.value.data.paymentDate
+              paymentDate: result.value.data.paymentDate,
             };
           }
           return order;
@@ -233,14 +222,14 @@ const Order = () => {
       );
 
       await Swal.fire({
-        icon: successful > 0 ? 'success' : 'warning',
-        title: 'Kết quả xử lý',
+        icon: successful > 0 ? "success" : "warning",
+        title: "Kết quả xử lý",
         html: `
           <div class="text-left">
             <p>✅ Thành công: ${successful} đơn hàng</p>
-            ${failed > 0 ? `<p>❌ Thất bại: ${failed} đơn hàng</p>` : ''}
+            ${failed > 0 ? `<p>❌ Thất bại: ${failed} đơn hàng</p>` : ""}
           </div>
-        `
+        `,
       });
 
       if (successful > 0) {
@@ -249,13 +238,14 @@ const Order = () => {
     } catch (error) {
       console.error("Lỗi khi duyệt tất cả đơn hàng:", error);
       Swal.fire({
-        icon: 'error',
-        title: 'Lỗi',
-        text: 'Có lỗi xảy ra khi duyệt đơn hàng. Vui lòng thử lại.'
+        icon: "error",
+        title: "Lỗi",
+        text: "Có lỗi xảy ra khi duyệt đơn hàng. Vui lòng thử lại.",
       });
     }
   };
 
+  // Lọc và phân trang đơn hàng
   const filteredOrders = orders.filter((order) => {
     const searchLower = searchTerm.toLowerCase();
     const matchesSearch = [
@@ -264,12 +254,12 @@ const Order = () => {
       order.userPhone,
       order.userAddress,
       order.totalAmount,
-      order.status
-    ].some(field => 
-      String(field).toLowerCase().includes(searchLower)
-    );
+      order.status,
+    ].some((field) => String(field).toLowerCase().includes(searchLower));
 
-    return matchesSearch && (filterStatus === "All" || order.status === filterStatus);
+    return (
+      matchesSearch && (filterStatus === "All" || order.status === filterStatus)
+    );
   });
 
   const totalPages = Math.ceil(filteredOrders.length / ordersPerPage);
@@ -278,12 +268,13 @@ const Order = () => {
     currentPage * ordersPerPage
   );
 
+  // Hàm hiển thị trạng thái và màu sắc
   const getStatusDisplay = (status) => {
     return STATUS_MAP[status] || "Chờ xử lý";
   };
 
   const getStatusColor = (status) => {
-    switch(status) {
+    switch (status) {
       case ORDER_STATUS.PENDING:
         return "bg-yellow-100 text-yellow-800";
       case ORDER_STATUS.PROCESSING:
@@ -297,6 +288,13 @@ const Order = () => {
     }
   };
 
+  // Tải dữ liệu ban đầu
+  useEffect(() => {
+    fetchOrdersData();
+    fetchUsers();
+  }, []);
+
+  // Giao diện khi đang tải
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -305,6 +303,7 @@ const Order = () => {
     );
   }
 
+  // Giao diện khi không có đơn hàng
   if (!orders || orders.length === 0) {
     return (
       <div className="p-4 md:p-6 bg-gradient-to-br from-gray-50 to-gray-100 min-h-screen">
@@ -329,13 +328,14 @@ const Order = () => {
             onClick={fetchOrdersData}
             className="mt-4 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
           >
-            Tải lại dữ liệu 
+            Tải lại dữ liệu
           </button>
         </div>
       </div>
     );
   }
 
+  // Giao diện chính
   return (
     <div className="p-4 md:p-6 bg-gradient-to-br from-gray-50 to-gray-100 min-h-screen">
       {/* Header */}
@@ -442,34 +442,43 @@ const Order = () => {
                     {formatCurrency(order.totalAmount)}
                   </td>
                   <td className="p-4 text-sm">
-                    {dayjs(order.orderDate).format('DD/MM/YYYY HH:mm')}
+                    {dayjs(order.orderDate).format("DD/MM/YYYY HH:mm")}
                   </td>
                   <td className="p-4">
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(order.status)}`}>
+                    <span
+                      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(
+                        order.status
+                      )}`}
+                    >
                       {getStatusDisplay(order.status)}
                     </span>
                   </td>
                   <td className="p-4">
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                      order.paymentStatus === "Confirmed" 
-                        ? "bg-green-100 text-green-800" 
-                        : "bg-yellow-100 text-yellow-800"
-                    }`}>
-                      {order.paymentStatus === "Confirmed" ? "Đã thanh toán" : "Chưa thanh toán"}
+                    <span
+                      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                        order.paymentStatus === "Confirmed"
+                          ? "bg-green-100 text-green-800"
+                          : "bg-yellow-100 text-yellow-800"
+                      }`}
+                    >
+                      {order.paymentStatus === "Confirmed"
+                        ? "Đã thanh toán"
+                        : "Chưa thanh toán"}
                     </span>
                   </td>
                   <td className="p-4 text-center">
                     <div className="flex items-center justify-center space-x-2">
-                      {order.status === ORDER_STATUS.PENDING && !order.paymentId && (
-                        <button
-                          onClick={() => handleApproveOrder(order.orderId)}
-                          className="px-3 py-1.5 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors flex items-center gap-1"
-                          title="Duyệt đơn"
-                        >
-                          <FaCheckCircle className="w-4 h-4" />
-                          <span className="text-sm">Duyệt</span>
-                        </button>
-                      )}
+                      {order.status === ORDER_STATUS.PENDING &&
+                        !order.paymentId && (
+                          <button
+                            onClick={() => handleApproveOrder(order.orderId)}
+                            className="px-3 py-1.5 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors flex items-center gap-1"
+                            title="Duyệt đơn"
+                          >
+                            <FaCheckCircle className="w-4 h-4" />
+                            <span className="text-sm">Duyệt</span>
+                          </button>
+                        )}
                     </div>
                   </td>
                 </tr>
