@@ -8,7 +8,7 @@ import { useAuth } from "../../context/AuthContext";
 import Navbar from "../../components/Navbar/Navbar";
 import Footer from "../../components/Footer/Footer";
 import { formatCurrency } from "../../utils/formatCurrency";
-import { FaArrowLeft, FaShoppingCart } from "react-icons/fa";
+import { FaArrowLeft, FaShoppingCart, FaTrash } from "react-icons/fa";
 import Swal from "sweetalert2";
 import { Rating, Chip, Dialog, DialogContent, IconButton } from "@mui/material";
 import reviewsAPI from "../../services/reviews";
@@ -20,7 +20,7 @@ const ProductDetail = () => {
   const { addToCart } = useCart();
   const { users } = useUsersContext();
   const { products, fetchProduct } = useDataContext();
-  const { currentUser } = useAuth();
+  const { user } = useAuth();
   const { reviews, fetchReviews, setReviews } = useReviewContext();
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -114,29 +114,72 @@ const ProductDetail = () => {
     setActiveImage((prev) => (prev === images.length - 1 ? 0 : prev + 1));
   };
 
-  const handleAddToCart = () => {
-    if (!product || product.quantity === 0) {
+  const handleAddToCart = async (productToAdd, quantityToAdd = 1) => {
+    if (productToAdd.quantity === 0) {
       Swal.fire({
-        icon: "error",
-        title: "Hết hàng!",
-        text: "Sản phẩm này hiện đã hết hàng.",
+        icon: 'error',
+        title: 'Hết hàng',
+        text: 'Sản phẩm này hiện đã hết hàng!',
+        confirmButtonColor: '#3085d6'
       });
       return;
     }
+
+    try {
+      const cartItem = {
+        productId: productToAdd.productId,
+        quantity: quantityToAdd,
+        price: productToAdd.price,
+        productName: productToAdd.productName,
+        productImage: productToAdd.productsImages?.[0]?.imageUrl || productToAdd.image
+      };
+
+      await addToCart(cartItem);
+      
+    } catch (error) {
+      console.error("Error adding to cart:", error);
+      Swal.fire({
+        icon: 'error',
+        title: 'Lỗi',
+        text: error.response?.data || 'Không thể thêm sản phẩm vào giỏ hàng',
+        confirmButtonColor: '#3085d6'
+      });
+    }
+  };
+
+  const handleRelatedProductAddToCart = async (relatedProduct, e) => {
+    e.stopPropagation(); // Ngăn chặn sự kiện click lan ra ngoài
     
-    addToCart({
-      id: product.productId,
-      name: product.productName,
-      price: product.price,
-      image: images[0],
-      quantity: quantity,
-    });
-    
-    Swal.fire({
-      icon: "success",
-      title: "Đã thêm vào giỏ hàng!",
-      text: `${product.productName} đã được thêm vào giỏ hàng với số lượng: ${quantity}.`,
-    });
+    if (relatedProduct.quantity === 0) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Hết hàng',
+        text: 'Sản phẩm này hiện đã hết hàng!',
+        confirmButtonColor: '#3085d6'
+      });
+      return;
+    }
+
+    try {
+      const cartItem = {
+        productId: relatedProduct.productId,
+        quantity: 1,
+        price: relatedProduct.price,
+        productName: relatedProduct.productName,
+        productImage: relatedProduct.productsImages?.[0]?.imageUrl || relatedProduct.image
+      };
+
+      await addToCart(cartItem);
+      
+    } catch (error) {
+      console.error("Error adding to cart:", error);
+      Swal.fire({
+        icon: 'error',
+        title: 'Lỗi',
+        text: error.response?.data || 'Không thể thêm sản phẩm vào giỏ hàng',
+        confirmButtonColor: '#3085d6'
+      });
+    }
   };
 
   const handleImageChange = (e) => {
@@ -147,115 +190,65 @@ const ProductDetail = () => {
     }
   };
 
-  const handleReviewSubmit = async () => {
-    if (isSubmitting) return;
-    setIsSubmitting(true);
-
+  const handleSubmitReview = async (reviewData) => {
     try {
-      // Kiểm tra user đã đăng nhập chưa
-      if (!currentUser) {
-        Swal.fire({
-          icon: "warning",
-          title: "Cần đăng nhập",
-          text: "Bạn cần đăng nhập để gửi đánh giá!",
-          showCancelButton: true,
-          confirmButtonText: "Đăng nhập ngay",
-          cancelButtonText: "Đóng"
-        }).then((result) => {
-          if (result.isConfirmed) {
-            navigate("/login", { state: { from: `/product/${id}` } });
-          }
-        });
-        setIsSubmitting(false);
-        return;
-      }
-
-      // Tìm thông tin chi tiết của người dùng từ users context
-      const userDetail = users.find(user => user.email === currentUser.email);
+      // Kiểm tra và đảm bảo userId là số
+      const userId = user?.userId;
       
-      if (!userDetail || !userDetail.userId) {
-        console.error("Không tìm thấy thông tin người dùng trong context:", currentUser, users);
+      // Debug để kiểm tra giá trị
+      console.log('User object:', user);
+      console.log('Raw userId:', userId);
+      console.log('Type of userId:', typeof userId);
+
+      if (!userId || isNaN(userId)) {
         Swal.fire({
-          icon: "error",
-          title: "Lỗi xác thực",
-          text: "Không thể xác định thông tin người dùng. Vui lòng đăng nhập lại.",
+          icon: 'error',
+          title: 'Lỗi!',
+          text: 'Không thể xác định người dùng. Vui lòng đăng nhập lại.'
         });
-        setIsSubmitting(false);
         return;
       }
 
-      // Validate dữ liệu đầu vào
-      if (!newComment.trim()) {
-        Swal.fire({
-          icon: "warning",
-          title: "Thiếu nội dung",
-          text: "Vui lòng nhập nội dung đánh giá!",
-        });
-        setIsSubmitting(false);
-        return;
-      }
-
-      if (newRating === 0) {
-        Swal.fire({
-          icon: "warning",
-          title: "Thiếu đánh giá",
-          text: "Vui lòng chọn số sao đánh giá!",
-        });
-        setIsSubmitting(false);
-        return;
-      }
-
-      // Tạo object review theo cấu trúc API
-      const reviewData = {
-        productId: parseInt(product.productId),
-        userId: parseInt(userDetail.userId),
-        rating: newRating,
-        comment: newComment,
+      const reviewPayload = {
+        ...reviewData,
+        // Đảm bảo userId là số
+        userId: Number(userId),
+        productId: Number(id),
         reviewDate: new Date().toISOString()
       };
 
-      console.log("Thông tin người dùng từ context:", userDetail);
-      console.log("Đang gửi đánh giá:", reviewData);
+      console.log('Review payload:', reviewPayload);
 
-      // Gọi API tạo review
-      const response = await reviewsAPI.createReviews(reviewData);
-      console.log("Phản hồi từ API:", response);
+      const response = await reviewsAPI.createReviews(reviewPayload);
 
-      // Xử lý response thành công
       if (response.status === 200) {
-        // Tạo đối tượng review mới để thêm vào state
-        const newReview = {
-          ...reviewData,
-          reviewId: Date.now(), // Tạm thời dùng timestamp làm ID vì API không trả về ID
-          userName: userDetail.fullName || userDetail.userName || currentUser.email || "Người dùng",
+        const newReviewDisplay = {
+          ...reviewPayload,
+          productName: product.productName,
+          userName: user.name || "Người dùng",
         };
-        
-        // Cập nhật state reviews
-        setReviews(prevReviews => [newReview, ...prevReviews]);
 
-        // Reset form
+        setReviews(prevReviews => [newReviewDisplay, ...prevReviews]);
         setNewRating(0);
         setNewComment("");
 
-        // Thông báo thành công
         Swal.fire({
           icon: "success",
           title: "Thành công!",
           text: "Đánh giá của bạn đã được gửi thành công!",
+          showConfirmButton: false,
+          timer: 1500
         });
-        
-        // Cập nhật lại danh sách đánh giá
-        fetchReviews();
+
+        await fetchReviews();
       }
     } catch (error) {
-      console.error("Lỗi khi gửi đánh giá:", error);
+      console.error('Error submitting review:', error);
       Swal.fire({
-        icon: "error",
-        title: "Lỗi!",
-        text: "Có lỗi xảy ra khi gửi đánh giá. Vui lòng thử lại sau.",
+        icon: 'error',
+        title: 'Lỗi!',
+        text: 'Không thể gửi đánh giá. Vui lòng thử lại sau.'
       });
-    } finally {
-      setIsSubmitting(false);
     }
   };
 
@@ -266,6 +259,130 @@ const ProductDetail = () => {
   const productReviews = reviews.filter(
     (review) => review.productId.toString() === id
   );
+
+  // Thêm hàm hiển thị đánh giá
+  const renderReviews = () => {
+    return productReviews.map((review) => {
+      const reviewUser = users?.find((u) => u.userId === review.userId) || {};
+      
+      // Kiểm tra xem người dùng hiện tại có phải là người viết review không
+      const isReviewOwner = user && user.userId === review.userId;
+      
+      return (
+        <div
+          key={review.reviewId}
+          className="border p-4 rounded-lg shadow-sm hover:shadow-md transition-shadow"
+        >
+          <div className="flex items-center gap-3">
+            <img
+              src={reviewUser.avatar || `https://api.dicebear.com/9.x/adventurer/svg?seed=${review.userName}`}
+              alt={review.userName}
+              className="w-10 h-10 rounded-full object-cover border"
+            />
+            <div>
+              <p className="text-lg font-semibold">{review.userName}</p>
+              <Rating
+                value={review.rating}
+                readOnly
+                size="small"
+                precision={0.5}
+              />
+            </div>
+            
+            {/* Chỉ hiển thị nút xóa nếu là chủ của review */}
+            {isReviewOwner && (
+              <button
+                onClick={() => handleDeleteReview(review.reviewId)}
+                className="ml-auto text-red-500 hover:text-red-700 transition-colors"
+                title="Xóa đánh giá"
+              >
+                <FaTrash />
+              </button>
+            )}
+          </div>
+
+          <p className="mt-2 text-gray-700">{review.comment}</p>
+          <p className="text-sm text-gray-500 mt-1">
+            {dayjs(review.reviewDate).format("DD/MM/YYYY HH:mm")}
+          </p>
+        </div>
+      );
+    });
+  };
+
+  // Thêm hàm xóa đánh giá
+  const handleDeleteReview = async (reviewId) => {
+    try {
+      // Kiểm tra xem người dùng đã đăng nhập chưa
+      if (!user) {
+        Swal.fire({
+          icon: 'error',
+          title: 'Lỗi!',
+          text: 'Bạn cần đăng nhập để thực hiện thao tác này.',
+        });
+        return;
+      }
+
+      // Tìm review cần xóa
+      const reviewToDelete = reviews.find(review => review.reviewId === reviewId);
+      
+      // Kiểm tra xem review có tồn tại và người dùng có quyền xóa không
+      if (!reviewToDelete) {
+        Swal.fire({
+          icon: 'error',
+          title: 'Lỗi!',
+          text: 'Không tìm thấy đánh giá này.',
+        });
+        return;
+      }
+
+      // Kiểm tra quyền xóa
+      if (reviewToDelete.userId !== user.userId) {
+        Swal.fire({
+          icon: 'error',
+          title: 'Lỗi!',
+          text: 'Bạn không có quyền xóa đánh giá này.',
+        });
+        return;
+      }
+
+      const result = await Swal.fire({
+        title: 'Xác nhận xóa',
+        text: "Bạn có chắc chắn muốn xóa đánh giá này?",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Xóa',
+        cancelButtonText: 'Hủy'
+      });
+
+      if (result.isConfirmed) {
+        const response = await reviewsAPI.deleteReviews(reviewId);
+        
+        if (response.status === 200) {
+          setReviews(prevReviews => prevReviews.filter(review => review.reviewId !== reviewId));
+          
+          Swal.fire({
+            icon: 'success',
+            title: 'Đã xóa!',
+            text: 'Đánh giá đã được xóa thành công.',
+            showConfirmButton: false,
+            timer: 1500
+          });
+
+          await fetchReviews();
+        }
+      }
+    } catch (error) {
+      console.error("Lỗi khi xóa đánh giá:", error);
+      Swal.fire({
+        icon: 'error',
+        title: 'Lỗi!',
+        text: 'Không thể xóa đánh giá. Vui lòng thử lại sau.',
+      });
+    }
+  };
 
   return (
     <>
@@ -393,7 +510,7 @@ const ProductDetail = () => {
                     ? "bg-gray-400 text-gray-800 cursor-not-allowed"
                     : "bg-blue-600 hover:bg-blue-700 text-white transform hover:scale-105"
                 }`}
-                onClick={handleAddToCart}
+                onClick={() => handleAddToCart(product, quantity)}
                 disabled={product.quantity === 0}
               >
                 <FaShoppingCart className="text-xl" />
@@ -448,53 +565,7 @@ const ProductDetail = () => {
                 </p>
                 {productReviews.length > 0 ? (
                   <div className="space-y-4">
-                    {productReviews.map((review) => {
-                      const user =
-                        users?.find((u) => u.userId === review.userId) || {};
-
-                      return (
-                        <div
-                          key={review.reviewId || review.id}
-                          className="border p-4 rounded-lg shadow-sm"
-                        >
-                          {/* Avatar & Tên người dùng */}
-                          <div className="flex items-center gap-3">
-                            {user.avatar ? (
-                              <img
-                                src={user.avatar}
-                                alt={user.fullName || "Người dùng ẩn danh"}
-                                className="w-10 h-10 rounded-full object-cover border"
-                              />
-                            ) : (
-                              <img
-                                src={`https://api.dicebear.com/9.x/adventurer/svg?seed=Liliana${
-                                  user.userName || "default"
-                                }`}
-                                alt="Avatar ảo"
-                                className="w-10 h-10 rounded-full border"
-                              />
-                            )}
-                            <div>
-                              <p className="text-lg font-semibold">
-                                {user.userName || review.userName || "Người dùng ẩn danh"}
-                              </p>
-                              <Rating
-                                value={review.rating}
-                                readOnly
-                                size="small"
-                              />
-                            </div>
-                          </div>
-                          {/* Nội dung đánh giá */}
-                          <p className="mt-2 text-gray-700">{review.comment}</p>
-                          <p className="text-sm text-gray-500 mt-1">
-                            {dayjs(review.reviewDate).format(
-                              "DD/MM/YYYY HH:mm"
-                            )}
-                          </p>
-                        </div>
-                      );
-                    })}
+                    {renderReviews()}
                   </div>
                 ) : (
                   <p className="text-gray-500">Chưa có đánh giá nào</p>
@@ -530,7 +601,10 @@ const ProductDetail = () => {
                         ? "bg-gray-400 cursor-not-allowed"
                         : "bg-blue-500 hover:bg-blue-600"
                     }`}
-                    onClick={handleReviewSubmit}
+                    onClick={() => handleSubmitReview({
+                      rating: newRating,
+                      comment: newComment.trim()
+                    })}
                     disabled={isSubmitting}
                   >
                     {isSubmitting ? "Đang gửi..." : "Gửi đánh giá"}
@@ -636,24 +710,9 @@ const ProductDetail = () => {
                         {formatCurrency(relatedProduct.price)}
                       </p>
                       <button 
-                        className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded-full text-sm transition-colors"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          addToCart({
-                            id: relatedProduct.productId,
-                            name: relatedProduct.productName,
-                            price: relatedProduct.price,
-                            image: relatedProduct.productsImages?.[0]?.imageUrl || relatedProduct.image,
-                            quantity: 1,
-                          });
-                          Swal.fire({
-                            icon: "success",
-                            title: "Đã thêm vào giỏ hàng!",
-                            text: `${relatedProduct.productName} đã được thêm vào giỏ hàng với số lượng: 1.`,
-                            showConfirmButton: false,
-                            timer: 1500
-                          });
-                        }}
+                        className={`bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded-full text-sm transition-colors
+                          ${relatedProduct.quantity === 0 ? "opacity-50 cursor-not-allowed" : ""}`}
+                        onClick={(e) => handleRelatedProductAddToCart(relatedProduct, e)}
                         disabled={relatedProduct.quantity === 0}
                       >
                         <FaShoppingCart />

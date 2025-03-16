@@ -8,91 +8,65 @@ const orderAPI = {
       const response = await axiosInstance.get(endPoint);
       return response.data;
     } catch (error) {
-      console.error("Error fetching orders:", error);
+      console.error("Lỗi khi lấy danh sách đơn hàng:", error);
       throw error;
     }
   },
 
-  getOrderPending: async () => {
+  getOrderDetail: async (orderId) => {
     try {
-      const response = await axiosInstance.get(`${endPoint}/Pending-orders`);
+      const response = await axiosInstance.get(`${endPoint}/orders/${orderId}`);
       return response.data;
     } catch (error) {
-      console.error("Error fetching orders:", error);
-      throw error;
+      if (error.response) {
+        if (error.response.status === 401) {
+          throw new Error('Bạn không có quyền xem đơn hàng này');
+        } else if (error.response.status === 404) {
+          throw new Error('Không tìm thấy đơn hàng');
+        }
+      }
+      throw new Error('Có lỗi xảy ra khi lấy thông tin đơn hàng');
     }
   },
 
-  getInCartOrder: async () => {
+  getListOrderUser: async () => {
     try {
-      const response = await axiosInstance.get(`${endPoint}/in-cart`);
+      const response = await axiosInstance.get(`${endPoint}/orders/myOrders`);
       return response.data;
     } catch (error) {
-      console.error("Error fetching in-cart order:", error);
+      console.error("Lỗi khi lấy danh sách đơn hàng của user:", error);
       throw error;
     }
   },
-
-  createOrderAddCart: async (userId, products) => {
+  
+  createOrder: async (promotionID, products) => {
     try {
-      const response = await axiosInstance.post(`${endPoint}/add-to-cart`, {
-        userID: userId,
-        products: products
-      });
-      return response.data;
-    } catch (error) {
-      console.error("Error adding to cart:", error);
-      throw error;
-    }
-  },
+      // Kiểm tra dữ liệu đầu vào
+      if (!Array.isArray(products) || products.length === 0) {
+        throw new Error("Danh sách sản phẩm không hợp lệ");
+      }
 
-  createOrderCheckout: async (orderId, promotionID = null) => {
-    try {
-      const response = await axiosInstance.post(`${endPoint}/checkout`, null, {
-        params: { orderId, promotionID }
-      });
-      return response.data;
-    } catch (error) {
-      console.error(`Error checkout order ${orderId}:`, error);
-      throw error;
-    }
-  },
+      // Format lại products theo đúng model
+      const formattedProducts = products.map(item => ({
+        productID: Number(item.productID),
+        quantity: Number(item.quantity)
+      }));
 
-  createOrderCompleted: async (orderId) => {
-    try {
-      const response = await axiosInstance.patch(`${endPoint}/complete-order`, {
-        orderId, // Sending orderId in the request body
-      });
-
-      return response.data;
-    } catch (error) {
-      console.error(
-        `Error completing order ${orderId}:`,
-        error.response?.data || error.message
+      // Gửi request với body đúng format
+      const response = await axiosInstance.post(
+        `${endPoint}/order-products?promotionID=${promotionID || ''}`, 
+        formattedProducts  // Gửi trực tiếp mảng products
       );
-      throw error;
-    }
-  },
-
-  editOrder: async (id, payload) => {
-    try {
-      const response = await axiosInstance.put(`${endPoint}/${id}`, payload);
       return response.data;
     } catch (error) {
-      console.error(`Error updating order ${id}:`, error);
-      throw error;
+      console.error('Order creation error:', error.response?.data || error);
+      if (error.response?.data) {
+        // Log chi tiết lỗi từ server
+        console.log('Detailed error:', JSON.stringify(error.response.data, null, 2));
+      }
+      throw new Error(error.response?.data?.message || "Lỗi khi tạo đơn hàng");
     }
-  },
-
-  deleteOrder: async (id) => {
-    try {
-      const response = await axiosInstance.delete(`${endPoint}/${id}`);
-      return response.data;
-    } catch (error) {
-      console.error(`Error deleting order ${id}:`, error);
-      throw error;
-    }
-  },
+  }
 };
 
 export default orderAPI;

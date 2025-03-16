@@ -8,6 +8,7 @@ import loginImage from "../../assets/login/login.png";
 import { useAuth } from "../../context/AuthContext";
 import { useNotifications } from "../../context/NotificationContext";
 import GoogleLogin from '../../components/Google/GoogleLogin';
+import { useCart } from '../../context/CartContext';
 
 function Login() {
   const { user, login } = useAuth();
@@ -17,14 +18,10 @@ function Login() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { addNotification } = useNotifications();
+  const { syncCartAfterLogin } = useCart();
 
   useEffect(() => {
-    if (user) {
-      navigate("/");
-      return;
-    }
-
-    // Kiểm tra lỗi từ Google Login
+    // Chỉ xử lý lỗi Google Login, bỏ phần đồng bộ giỏ hàng
     const error = searchParams.get('error');
     if (error) {
       let errorMessage = 'Đăng nhập không thành công';
@@ -48,7 +45,7 @@ function Login() {
         confirmButtonColor: '#6bbcfe'
       });
     }
-  }, [user, navigate, searchParams]);
+  }, [searchParams]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -90,7 +87,6 @@ function Login() {
     try {
       setLoading(true);
 
-      // Hiển thị loading
       const loadingAlert = Swal.fire({
         title: 'Đang đăng nhập...',
         text: 'Vui lòng đợi trong giây lát',
@@ -100,11 +96,18 @@ function Login() {
         }
       });
 
+      // Đăng nhập
       await login({ ...formData, recaptchaToken });
+
+      // Đồng bộ giỏ hàng
+      try {
+        await syncCartAfterLogin();
+      } catch (syncError) {
+        console.error('Lỗi khi đồng bộ giỏ hàng:', syncError);
+      }
 
       loadingAlert.close();
 
-      // Thông báo thành công
       await Swal.fire({
         icon: 'success',
         title: 'Đăng nhập thành công!',

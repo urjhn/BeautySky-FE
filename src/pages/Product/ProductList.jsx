@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useCart } from "../../context/CartContext";
 import { useDataContext } from "../../context/DataContext";
 import { formatCurrency } from "../../utils/formatCurrency";
+import Swal from "sweetalert2";
 
 const ITEMS_PER_PAGE = 12;
 
@@ -49,18 +50,37 @@ const ProductList = ({ selectedSkinType, selectedCategory, sortOrder }) => {
     currentPage * ITEMS_PER_PAGE
   );
 
-  const handleAddToCart = (product) => {
+  const handleAddToCart = async (product) => {
     if (product.quantity === 0) {
-      alert("Sản phẩm này đã hết hàng!");
+      Swal.fire({
+        icon: 'error',
+        title: 'Hết hàng',
+        text: 'Sản phẩm này hiện đã hết hàng!',
+        confirmButtonColor: '#3085d6'
+      });
       return;
     }
-    addToCart({
-      id: product.productId,
-      name: product.productName,
-      price: product.price,
-      image: product.productsImages?.[0]?.imageUrl || product.image,
-      quantity: 1,
-    });
+
+    try {
+      const cartItem = {
+        productId: product.productId,
+        quantity: 1,
+        price: product.price,
+        productName: product.productName,
+        productImage: product.productsImages?.[0]?.imageUrl || product.image
+      };
+
+      await addToCart(cartItem);
+      
+    } catch (error) {
+      console.error("Error adding to cart:", error);
+      Swal.fire({
+        icon: 'error',
+        title: 'Lỗi',
+        text: error.response?.data || 'Không thể thêm sản phẩm vào giỏ hàng',
+        confirmButtonColor: '#3085d6'
+      });
+    }
   };
 
   const handleViewDetails = (productId) => {

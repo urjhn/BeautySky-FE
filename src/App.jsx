@@ -55,7 +55,6 @@ const App = () => (
     <Route path="/product/:id" element={<ProductDetail />} />
     <Route path="/paymentsuccess" element={<PaymentSuccess />} />
     <Route path="/vieworder" element={<ViewOrder />} />
-    <Route path="/orderdetail/:orderId:" element={<OrderDetail />} />
     <Route path="/viewcart" element={<Viewcart />} />
     <Route path="/contact" element={<Contact />} />
     <Route path="/quizz" element={<Quizz />} />
@@ -102,6 +101,7 @@ const App = () => (
     <Route path="/profilelayout" element={<ProfileLayout />}>
       <Route index element={<UserProfile />} />
       <Route path="historyorder" element={<HistoryOrder />} />
+      <Route path="orderdetail/:orderId" element={<OrderDetail />} />
       <Route path="security" element={<Security />} />
       <Route path="notifications" element={<Notifications />} />
       <Route path="my-routines" element={<UserRoutinePage />} />

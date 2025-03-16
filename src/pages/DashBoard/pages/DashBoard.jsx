@@ -143,64 +143,88 @@ const Dashboard = () => {
   }, [orders, users]);
 
   return (
-    <div className="flex h-screen bg-gray-100">
-      <div className="flex-1 flex flex-col p-4 md:p-6 space-y-4 md:space-y-6 overflow-y-auto">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+      <div className="flex-1 flex flex-col p-4 md:p-6 space-y-6 md:space-y-8">
+        {/* Header Section */}
+        <div className="flex items-center justify-between">
+          <h1 className="text-2xl md:text-3xl font-bold text-gray-800 animate-fade-in">
+            Dashboard Overview
+          </h1>
+          <div className="text-sm text-gray-500">
+            Last updated: {new Date().toLocaleDateString()}
+          </div>
+        </div>
+
         {/* Statistics Cards */}
-        <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6">
+        <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
           <StatCard
-            icon={<FaUsers />}
+            icon={<FaUsers className="text-blue-500" />}
             title="Users"
             value={users.length}
             subtitle="Updated dynamically"
+            className="bg-white hover:shadow-lg transform hover:-translate-y-1 transition-all duration-300"
+            gradient="from-blue-500/10 to-blue-100/30"
           />
           <StatCard
-            icon={<FaShoppingCart />}
+            icon={<FaShoppingCart className="text-green-500" />}
             title="Orders"
             value={orders ? orders.length : 0}
             subtitle="Fetched from API"
+            className="bg-white hover:shadow-lg transform hover:-translate-y-1 transition-all duration-300"
+            gradient="from-green-500/10 to-green-100/30"
           />
           <StatCard
-            icon={<FaBox />}
+            icon={<FaBox className="text-purple-500" />}
             title="Products"
             value={products.length}
             subtitle="Stock data from API"
+            className="bg-white hover:shadow-lg transform hover:-translate-y-1 transition-all duration-300"
+            gradient="from-purple-500/10 to-purple-100/30"
           />
           <StatCard
-            icon={<FaMoneyBillWave />}
+            icon={<FaMoneyBillWave className="text-yellow-500" />}
             title="Revenue"
             value={new Intl.NumberFormat("vi-VN", {
               style: "currency",
               currency: "VND",
             }).format(revenue)}
             subtitle="Real-time revenue"
+            className="bg-white hover:shadow-lg transform hover:-translate-y-1 transition-all duration-300"
+            gradient="from-yellow-500/10 to-yellow-100/30"
           />
         </div>
 
         {/* Charts Section */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
-          <div className="w-full min-h-[300px] md:min-h-[400px]">
-            <SalesChart salesData={salesData} leadData={leadData} />
-          </div>
-          <div className="w-full min-h-[300px] md:min-h-[400px]">
-            <RevenueChart revenueGrowth={revenueGrowth} />
-          </div>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8">
+            <div className="w-full min-h-[300px] md:min-h-[400px]">
+              <SalesChart salesData={salesData} leadData={leadData} />
+            </div>
+          
+            <div className="w-full min-h-[300px] md:min-h-[400px]">
+              <RevenueChart revenueGrowth={revenueGrowth} />
+            </div>
         </div>
 
         {/* Additional Insights */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
           <StatCard
-            icon={<FaChartLine />}
+            icon={<FaChartLine className="text-indigo-500" />}
             title="Conversion Rate"
             value={`${conversionRate}%`}
             subtitle="Improved from last month"
+            className="bg-white hover:shadow-lg transform hover:-translate-y-1 transition-all duration-300"
+            gradient="from-indigo-500/10 to-indigo-100/30"
           />
           <StatCard
-            icon={<FaPercentage />}
+            icon={<FaPercentage className="text-red-500" />}
             title="Profit Margin"
             value="22.5%"
             subtitle="Stable trend"
+            className="bg-white hover:shadow-lg transform hover:-translate-y-1 transition-all duration-300"
+            gradient="from-red-500/10 to-red-100/30"
           />
-          <div className="col-span-1 sm:col-span-2 md:col-span-1">
+          <div className="col-span-1 sm:col-span-2 md:col-span-1 bg-white rounded-xl shadow-md p-4 hover:shadow-lg transition-shadow duration-300">
+            <h3 className="text-lg font-semibold mb-4 text-gray-700">Customer Growth</h3>
             <CustomersChart customerGrowth={customerGrowth} />
           </div>
         </div>

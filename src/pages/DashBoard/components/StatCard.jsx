@@ -1,17 +1,27 @@
 import React from "react";
 
-const StatCard = ({ icon, title, value, color }) => {
+const StatCard = ({ icon, title, value, subtitle, className = '', gradient = '' }) => {
   return (
-    <div
-      className={`bg-white p-4 md:p-6 rounded-2xl shadow-lg flex items-center space-x-3 md:space-x-4 
-      transition transform hover:scale-105 border-l-8 ${color}
-      w-full sm:w-[calc(50%-1rem)] lg:w-auto`}
+    <div 
+      className={`
+        relative overflow-hidden rounded-xl p-4 
+        bg-gradient-to-br ${gradient}
+        ${className}
+      `}
     >
-      <div className="text-2xl md:text-4xl text-gray-700">{icon}</div>
-      <div>
-        <p className="text-gray-500 text-xs md:text-sm">{title}</p>
-        <h2 className="text-xl md:text-3xl font-bold text-gray-800">{value}</h2>
+      <div className="flex items-center justify-between">
+        <div className="flex-1">
+          <div className="text-lg font-semibold text-gray-800 mb-1">{title}</div>
+          <div className="text-2xl font-bold text-gray-900 mb-2">{value}</div>
+          <div className="text-sm text-gray-500">{subtitle}</div>
+        </div>
+        <div className="text-2xl opacity-90">
+          {icon}
+        </div>
       </div>
+      
+      {/* Decorative circle */}
+      <div className="absolute -right-6 -top-6 w-24 h-24 rounded-full bg-current opacity-[0.03]" />
     </div>
   );
 };

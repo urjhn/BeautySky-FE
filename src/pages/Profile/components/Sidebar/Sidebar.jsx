@@ -62,67 +62,76 @@ const Sidebar = () => {
       </button>
 
       <aside className={`
-        fixed lg:relative
+        fixed lg:sticky lg:top-0
         w-72 bg-gradient-to-b from-blue-50 to-blue-100 
-        p-6 flex flex-col space-y-6 h-screen shadow-xl
+        min-h-screen max-h-screen overflow-y-auto
         transition-transform duration-300 ease-in-out
-        lg:translate-x-0
+        lg:translate-x-0 scrollbar-thin scrollbar-thumb-blue-500 scrollbar-track-blue-100
         ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}
         z-40
       `}>
-        {/* Header */}
-        <h2 className="text-3xl font-bold text-center text-blue-800 mb-2">
-          Profile
-        </h2>
-
-        {/* User Info Section */}
-        <div className="text-center bg-white rounded-xl p-6 shadow-md">
-          <div className="w-24 h-24 mx-auto mb-4 rounded-full bg-blue-200 flex items-center justify-center">
-            {currentUser?.fullName?.[0] || "G"}
+        <div className="flex flex-col min-h-screen">
+          {/* Header - Sticky */}
+          <div className="sticky top-0 z-10 bg-gradient-to-b from-blue-50 to-blue-100 pt-6 px-6 pb-3">
+            <h2 className="text-3xl font-bold text-center text-blue-800">
+              Profile
+            </h2>
           </div>
-          <h2 className="text-xl font-bold text-gray-800 mb-1">
-            {currentUser?.fullName || "Guest"}
-          </h2>
-          <p className="text-gray-500 text-sm">
-            {currentUser?.email || "No email available"}
-          </p>
-        </div>
 
-        {/* Navigation */}
-        <nav className="flex-1">
-          <ul className="space-y-3">
-            <NavItem icon={<FaUsers />} title="Profile" to="/profilelayout" />
-            <NavItem
-              icon={<FaChartBar />}
-              title="Orders"
-              to="/profilelayout/historyorder"
-            />
-            <NavItem
-              icon={<FaSpa />}
-              title="Lộ trình của bạn"
-              to="/profilelayout/my-routines"
-            />
-            <NavItem
-              icon={<FaShieldAlt />}
-              title="Bảo mật 2 lớp (2FA)"
-              to="/profilelayout/security"
-            />
-            <NavItem
-              icon={<FaBell />}
-              title="Thông báo"
-              to="/profilelayout/notifications"
-            />
+          {/* Main Content */}
+          <div className="flex-1 px-6 space-y-6 pb-6">
+            {/* User Info Section */}
+            <div className="text-center bg-white rounded-xl p-6 shadow-md mt-3">
+              <div className="w-24 h-24 mx-auto mb-4 rounded-full bg-blue-200 flex items-center justify-center text-2xl font-bold text-blue-600">
+                {currentUser?.fullName?.[0] || "G"}
+              </div>
+              <h2 className="text-xl font-bold text-gray-800 mb-1">
+                {currentUser?.fullName || "Guest"}
+              </h2>
+              <p className="text-gray-500 text-sm">
+                {currentUser?.email || "No email available"}
+              </p>
+            </div>
 
-            {/* Logout Button */}
-            <li
+            {/* Navigation */}
+            <nav className="flex-1">
+              <ul className="space-y-2">
+                <NavItem icon={<FaUsers />} title="Profile" to="/profilelayout" />
+                <NavItem
+                  icon={<FaChartBar />}
+                  title="Orders"
+                  to="/profilelayout/historyorder"
+                />
+                <NavItem
+                  icon={<FaSpa />}
+                  title="Lộ trình của bạn"
+                  to="/profilelayout/my-routines"
+                />
+                <NavItem
+                  icon={<FaShieldAlt />}
+                  title="Bảo mật 2 lớp (2FA)"
+                  to="/profilelayout/security"
+                />
+                <NavItem
+                  icon={<FaBell />}
+                  title="Thông báo"
+                  to="/profilelayout/notifications"
+                />
+              </ul>
+            </nav>
+          </div>
+
+          {/* Logout Button - Fixed at bottom */}
+          <div className="sticky bottom-0 bg-gradient-to-b from-blue-50 to-blue-100 p-6">
+            <button
               onClick={handleLogout}
-              className="flex items-center space-x-3 px-4 py-3 rounded-lg cursor-pointer transition-all duration-300 text-red-600 hover:bg-red-50 mt-8"
+              className="w-full flex items-center justify-center space-x-3 px-4 py-3 rounded-lg cursor-pointer transition-all duration-300 text-red-600 hover:bg-red-50 hover:shadow-md"
             >
               <FaSignOutAlt className="text-xl" />
               <span className="font-medium">Logout</span>
-            </li>
-          </ul>
-        </nav>
+            </button>
+          </div>
+        </div>
       </aside>
 
       {/* Overlay for mobile menu */}
@@ -143,11 +152,11 @@ const NavItem = ({ icon, title, to }) => (
       to={to}
       className={({ isActive }) =>
         `flex items-center space-x-3 px-4 py-3 rounded-lg cursor-pointer transition-all duration-300
-              ${
-                isActive
-                  ? "bg-blue-600 text-white shadow-md hover:bg-blue-700"
-                  : "text-gray-700 hover:bg-blue-50 hover:text-blue-600"
-              }`
+        ${
+          isActive
+            ? "bg-blue-600 text-white shadow-md hover:bg-blue-700"
+            : "text-gray-700 hover:bg-blue-50 hover:text-blue-600 hover:shadow-sm"
+        }`
       }
     >
       <div className="text-xl">{icon}</div>
