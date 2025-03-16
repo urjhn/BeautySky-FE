@@ -17,6 +17,20 @@ import paymentsAPI from "../../../services/payment";
 import dayjs from "dayjs";
 import { useNavigate } from "react-router-dom";
 
+const ORDER_STATUS = {
+  PENDING: 'Pending',
+  PROCESSING: 'Processing',
+  COMPLETED: 'Completed',
+  CANCELLED: 'Cancelled'
+};
+
+const STATUS_MAP = {
+  [ORDER_STATUS.PENDING]: "Chờ xử lý",
+  [ORDER_STATUS.PROCESSING]: "Đang xử lý",
+  [ORDER_STATUS.COMPLETED]: "Đã hoàn thành",
+  [ORDER_STATUS.CANCELLED]: "Đã hủy"
+};
+
 const Order = () => {
   const { orders = [], setOrders } = useOrdersContext();
   const { users = [], fetchUsers } = useUsersContext();
@@ -31,72 +45,54 @@ const Order = () => {
     setIsLoading(true);
     try {
       const ordersData = await orderAPI.getAll();
+      console.log('Raw orders data:', ordersData); // Debug log
       
       if (ordersData && ordersData.length > 0) {
         try {
           const paymentsData = await paymentsAPI.getAllPaymentDetails();
+          console.log('Payments data:', paymentsData); // Debug log
           
-          // Kết hợp và format dữ liệu
           const combinedData = ordersData.map(order => {
             const payment = paymentsData?.find(p => 
-              p.order && p.order.orderId === order.orderId
+              p.orderId === order.orderId || (p.order && p.order.orderId === order.orderId)
             );
-
-            // Kiểm tra và truy cập thông tin user một cách an toàn hơn
+            
+            // Chuẩn hóa status
+            let orderStatus = (order.status || 'pending').toLowerCase();
+            
+            // Đảm bảo status hợp lệ
+            if (!Object.values(ORDER_STATUS).includes(orderStatus)) {
+              orderStatus = ORDER_STATUS.PENDING;
+            }
+            
             const userData = order.user || {};
             
             return {
               ...order,
-              // Xử lý thông tin user kỹ hơn
+              status: orderStatus,
+              paymentStatus: payment ? "Confirmed" : "Pending",
               userFullName: userData.fullName || userData.name || "Không xác định",
               userPhone: userData.phone || userData.phoneNumber || "Không có",
               userAddress: userData.address || "Không có",
-              // Thêm userId để debug
               userId: userData.userId || userData.id,
-              // Thông tin thanh toán
-              paymentStatus: payment?.paymentStatus || "Chưa thanh toán",
               paymentType: payment?.paymentType || "Chưa có",
               paymentDate: payment?.paymentDate || null,
               totalAmount: order.finalAmount || order.totalAmount || 0
             };
           });
 
-
-          // Sắp xếp theo thời gian mới nhất
-          const sortedData = combinedData.sort((a, b) => 
-            new Date(b.orderDate) - new Date(a.orderDate)
-          );
-
-          setOrders(sortedData);
-        } catch (paymentError) {
-          console.error("Lỗi khi lấy thông tin thanh toán:", paymentError);
-          
-          // Nếu lỗi payment vẫn xử lý orders
-          const formattedOrders = ordersData.map(order => {
-            const userData = order.user || {};
-            return {
-              ...order,
-              userFullName: userData.fullName || userData.name || "Không xác định",
-              userPhone: userData.phone || userData.phoneNumber || "Không có",
-              userAddress: userData.address || "Không có",
-              userId: userData.userId || userData.id,
-              paymentStatus: "Chưa thanh toán",
-              paymentType: "Chưa có"
-            };
-          });
-          setOrders(formattedOrders);
+          console.log('Processed orders:', combinedData); // Debug log
+          setOrders(combinedData);
+        } catch (error) {
+          console.error("Lỗi khi xử lý dữ liệu:", error);
+          handleErrorWithSwal(error);
         }
       } else {
         setOrders([]);
       }
     } catch (error) {
       console.error("Lỗi khi tải dữ liệu:", error);
-      console.error("Chi tiết lỗi:", error.response?.data);
-      Swal.fire({
-        icon: 'error',
-        title: 'Lỗi tải dữ liệu',
-        text: 'Không thể tải danh sách đơn hàng. Vui lòng thử lại sau.',
-      });
+      handleErrorWithSwal(error);
     } finally {
       setIsLoading(false);
     }
@@ -116,59 +112,63 @@ const Order = () => {
         showCancelButton: true,
         confirmButtonText: 'Duyệt',
         cancelButtonText: 'Hủy',
-        confirmButtonColor: '#3085d6',
-        cancelButtonColor: '#d33'
+        confirmButtonColor: '#10B981',
+        cancelButtonColor: '#EF4444'
       });
 
-      if (!result.isConfirmed) return;
-
-      Swal.fire({
-        title: 'Đang xử lý...',
-        allowOutsideClick: false,
-        didOpen: () => Swal.showLoading()
-      });
-
-      const response = await paymentsAPI.processAndConfirmPayment(orderId);
-
-      if (response) {
-        setOrders(prevOrders =>
-          prevOrders.map(order =>
-            order.orderId === orderId
-              ? {
-                  ...order,
-                  status: "Completed",
-                  paymentStatus: "Confirmed",
-                  paymentDate: new Date().toISOString()
-                }
-              : order
-          )
-        );
-
-        await Swal.fire({
-          icon: 'success',
-          title: 'Duyệt đơn thành công',
-          text: `Đơn hàng #${orderId} đã được duyệt`,
-          timer: 1500
+      if (result.isConfirmed) {
+        Swal.fire({
+          title: 'Đang xử lý...',
+          text: 'Vui lòng chờ trong giây lát',
+          allowOutsideClick: false,
+          didOpen: () => Swal.showLoading()
         });
+
+        const response = await paymentsAPI.processAndConfirmPayment(orderId);
+
+        if (response && response.data) {
+          setOrders(prevOrders =>
+            prevOrders.map(order =>
+              order.orderId === orderId
+                ? {
+                    ...order,
+                    status: ORDER_STATUS.COMPLETED,
+                    paymentStatus: "Confirmed",
+                    paymentId: response.data.paymentId,
+                    paymentDate: response.data.paymentDate
+                  }
+                : order
+            )
+          );
+
+          await Swal.fire({
+            icon: 'success',
+            title: 'Thành công',
+            text: 'Đã duyệt và thanh toán đơn hàng thành công',
+            timer: 1500
+          });
+        }
       }
     } catch (error) {
       console.error("Lỗi khi duyệt đơn:", error);
       Swal.fire({
         icon: 'error',
         title: 'Lỗi',
-        text: 'Không thể duyệt đơn hàng. Vui lòng thử lại sau.'
+        text: error.response?.data || error.message || 'Có lỗi xảy ra khi duyệt đơn hàng'
       });
     }
   };
 
   const handleApproveAllOrders = async () => {
-    const pendingOrders = orders.filter(order => order.status === "Pending");
+    const pendingOrders = orders.filter(order => 
+      order.status === ORDER_STATUS.PENDING && !order.paymentId
+    );
 
     if (pendingOrders.length === 0) {
       Swal.fire({
         icon: 'info',
         title: 'Thông báo',
-        text: 'Không có đơn hàng nào đang chờ xử lý.'
+        text: 'Không có đơn hàng nào cần duyệt.'
       });
       return;
     }
@@ -180,26 +180,57 @@ const Order = () => {
         icon: 'question',
         showCancelButton: true,
         confirmButtonText: 'Duyệt tất cả',
-        cancelButtonText: 'Hủy'
+        cancelButtonText: 'Hủy',
+        confirmButtonColor: '#10B981',
+        cancelButtonColor: '#EF4444'
       });
 
       if (!result.isConfirmed) return;
 
       Swal.fire({
         title: 'Đang xử lý...',
-        html: 'Vui lòng chờ trong giây lát',
+        html: `Đang duyệt ${pendingOrders.length} đơn hàng...<br>Vui lòng chờ trong giây lát`,
         allowOutsideClick: false,
         didOpen: () => Swal.showLoading()
       });
 
       const results = await Promise.allSettled(
-        pendingOrders.map(order => 
-          paymentsAPI.processAndConfirmPayment(order.orderId)
-        )
+        pendingOrders.map(async order => {
+          try {
+            const response = await paymentsAPI.processAndConfirmPayment(order.orderId);
+            return {
+              orderId: order.orderId,
+              success: true,
+              data: response.data
+            };
+          } catch (error) {
+            return {
+              orderId: order.orderId,
+              success: false,
+              error: error.response?.data || error.message
+            };
+          }
+        })
       );
 
-      const successful = results.filter(r => r.status === 'fulfilled').length;
-      const failed = results.filter(r => r.status === 'rejected').length;
+      const successful = results.filter(r => r.value?.success).length;
+      const failed = results.filter(r => !r.value?.success).length;
+
+      setOrders(prevOrders =>
+        prevOrders.map(order => {
+          const result = results.find(r => r.value?.orderId === order.orderId);
+          if (result?.value?.success) {
+            return {
+              ...order,
+              status: ORDER_STATUS.COMPLETED,
+              paymentStatus: "Confirmed",
+              paymentId: result.value.data.paymentId,
+              paymentDate: result.value.data.paymentDate
+            };
+          }
+          return order;
+        })
+      );
 
       await Swal.fire({
         icon: successful > 0 ? 'success' : 'warning',
@@ -212,7 +243,9 @@ const Order = () => {
         `
       });
 
-      await fetchOrdersData();
+      if (successful > 0) {
+        await fetchOrdersData();
+      }
     } catch (error) {
       console.error("Lỗi khi duyệt tất cả đơn hàng:", error);
       Swal.fire({
@@ -245,26 +278,23 @@ const Order = () => {
     currentPage * ordersPerPage
   );
 
-  // Mapping trạng thái sang tiếng Việt
   const getStatusDisplay = (status) => {
-    const statusMap = {
-      "Pending": "Chờ xử lý",
-      "Processing": "Đang xử lý",
-      "Completed": "Đã hoàn thành",
-      "Cancelled": "Đã hủy"
-    };
-    return statusMap[status] || status;
+    return STATUS_MAP[status] || "Chờ xử lý";
   };
 
-  // Xử lý màu sắc cho trạng thái
   const getStatusColor = (status) => {
-    const colorMap = {
-      "Completed": "bg-green-100 text-green-800",
-      "Cancelled": "bg-red-100 text-red-800",
-      "Pending": "bg-yellow-100 text-yellow-800",
-      "Processing": "bg-blue-100 text-blue-800"
-    };
-    return colorMap[status] || "bg-gray-100 text-gray-800";
+    switch(status) {
+      case ORDER_STATUS.PENDING:
+        return "bg-yellow-100 text-yellow-800";
+      case ORDER_STATUS.PROCESSING:
+        return "bg-blue-100 text-blue-800";
+      case ORDER_STATUS.COMPLETED:
+        return "bg-green-100 text-green-800";
+      case ORDER_STATUS.CANCELLED:
+        return "bg-red-100 text-red-800";
+      default:
+        return "bg-gray-100 text-gray-800";
+    }
   };
 
   if (isLoading) {
@@ -299,7 +329,7 @@ const Order = () => {
             onClick={fetchOrdersData}
             className="mt-4 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
           >
-            Tải lại dữ liệu
+            Tải lại dữ liệu 
           </button>
         </div>
       </div>
@@ -349,10 +379,11 @@ const Order = () => {
                 className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
                 <option value="All">Tất cả trạng thái</option>
-                <option value="Pending">Chờ xử lý</option>
-                <option value="Processing">Đang xử lý</option>
-                <option value="Completed">Đã hoàn thành</option>
-                <option value="Cancelled">Đã hủy</option>
+                {Object.entries(STATUS_MAP).map(([key, value]) => (
+                  <option key={key} value={key}>
+                    {value}
+                  </option>
+                ))}
               </select>
             </div>
 
@@ -422,27 +453,21 @@ const Order = () => {
                     <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                       order.paymentStatus === "Confirmed" 
                         ? "bg-green-100 text-green-800" 
-                        : "bg-gray-100 text-gray-800"
+                        : "bg-yellow-100 text-yellow-800"
                     }`}>
                       {order.paymentStatus === "Confirmed" ? "Đã thanh toán" : "Chưa thanh toán"}
                     </span>
                   </td>
                   <td className="p-4 text-center">
                     <div className="flex items-center justify-center space-x-2">
-                      <button
-                        onClick={() => navigate(`/admin/orders/${order.orderId}`)}
-                        className="p-1.5 text-blue-600 hover:text-blue-800"
-                        title="Xem chi tiết"
-                      >
-                        <FaEye />
-                      </button>
-                      {order.status === "Pending" && (
+                      {order.status === ORDER_STATUS.PENDING && !order.paymentId && (
                         <button
                           onClick={() => handleApproveOrder(order.orderId)}
-                          className="p-1.5 text-green-600 hover:text-green-800"
+                          className="px-3 py-1.5 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors flex items-center gap-1"
                           title="Duyệt đơn"
                         >
-                          <FaCheckCircle />
+                          <FaCheckCircle className="w-4 h-4" />
+                          <span className="text-sm">Duyệt</span>
                         </button>
                       )}
                     </div>
