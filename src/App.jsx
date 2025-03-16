@@ -5,7 +5,7 @@ import Login from "./pages/Login/Login.jsx";
 import Register from "./pages/Register/Register.jsx";
 import Product from "./pages/Product/Product.jsx";
 import ProductDetail from "./pages/Product/ProductDetail.jsx";
-import PaymentSuccess from "./pages/Checkout/PaymentSuccess.jsx";
+import OrderSuccess from "./pages/Checkout/OrderSuccess.jsx";
 import ViewOrder from "./pages/Orders/ViewOrder.jsx";
 import Viewcart from "./pages/Product/Viewcart.jsx";
 import Quizz from "./features/quiz/QuizPage.jsx";
@@ -36,6 +36,9 @@ import Unauthorized from "./pages/Unauthorized/unauthorized.jsx";
 import UpdateProfile from './components/Google/UpdateProfile';
 import GoogleCallback from './components/Google/GoogleCallback';
 import UserRoutinePage from "./pages/Profile/pages/UserRoutinePage.jsx";
+import PaymentCallback from './pages/Payment/PaymentCallback.jsx';
+import PaymentSuccess from './pages/Payment/PaymentSuccess.jsx';
+import PaymentFailed from './pages/Payment/PaymentFailed.jsx';
 
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
@@ -53,7 +56,10 @@ const App = () => (
     <Route path="/register" element={<Register />} />
     <Route path="/product" element={<Product />} />
     <Route path="/product/:id" element={<ProductDetail />} />
+    <Route path="/ordersuccess" element={<OrderSuccess />} />
+    <Route path="/paymentcallback" element={<PaymentCallback />} />
     <Route path="/paymentsuccess" element={<PaymentSuccess />} />
+    <Route path="/paymentfailed" element={<PaymentFailed />} />
     <Route path="/vieworder" element={<ViewOrder />} />
     <Route path="/viewcart" element={<Viewcart />} />
     <Route path="/contact" element={<Contact />} />

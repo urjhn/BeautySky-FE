@@ -10,6 +10,7 @@ import { formatCurrency } from "../../utils/formatCurrency";
 import Navbar from "../../components/Navbar/Navbar";
 import Footer from "../../components/Footer/Footer";
 import Swal from "sweetalert2";
+import paymentAPI from "../../services/payment";
 
 const Viewcart = () => {
   const { user } = useAuth();
@@ -76,15 +77,6 @@ const Viewcart = () => {
         return;
       }
 
-      // Format dữ liệu sản phẩm
-      const orderProducts = cartItems.map(item => ({
-        productID: Number(item.productId),
-        quantity: Number(item.quantity)
-      }));
-
-      const promotionId = selectedVoucher ? Number(selectedVoucher.promotionId) : null;
-
-      // Hiển thị loading
       Swal.fire({
         title: 'Đang xử lý...',
         allowOutsideClick: false,
@@ -93,54 +85,52 @@ const Viewcart = () => {
         }
       });
 
-      const response = await orderAPI.createOrder(promotionId, orderProducts);
+      const orderProducts = cartItems.map(item => ({
+        productID: Number(item.productId),
+        quantity: Number(item.quantity)
+      }));
 
-      if (response.orderId) {
-        // Xử lý dựa trên phương thức thanh toán
-        if (paymentMethod === "Cash") {
+      const promotionId = selectedVoucher ? Number(selectedVoucher.promotionId) : null;
+      const orderResponse = await orderAPI.createOrder(promotionId, orderProducts);
+
+      if (orderResponse.orderId) {
+        if (paymentMethod === "VNPay") {
+          const paymentRequest = {
+            orderId: orderResponse.orderId,
+            amount: discountedPrice, // Sử dụng giá đã giảm
+            orderInfo: `Thanh toan don hang #${orderResponse.orderId}`,
+            orderType: "billpayment",
+            language: "vn"
+          };
+
+          const vnpayResponse = await paymentAPI.createVNPayPayment(paymentRequest);
+
+          if (vnpayResponse.success && vnpayResponse.paymentUrl) {
+            Swal.close();
+            window.location.href = vnpayResponse.paymentUrl;
+          } else {
+            throw new Error(vnpayResponse.message || "Không thể tạo URL thanh toán");
+          }
+        } else {
           // Thanh toán tiền mặt
           await Promise.all(cartItems.map(item => 
             removeFromCart(item.productId)
           ));
 
           const orderInfo = {
-            orderId: response.orderId,
-            totalAmount: response.totalAmount,
-            discountAmount: response.discountAmount,
-            finalAmount: response.finalAmount,
+            orderId: orderResponse.orderId,
+            totalAmount: orderResponse.totalAmount,
+            discountAmount: orderResponse.discountAmount,
+            finalAmount: orderResponse.finalAmount,
             products: cartItems,
             paymentMethod: "Cash"
           };
 
-          navigate("/paymentsuccess", {
+          navigate("/ordersuccess", {
             state: {
               orderDetails: orderInfo
             }
           });
-        } else {
-          // Thanh toán VNPay
-          try {
-            // Giả sử bạn có API để tạo URL thanh toán VNPay
-            const vnpayResponse = await orderAPI.createVNPayUrl({
-              orderId: response.orderId,
-              amount: response.finalAmount,
-              orderInfo: `Thanh toan don hang #${response.orderId}`
-            });
-            
-            // Chuyển hướng đến trang thanh toán VNPay
-            if (vnpayResponse.paymentUrl) {
-              window.location.href = vnpayResponse.paymentUrl;
-            } else {
-              throw new Error("Không thể tạo URL thanh toán");
-            }
-          } catch (error) {
-            console.error("Lỗi khi tạo URL VNPay:", error);
-            Swal.fire({
-              icon: "error",
-              title: "Lỗi thanh toán",
-              text: "Không thể kết nối đến cổng thanh toán VNPay. Vui lòng thử lại sau.",
-            });
-          }
         }
       }
     } catch (error) {

@@ -22,6 +22,10 @@ const paymentsAPI = {
     }
   },
   processAndConfirmPayment: async (orderId) => {
+    if (!orderId) {
+      throw new Error('OrderId là bắt buộc');
+    }
+
     try {
       const response = await axiosInstance.post(
         `${endPoint}/ProcessAndConfirmPayment/${orderId}`,
@@ -34,18 +38,36 @@ const paymentsAPI = {
         }
       );
       
-      if (response.status === 201 || response.status === 200) {
-        return response.data;
+      // Kiểm tra response status cụ thể hơn
+      switch (response.status) {
+        case 201:
+          return {
+            success: true,
+            data: response.data,
+            message: 'Thanh toán đã được xử lý thành công'
+          };
+        case 404:
+          throw new Error('Không tìm thấy đơn hàng');
+        case 400:
+          throw new Error(response.data || 'Đơn hàng không hợp lệ');
+        default:
+          throw new Error('Có lỗi xảy ra khi xử lý thanh toán');
       }
-      
-      throw new Error('Không thể xử lý thanh toán');
     } catch (error) {
       if (error.response) {
-        console.error('Server error details:', error.response.data);
-        throw new Error(error.response.data || 'Lỗi server khi xử lý thanh toán');
+        const { status, data } = error.response;
+        switch (status) {
+          case 404:
+            throw new Error('Không tìm thấy đơn hàng');
+          case 400:
+            throw new Error(data || 'Đơn hàng không hợp lệ');
+          case 500:
+            throw new Error('Lỗi hệ thống, vui lòng thử lại sau');
+          default:
+            throw new Error(data?.message || 'Có lỗi xảy ra khi xử lý thanh toán');
+        }
       }
       if (error.request) {
-        console.error('Network error:', error.request);
         throw new Error('Lỗi kết nối, vui lòng thử lại sau');
       }
       throw error;
@@ -115,6 +137,27 @@ const paymentsAPI = {
     }
     return response;
   },
+  createVNPayPayment: async (paymentData) => {
+    try {
+        const response = await axiosInstance.post(
+            `${endPoint}/create-payment`,
+            paymentData
+        );
+        return response.data;
+    } catch (error) {
+        throw new Error(error.response?.data?.message || 'Lỗi tạo thanh toán');
+    }
+},
+  handlePaymentCallback: async (queryString) => {
+    try {
+        const response = await axiosInstance.get(
+            `${endPoint}/payment-callback?${queryString}`
+        );
+        return response.data;
+    } catch (error) {
+        throw new Error(error.response?.data?.message || 'Lỗi xử lý callback');
+    }
+}
 };
 
 export default paymentsAPI;
