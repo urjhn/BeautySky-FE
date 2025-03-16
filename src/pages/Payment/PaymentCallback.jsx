@@ -13,33 +13,33 @@ const PaymentCallback = () => {
         const handleCallback = async () => {
             try {
                 const queryParams = new URLSearchParams(location.search);
-                const result = await paymentsAPI.handlePaymentCallback(queryParams);
-                
-                if (result.success) {
-                    navigate('/payment-success', { 
-                        state: { 
-                            orderId: result.data.orderId,
+                const responseCode = queryParams.get('vnp_ResponseCode');
+                const transactionRef = queryParams.get('vnp_TxnRef');
+
+                // Gọi API xử lý callback
+                const response = await paymentsAPI.handlePaymentCallback(queryParams.toString());
+
+                if (responseCode === '00') {
+                    // Thanh toán thành công
+                    navigate('/paymentsuccess', {
+                        state: {
+                            orderId: transactionRef,
                             message: 'Thanh toán thành công!'
                         }
                     });
                 } else {
-                    setError(result.error);
-                    navigate('/payment-failed', { 
-                        state: { 
-                            error: result.error,
-                            orderId: queryParams.get('vnp_TxnRef')
+                    // Thanh toán thất bại
+                    const errorMessage = response.message || 'Thanh toán thất bại';
+                    navigate('/paymentfailed', {
+                        state: {
+                            error: errorMessage,
+                            orderId: transactionRef
                         }
                     });
                 }
             } catch (error) {
                 console.error('Lỗi xử lý callback:', error);
                 setError('Có lỗi xảy ra khi xử lý thanh toán');
-                navigate('/payment-failed', { 
-                    state: { 
-                        error: 'Có lỗi xảy ra khi xử lý thanh toán',
-                        orderId: queryParams?.get('vnp_TxnRef')
-                    }
-                });
             } finally {
                 setIsProcessing(false);
             }

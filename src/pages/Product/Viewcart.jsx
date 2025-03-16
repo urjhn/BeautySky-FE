@@ -77,7 +77,6 @@ const Viewcart = () => {
         return;
       }
 
-      // Hiển thị loading
       Swal.fire({
         title: 'Đang xử lý...',
         allowOutsideClick: false,
@@ -86,43 +85,31 @@ const Viewcart = () => {
         }
       });
 
-      // Format dữ liệu sản phẩm
       const orderProducts = cartItems.map(item => ({
         productID: Number(item.productId),
         quantity: Number(item.quantity)
       }));
 
       const promotionId = selectedVoucher ? Number(selectedVoucher.promotionId) : null;
-
-      // Tạo đơn hàng
       const orderResponse = await orderAPI.createOrder(promotionId, orderProducts);
 
       if (orderResponse.orderId) {
         if (paymentMethod === "VNPay") {
-          try {
-            const vnpayResponse = await paymentAPI.createVNPayPayment({
-              orderId: orderResponse.orderId,
-              amount: parseFloat(orderResponse.finalAmount), // Đảm bảo là số
-              orderInfo: `Thanh toan don hang #${orderResponse.orderId}`,
-              orderType: "billpayment",
-              language: "vn"
-            });
+          const paymentRequest = {
+            orderId: orderResponse.orderId,
+            amount: discountedPrice, // Sử dụng giá đã giảm
+            orderInfo: `Thanh toan don hang #${orderResponse.orderId}`,
+            orderType: "billpayment",
+            language: "vn"
+          };
 
-            console.log("VNPay Response:", vnpayResponse);
+          const vnpayResponse = await paymentAPI.createVNPayPayment(paymentRequest);
 
-            if (vnpayResponse.success && vnpayResponse.paymentUrl) {
-              Swal.close();
-              window.location.href = vnpayResponse.paymentUrl;
-            } else {
-              throw new Error(vnpayResponse.message || "Không thể tạo URL thanh toán");
-            }
-          } catch (error) {
-            console.error("Lỗi chi tiết:", error);
-            Swal.fire({
-              icon: "error",
-              title: "Lỗi thanh toán",
-              text: error.message || "Không thể kết nối đến cổng thanh toán VNPay. Vui lòng thử lại sau.",
-            });
+          if (vnpayResponse.success && vnpayResponse.paymentUrl) {
+            Swal.close();
+            window.location.href = vnpayResponse.paymentUrl;
+          } else {
+            throw new Error(vnpayResponse.message || "Không thể tạo URL thanh toán");
           }
         } else {
           // Thanh toán tiền mặt
