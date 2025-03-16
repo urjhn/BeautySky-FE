@@ -12,6 +12,25 @@ const orderAPI = {
       throw error;
     }
   },
+
+  getOrderDetail: async (orderId) => {
+    try {
+      const response = await axiosInstance.get(`${endPoint}/${orderId}`);
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  getListOrderUser: async () => {
+    try {
+      const response = await axiosInstance.get(`${endPoint}/orders/myOrders`);
+      return response.data;
+    } catch (error) {
+      console.error("Lỗi khi lấy danh sách đơn hàng của user:", error);
+      throw error;
+    }
+  },
   
   createOrder: async (promotionID, products) => {
     try {
