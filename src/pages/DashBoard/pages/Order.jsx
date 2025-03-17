@@ -58,7 +58,7 @@ const Order = () => {
             userPhone: userData.phone || "Không có",
             userAddress: userData.address || "Không có",
             userId: userData.userId || null,
-            totalAmount: order.totalAmount || 0,
+            finalAmount: order.finalAmount || 0,
             paymentStatus: order.paymentId ? "Confirmed" : "Pending", // Xác định trạng thái thanh toán dựa vào paymentId
           };
         });
@@ -252,7 +252,7 @@ const Order = () => {
       order.userFullName,
       order.userPhone,
       order.userAddress,
-      order.totalAmount,
+      order.finalAmount,
       order.status,
     ].some((field) => String(field).toLowerCase().includes(searchLower));
 
@@ -438,7 +438,7 @@ const Order = () => {
                   <td className="p-4 text-sm">{order.userPhone}</td>
                   <td className="p-4 text-sm">{order.userAddress}</td>
                   <td className="p-4 text-sm font-medium">
-                    {formatCurrency(order.totalAmount)}
+                    {formatCurrency(order.finalAmount)}
                   </td>
                   <td className="p-4 text-sm">
                     {dayjs(order.orderDate).format("DD/MM/YYYY HH:mm")}
