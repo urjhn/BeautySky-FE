@@ -105,44 +105,42 @@ export const CartProvider = ({ children }) => {
       
       if (!user) {
         // Xử lý thêm vào giỏ hàng cho guest
-        const existingItem = cartItems.find(item => item.productId === product.productId);
+        const existingItemIndex = cartItems.findIndex(item => 
+          item.productId === product.productId
+        );
         
-        if (existingItem) {
-          // Cập nhật số lượng nếu sản phẩm đã có trong giỏ
-          const updatedItems = cartItems.map(item =>
-            item.productId === product.productId
-              ? {
-                  ...item,
-                  quantity: item.quantity + (product.quantity || 1),
-                  totalPrice: (item.quantity + (product.quantity || 1)) * item.price
-                }
-              : item
-          );
+        if (existingItemIndex !== -1) {
+          // Cập nhật số lượng nếu sản phẩm đã tồn tại
+          const updatedItems = cartItems.map((item, index) => {
+            if (index === existingItemIndex) {
+              return {
+                ...item,
+                quantity: item.quantity + (product.quantity || 1),
+                totalPrice: (item.quantity + (product.quantity || 1)) * item.price
+              };
+            }
+            return item;
+          });
           setCartItems(updatedItems);
         } else {
-          // Thêm sản phẩm mới vào giỏ
+          // Thêm sản phẩm mới với ID duy nhất
           const newItem = {
             ...product,
+            cartItemId: `${product.productId}-${Date.now()}`, // Thêm ID duy nhất
             quantity: product.quantity || 1,
             totalPrice: (product.quantity || 1) * product.price
           };
-          setCartItems([...cartItems, newItem]);
+          setCartItems(prev => [...prev, newItem]);
         }
-        
-        // Cập nhật tổng giá
-        const newTotal = cartItems.reduce((sum, item) => sum + item.totalPrice, 0);
-        setTotalPrice(newTotal);
-        
         return;
       }
 
-      // Xử lý thêm vào giỏ hàng cho user đã đăng nhập
-      const payload = {
+      // Xử lý cho user đã đăng nhập
+      const response = await cartsAPI.createCarts({
         productId: product.productId,
         quantity: product.quantity || 1
-      };
-      
-      const response = await cartsAPI.createCarts(payload);
+      });
+
       if (response.data) {
         await fetchCart();
       }

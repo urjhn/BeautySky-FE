@@ -247,9 +247,9 @@ const Viewcart = () => {
               </div>
               
               <div className="space-y-4">
-                {cartItems.map((item) => (
+                {cartItems.map((item, index) => (
                   <div
-                    key={item.productId}
+                    key={`${item.productId}-${index}`}
                     className="flex flex-col sm:flex-row items-start sm:items-center justify-between border-b pb-4 hover:bg-gray-50 transition-colors rounded-lg p-2"
                   >
                     <div className="flex items-center space-x-4">
