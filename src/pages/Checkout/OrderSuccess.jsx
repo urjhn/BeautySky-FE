@@ -13,41 +13,31 @@ const OrderSuccess = () => {
   const { addNotification } = useNotifications();
   const [orderDetails, setOrderDetails] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [isRedirecting, setIsRedirecting] = useState(false);
 
-  // Tách logic chuyển hướng thành một function riêng và sử dụng useCallback
+  // Hàm chuyển hướng về trang chủ
   const redirectToHome = useCallback(() => {
-    if (!isRedirecting) {
-      setIsRedirecting(true);
-      navigate('/', { replace: true });
-    }
-  }, [navigate, isRedirecting]);
+    // Chuyển hướng với refresh để đảm bảo trang được tải lại hoàn toàn
+    window.location.href = '/';
+  }, []);
+
+  // Hàm chuyển hướng đến trang lịch sử đơn hàng
+  const redirectToOrderHistory = useCallback(() => {
+    // Chuyển hướng với refresh để đảm bảo trang được tải lại hoàn toàn
+    window.location.href = '/profilelayout/historyorder';
+  }, []);
 
   useEffect(() => {
     let timeoutId;
-
     const checkOrderDetails = async () => {
       try {
         const state = location.state;
-        
-        if (!state || !state.orderDetails) {
-          // Không có thông tin đơn hàng
+        if (!state || !state.orderDetails || state.orderDetails.paymentMethod !== "Cash") {
+          // Nếu không có dữ liệu hợp lệ, chuyển hướng về trang chủ
           timeoutId = setTimeout(redirectToHome, 2000);
           return;
         }
-
-        if (state.orderDetails.paymentMethod !== "Cash") {
-          // Không phải thanh toán tiền mặt
-          timeoutId = setTimeout(redirectToHome, 2000);
-          return;
-        }
-
-        // Có thông tin đơn hàng hợp lệ
         setOrderDetails(state.orderDetails);
-        // Chỉ thêm notification một lần khi có đơn hàng hợp lệ
-        if (!isRedirecting) {
-          addNotification("Đặt hàng thành công! 🎉");
-        }
+        addNotification("Đặt hàng thành công! 🎉");
       } catch (error) {
         console.error("Error processing order details:", error);
         timeoutId = setTimeout(redirectToHome, 2000);
@@ -55,18 +45,22 @@ const OrderSuccess = () => {
         setIsLoading(false);
       }
     };
-
     checkOrderDetails();
-
-    // Cleanup function
     return () => {
-      if (timeoutId) {
+      if (timeoutId) {``
         clearTimeout(timeoutId);
       }
     };
-  }, [location, addNotification, redirectToHome, isRedirecting]);
+  }, [location, addNotification, redirectToHome]);
 
-  // Tách phần render loading thành component riêng
+  // Xử lý khi component unmount
+  useEffect(() => {
+    return () => {
+      // Đảm bảo xóa dữ liệu khi rời khỏi trang
+      setOrderDetails(null);
+    };
+  }, []);
+
   if (isLoading) {
     return (
       <div className="min-h-screen flex flex-col">
@@ -82,7 +76,6 @@ const OrderSuccess = () => {
     );
   }
 
-  // Tách phần render error thành component riêng
   if (!orderDetails) {
     return (
       <div className="min-h-screen flex flex-col">
@@ -97,7 +90,7 @@ const OrderSuccess = () => {
               Bạn sẽ được chuyển về trang chủ trong giây lát...
             </p>
             <button
-              onClick={() => navigate("/")}
+              onClick={redirectToHome}
               className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
             >
               Về trang chủ ngay
@@ -109,7 +102,6 @@ const OrderSuccess = () => {
     );
   }
 
-  // Render main content
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
@@ -196,13 +188,13 @@ const OrderSuccess = () => {
               {/* Action Buttons */}
               <div className="mt-8 flex gap-4 justify-center">
                 <button
-                  onClick={() => navigate("/vieworder")}
+                  onClick={redirectToOrderHistory}
                   className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
                 >
                   Xem đơn hàng
                 </button>
                 <button
-                  onClick={() => navigate("/")}
+                  onClick={redirectToHome}
                   className="px-6 py-3 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
                 >
                   Về trang chủ
