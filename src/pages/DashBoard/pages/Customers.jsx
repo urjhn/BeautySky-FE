@@ -212,9 +212,6 @@ const Customers = () => {
         return;
       }
 
-      console.log("Editing user:", editingUser);
-      console.log("User ID:", editingUser.userId);
-      console.log("Payload:", userPayload);
 
       // Sử dụng hàm updateUser từ context thay vì gọi API trực tiếp
       const result = await updateUser(editingUser.userId, userPayload);
@@ -280,10 +277,7 @@ const Customers = () => {
         isActive: true
       };
       
-      console.log("Đang gửi dữ liệu:", userPayload);
-      
       const response = await usersAPI.createUser(userPayload);
-      console.log("Phản hồi từ server:", response);
       
       if (response && (response.status >= 200 && response.status < 300)) {
         Swal.fire("Thành công!", "Thành viên đã được thêm.", "success");

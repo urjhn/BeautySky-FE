@@ -14,9 +14,9 @@ const containerVariants = {
   visible: {
     opacity: 1,
     transition: {
-      staggerChildren: 0.1
-    }
-  }
+      staggerChildren: 0.1,
+    },
+  },
 };
 
 const itemVariants = {
@@ -25,9 +25,9 @@ const itemVariants = {
     opacity: 1,
     y: 0,
     transition: {
-      duration: 0.5
-    }
-  }
+      duration: 0.5,
+    },
+  },
 };
 
 const OrderHistory = () => {
@@ -47,17 +47,17 @@ const OrderHistory = () => {
         const response = await orderAPI.getListOrderUser();
         if (response) {
           // Sắp xếp đơn hàng mới nhất lên đầu
-          const sortedOrders = response.sort((a, b) => 
-            new Date(b.orderDate) - new Date(a.orderDate)
+          const sortedOrders = response.sort(
+            (a, b) => new Date(b.orderDate) - new Date(a.orderDate)
           );
           setOrders(sortedOrders);
         }
       } catch (error) {
         console.error("Lỗi khi lấy danh sách đơn hàng:", error);
         Swal.fire({
-          icon: 'error',
-          title: 'Lỗi!',
-          text: 'Không thể tải danh sách đơn hàng. Vui lòng thử lại sau.'
+          icon: "error",
+          title: "Lỗi!",
+          text: "Không thể tải danh sách đơn hàng. Vui lòng thử lại sau.",
         });
       } finally {
         setLoading(false);
@@ -70,7 +70,7 @@ const OrderHistory = () => {
   }, [user]);
 
   // Lọc đơn hàng theo status
-  const filteredOrders = orders.filter((order) => 
+  const filteredOrders = orders.filter((order) =>
     selectedTab === "All" ? true : order.status === selectedTab
   );
 
@@ -83,9 +83,9 @@ const OrderHistory = () => {
   // Mapping status để hiển thị tiếng Việt
   const getStatusDisplay = (status) => {
     const statusMap = {
-      "Pending": "Đang xử lý",
-      "Completed": "Đã giao hàng",
-      "Cancelled": "Đã hủy"
+      Pending: "Đang xử lý",
+      Completed: "Đã giao hàng",
+      Cancelled: "Đã hủy",
     };
     return statusMap[status] || status;
   };
@@ -93,9 +93,9 @@ const OrderHistory = () => {
   // Lấy màu cho status
   const getStatusColor = (status) => {
     const colorMap = {
-      "Pending": "bg-yellow-100 text-yellow-800",
-      "Completed": "bg-green-100 text-green-800",
-      "Cancelled": "bg-red-100 text-red-800"
+      Pending: "bg-yellow-100 text-yellow-800",
+      Completed: "bg-green-100 text-green-800",
+      Cancelled: "bg-red-100 text-red-800",
     };
     return colorMap[status] || "bg-gray-100 text-gray-800";
   };
@@ -108,14 +108,43 @@ const OrderHistory = () => {
     );
   }
 
+  const handleCancelOrder = async (orderId) => {
+    const confirmResult = await Swal.fire({
+      title: "Xác nhận hủy đơn?",
+      text: "Bạn có chắc muốn hủy đơn hàng này không?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "Hủy đơn hàng",
+      cancelButtonText: "Giữ lại",
+    });
+
+    if (confirmResult.isConfirmed) {
+      try {
+        await orderAPI.cancelOrder(orderId);
+        setOrders((prevOrders) =>
+          prevOrders.map((order) =>
+            order.orderId === orderId
+              ? { ...order, status: "Cancelled" }
+              : order
+          )
+        );
+        Swal.fire("Đã hủy!", "Đơn hàng của bạn đã bị hủy.", "success");
+      } catch (error) {
+        Swal.fire("Lỗi!", error.message, "error");
+      }
+    }
+  };
+
   return (
-    <motion.div 
+    <motion.div
       className="container mx-auto p-4 md:p-6 max-w-7xl"
       variants={containerVariants}
       initial="hidden"
       animate="visible"
     >
-      <motion.h1 
+      <motion.h1
         className="text-3xl md:text-4xl font-bold mb-8 text-center text-gray-800"
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -147,7 +176,7 @@ const OrderHistory = () => {
       </div>
 
       {orders.length === 0 ? (
-        <motion.div 
+        <motion.div
           className="text-center py-16 bg-white rounded-xl shadow-lg"
           variants={itemVariants}
         >
@@ -157,7 +186,7 @@ const OrderHistory = () => {
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            onClick={() => navigate('/product')}
+            onClick={() => navigate("/product")}
             className="px-8 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-full hover:shadow-lg transition-all duration-300"
           >
             Mua sắm ngay
@@ -175,11 +204,15 @@ const OrderHistory = () => {
               >
                 <div className="flex justify-between items-center mb-4">
                   <span className="font-bold text-lg">#{order.orderId}</span>
-                  <span className={`px-4 py-2 rounded-full text-sm font-medium ${getStatusColor(order.status)}`}>
+                  <span
+                    className={`px-4 py-2 rounded-full text-sm font-medium ${getStatusColor(
+                      order.status
+                    )}`}
+                  >
                     {getStatusDisplay(order.status)}
                   </span>
                 </div>
-                
+
                 <div className="space-y-3">
                   <p className="text-gray-600">
                     <i className="far fa-calendar-alt mr-2"></i>
@@ -190,6 +223,7 @@ const OrderHistory = () => {
                   </p>
                 </div>
 
+                {/* Nút Xem Chi Tiết */}
                 <motion.button
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
@@ -199,13 +233,25 @@ const OrderHistory = () => {
                   <EyeIcon className="w-5 h-5" />
                   Xem chi tiết
                 </motion.button>
+
+                {/* Nút Hủy Đơn Hàng */}
+                {order.status === "Pending" && (
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => handleCancelOrder(order.orderId)}
+                    className="mt-4 w-full px-6 py-3 bg-red-500 text-white rounded-lg shadow-md hover:bg-red-600 transition-all duration-300"
+                  >
+                    Hủy đơn hàng
+                  </motion.button>
+                )}
               </motion.div>
             ))}
           </div>
 
           {/* Desktop View - Cải thiện table design */}
           <div className="hidden md:block">
-            <motion.div 
+            <motion.div
               variants={itemVariants}
               className="bg-white rounded-xl shadow-lg overflow-hidden"
             >
@@ -243,7 +289,11 @@ const OrderHistory = () => {
                         {dayjs(order.orderDate).format("DD/MM/YYYY HH:mm")}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`px-4 py-2 rounded-full text-sm font-medium ${getStatusColor(order.status)}`}>
+                        <span
+                          className={`px-4 py-2 rounded-full text-sm font-medium ${getStatusColor(
+                            order.status
+                          )}`}
+                        >
                           {getStatusDisplay(order.status)}
                         </span>
                       </td>
@@ -254,12 +304,28 @@ const OrderHistory = () => {
                         <motion.button
                           whileHover={{ scale: 1.05 }}
                           whileTap={{ scale: 0.95 }}
-                          onClick={() => navigate(`/profilelayout/orderdetail/${order.orderId}`)}
+                          onClick={() =>
+                            navigate(
+                              `/profilelayout/orderdetail/${order.orderId}`
+                            )
+                          }
                           className="inline-flex items-center px-6 py-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-full shadow-md hover:shadow-lg transition-all duration-300"
                         >
                           <EyeIcon className="w-5 h-5 mr-2" />
                           Chi tiết
                         </motion.button>
+
+                        {/* Nút Hủy đơn hàng */}
+                        {order.status === "Pending" && (
+                          <motion.button
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                            onClick={() => handleCancelOrder(order.orderId)}
+                            className="inline-flex items-center px-6 py-2 ml-3 bg-red-500 text-white rounded-full shadow-md hover:bg-red-600 transition-all duration-300"
+                          >
+                            Hủy đơn hàng
+                          </motion.button>
+                        )}
                       </td>
                     </motion.tr>
                   ))}
@@ -270,7 +336,7 @@ const OrderHistory = () => {
 
           {/* Pagination - Cải thiện thiết kế */}
           {totalPages > 1 && (
-            <motion.div 
+            <motion.div
               variants={itemVariants}
               className="flex justify-center mt-8 gap-3"
             >
