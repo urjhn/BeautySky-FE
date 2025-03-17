@@ -1,12 +1,16 @@
 /** @type {import('tailwindcss').Config} */
 export default {
   content: ["./index.html", "./src/**/*.{js,ts,jsx,tsx}"],
+  darkMode: "class",
   theme: {
     extend: {
       color: {
         primary: "#6BBCFE",
         secondary: "#248ce0",
       },
+      // fontFamily: {
+      //   sans: ["Inter", "sans-serif"],
+      // },
       container: {
         center: true,
         padding: {
