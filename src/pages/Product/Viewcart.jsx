@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useCart } from "../../context/CartContext";
 import { useAuth } from "../../context/AuthContext";
@@ -19,6 +19,7 @@ const Viewcart = () => {
   const [selectedVoucher, setSelectedVoucher] = useState(null);
   const [paymentMethod, setPaymentMethod] = useState("VNPay");
   const [promotions, setPromotions] = useState([]);
+  const [selectedItems, setSelectedItems] = useState({});
   const [formData, setFormData] = useState(() => ({
     name: user?.name || "",
     email: user?.email || "",
@@ -62,17 +63,47 @@ const Viewcart = () => {
     }));
   };
 
+  const selectedTotalPrice = useMemo(() => {
+    return cartItems.reduce((total, item) => {
+      if (selectedItems[item.productId]) {
+        return total + (item.price * item.quantity);
+      }
+      return total;
+    }, 0);
+  }, [cartItems, selectedItems]);
+
   const discountedPrice = selectedVoucher
-    ? totalPrice - (totalPrice * selectedVoucher.discountPercentage) / 100
-    : totalPrice;
+    ? selectedTotalPrice - (selectedTotalPrice * selectedVoucher.discountPercentage) / 100
+    : selectedTotalPrice;
+
+  const handleSelectAll = (checked) => {
+    const newSelectedItems = {};
+    if (checked) {
+      cartItems.forEach(item => {
+        newSelectedItems[item.productId] = true;
+      });
+    }
+    setSelectedItems(newSelectedItems);
+  };
+
+  const handleSelectItem = (productId) => {
+    setSelectedItems(prev => ({
+      ...prev,
+      [productId]: !prev[productId]
+    }));
+  };
+
+  const hasSelectedItems = Object.values(selectedItems).some(value => value);
 
   const handleProceedToPayment = async () => {
     try {
-      if (!cartItems || cartItems.length === 0) {
+      const selectedProducts = cartItems.filter(item => selectedItems[item.productId]);
+      
+      if (selectedProducts.length === 0) {
         Swal.fire({
           icon: "error",
-          title: "Giỏ hàng trống!",
-          text: "Vui lòng thêm sản phẩm vào giỏ hàng.",
+          title: "Chưa chọn sản phẩm!",
+          text: "Vui lòng chọn ít nhất một sản phẩm để thanh toán.",
         });
         return;
       }
@@ -85,7 +116,7 @@ const Viewcart = () => {
         }
       });
 
-      const orderProducts = cartItems.map(item => ({
+      const orderProducts = selectedProducts.map(item => ({
         productID: Number(item.productId),
         quantity: Number(item.quantity)
       }));
@@ -97,23 +128,29 @@ const Viewcart = () => {
         if (paymentMethod === "VNPay") {
           const paymentRequest = {
             orderId: orderResponse.orderId,
-            amount: discountedPrice, // Sử dụng giá đã giảm
+            amount: discountedPrice,
             orderInfo: `Thanh toan don hang #${orderResponse.orderId}`,
-            orderType: "billpayment",
-            language: "vn"
+            orderType: "other",
+            language: "vn",
+            name: formData.name,
+            orderDescription: `Don hang ${orderResponse.orderId}`
           };
 
           const vnpayResponse = await paymentAPI.createVNPayPayment(paymentRequest);
-
-          if (vnpayResponse.success && vnpayResponse.paymentUrl) {
-            Swal.close();
+          
+          if (vnpayResponse.paymentUrl) {
+            localStorage.setItem('pendingOrder', JSON.stringify({
+              orderId: orderResponse.orderId,
+              amount: discountedPrice,
+              products: selectedProducts
+            }));
+            
             window.location.href = vnpayResponse.paymentUrl;
           } else {
-            throw new Error(vnpayResponse.message || "Không thể tạo URL thanh toán");
+            throw new Error("Không thể tạo URL thanh toán");
           }
         } else {
-          // Thanh toán tiền mặt
-          await Promise.all(cartItems.map(item => 
+          await Promise.all(selectedProducts.map(item => 
             removeFromCart(item.productId)
           ));
 
@@ -122,7 +159,7 @@ const Viewcart = () => {
             totalAmount: orderResponse.totalAmount,
             discountAmount: orderResponse.discountAmount,
             finalAmount: orderResponse.finalAmount,
-            products: cartItems,
+            products: selectedProducts,
             paymentMethod: "Cash"
           };
 
@@ -196,7 +233,18 @@ const Viewcart = () => {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Danh sách sản phẩm */}
             <div className="lg:col-span-2 bg-white p-4 sm:p-6 shadow-lg rounded-lg border border-gray-100">
-              <h2 className="text-xl font-bold mb-4 pb-2 border-b">Sản phẩm ({cartItems.length})</h2>
+              <div className="flex justify-between items-center mb-4 pb-2 border-b">
+                <h2 className="text-xl font-bold">Sản phẩm ({cartItems.length})</h2>
+                <div className="flex items-center">
+                  <input
+                    type="checkbox"
+                    className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
+                    checked={cartItems.length > 0 && cartItems.every(item => selectedItems[item.productId])}
+                    onChange={(e) => handleSelectAll(e.target.checked)}
+                  />
+                  <span className="ml-2 text-sm text-gray-600">Chọn tất cả</span>
+                </div>
+              </div>
               
               <div className="space-y-4">
                 {cartItems.map((item) => (
@@ -204,38 +252,52 @@ const Viewcart = () => {
                     key={item.productId}
                     className="flex flex-col sm:flex-row items-start sm:items-center justify-between border-b pb-4 hover:bg-gray-50 transition-colors rounded-lg p-2"
                   >
-                    <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-4 sm:space-y-0 sm:space-x-4 w-full sm:w-auto">
-                      <div className="relative">
-                        <img
-                          src={item.productImage}
-                          alt={item.productName}
-                          className="w-full sm:w-24 h-40 sm:h-24 object-cover rounded-lg border shadow-sm"
-                        />
-                        <span className="absolute -top-2 -right-2 bg-blue-500 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs">
-                          {item.quantity}
-                        </span>
-                      </div>
-                      <div className="w-full sm:w-auto">
-                        <h2 className="text-lg text-gray-800">
-                          {item.productName}
-                        </h2>
-                        <p className="text-blue-600 font-medium">
-                          {formatCurrency(item.price)}
-                        </p>
-                        <div className="flex items-center mt-3 space-x-2">
-                          <button
-                            className="px-3 py-1 bg-gray-200 hover:bg-gray-300 rounded-lg text-lg transition-colors"
-                            onClick={() => handleQuantityChange(item.productId, item.quantity - 1)}
-                          >
-                            −
-                          </button>
-                          <span className="text-lg w-8 text-center font-medium">{item.quantity}</span>
-                          <button
-                            className="px-3 py-1 bg-gray-200 hover:bg-gray-300 rounded-lg text-lg transition-colors"
-                            onClick={() => handleQuantityChange(item.productId, item.quantity + 1)}
-                          >
-                            +
-                          </button>
+                    <div className="flex items-center space-x-4">
+                      <input
+                        type="checkbox"
+                        className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
+                        checked={selectedItems[item.productId] || false}
+                        onChange={() => handleSelectItem(item.productId)}
+                      />
+                      <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-4 sm:space-y-0 sm:space-x-4">
+                        <div className="relative">
+                          <img
+                            src={item.productImage}
+                            alt={item.productName}
+                            className="w-full sm:w-24 h-40 sm:h-24 object-cover rounded-lg border shadow-sm"
+                          />
+                          <span className="absolute -top-2 -right-2 bg-blue-500 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs">
+                            {item.quantity}
+                          </span>
+                        </div>
+                        <div className="w-full sm:w-auto">
+                          <h2 className="text-lg text-gray-800">
+                            {item.productName}
+                          </h2>
+                          <p className="text-blue-600 font-medium">
+                            {formatCurrency(item.price)}
+                          </p>
+                          <div className="flex items-center mt-3 space-x-2">
+                            <button
+                              className="px-3 py-1 bg-gray-200 hover:bg-gray-300 rounded-lg text-lg transition-colors"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleQuantityChange(item.productId, item.quantity - 1);
+                              }}
+                            >
+                              −
+                            </button>
+                            <span className="text-lg w-8 text-center font-medium">{item.quantity}</span>
+                            <button
+                              className="px-3 py-1 bg-gray-200 hover:bg-gray-300 rounded-lg text-lg transition-colors"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleQuantityChange(item.productId, item.quantity + 1);
+                              }}
+                            >
+                              +
+                            </button>
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -245,7 +307,10 @@ const Viewcart = () => {
                       </p>
                       <button
                         className="text-red-500 hover:text-red-700 hover:bg-red-50 p-2 rounded-full transition-colors"
-                        onClick={() => handleRemoveItem(item.productId)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleRemoveItem(item.productId);
+                        }}
                       >
                         <FaTrash size={18} />
                       </button>
@@ -262,8 +327,8 @@ const Viewcart = () => {
                   <span className="mr-2">←</span> Tiếp tục mua sắm
                 </button>
                 <p className="text-lg font-medium">
-                  Tổng ({cartItems.reduce((acc, item) => acc + item.quantity, 0)} sản phẩm): 
-                  <span className="font-bold text-blue-600 ml-2">{formatCurrency(totalPrice)}</span>
+                  Đã chọn: {Object.values(selectedItems).filter(Boolean).length} sản phẩm
+                  <span className="font-bold text-blue-600 ml-2">{formatCurrency(selectedTotalPrice)}</span>
                 </p>
               </div>
             </div>
@@ -274,14 +339,14 @@ const Viewcart = () => {
               
               <div className="space-y-3">
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Tạm tính:</span>
-                  <span className="font-medium">{formatCurrency(totalPrice)}</span>
+                  <span className="text-gray-600">Tạm tính ({Object.values(selectedItems).filter(Boolean).length} sản phẩm):</span>
+                  <span className="font-medium">{formatCurrency(selectedTotalPrice)}</span>
                 </div>
                 
                 {selectedVoucher && (
                   <div className="flex justify-between text-green-600">
                     <span>Giảm giá ({selectedVoucher.discountPercentage}%):</span>
-                    <span>-{formatCurrency((totalPrice * selectedVoucher.discountPercentage) / 100)}</span>
+                    <span>-{formatCurrency((selectedTotalPrice * selectedVoucher.discountPercentage) / 100)}</span>
                   </div>
                 )}
                 
@@ -379,7 +444,8 @@ const Viewcart = () => {
 
               <button
                 onClick={handleProceedToPayment}
-                className="mt-6 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-6 py-3 rounded-lg w-full flex items-center justify-center text-lg font-medium transition duration-300 shadow-md hover:shadow-lg"
+                disabled={!hasSelectedItems}
+                className={`mt-6 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-6 py-3 rounded-lg w-full flex items-center justify-center text-lg font-medium transition duration-300 shadow-md hover:shadow-lg ${!hasSelectedItems ? 'opacity-50 cursor-not-allowed' : ''}`}
               >
                 Thanh toán <FaArrowRight className="ml-2" />
               </button>

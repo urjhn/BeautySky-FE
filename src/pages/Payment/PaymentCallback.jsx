@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import paymentsAPI from '../../services/payment';
 import { FaSpinner, FaExclamationTriangle, FaShoppingCart } from 'react-icons/fa';
+import Navbar from '../../components/Navbar/Navbar';
+import Footer from '../../components/Footer/Footer';
 
 const PaymentCallback = () => {
     const location = useLocation();
@@ -9,47 +11,46 @@ const PaymentCallback = () => {
     const [isProcessing, setIsProcessing] = useState(true);
     const [error, setError] = useState(null);
 
-    useEffect(() => {
-        const handleCallback = async () => {
-            try {
-                const queryParams = new URLSearchParams(location.search);
-                const responseCode = queryParams.get('vnp_ResponseCode');
-                const transactionRef = queryParams.get('vnp_TxnRef');
+    // Trong PaymentCallback.jsx
+useEffect(() => {
+    const handleCallback = async () => {
+        try {
+            const queryParams = new URLSearchParams(location.search);
+            const responseCode = queryParams.get('vnp_ResponseCode');
+            const transactionRef = queryParams.get('vnp_TxnRef');
 
-                // Gọi API xử lý callback
-                const response = await paymentsAPI.handlePaymentCallback(queryParams.toString());
+            // Gọi API xử lý callback
+            const response = await paymentsAPI.handlePaymentCallback(queryParams.toString());
 
-                if (responseCode === '00') {
-                    // Thanh toán thành công
-                    navigate('/paymentsuccess', {
-                        state: {
-                            orderId: transactionRef,
-                            message: 'Thanh toán thành công!'
-                        }
-                    });
-                } else {
-                    // Thanh toán thất bại
-                    const errorMessage = response.message || 'Thanh toán thất bại';
-                    navigate('/paymentfailed', {
-                        state: {
-                            error: errorMessage,
-                            orderId: transactionRef
-                        }
-                    });
-                }
-            } catch (error) {
-                console.error('Lỗi xử lý callback:', error);
-                setError('Có lỗi xảy ra khi xử lý thanh toán');
-            } finally {
-                setIsProcessing(false);
+            if (responseCode === '00') {
+                navigate('/paymentsuccess', {
+                    state: {
+                        orderId: transactionRef,
+                        message: 'Thanh toán thành công!'
+                    }
+                });
+            } else {
+                const errorMessage = response.message || 'Thanh toán thất bại';
+                navigate('/paymentfailed', {
+                    state: {
+                        error: errorMessage,
+                        orderId: transactionRef
+                    }
+                });
             }
-        };
+        } catch (error) {
+            console.error('Lỗi xử lý callback:', error);
+            setError('Có lỗi xảy ra khi xử lý thanh toán');
+        }
+    };
 
-        handleCallback();
-    }, [location, navigate]);
+    handleCallback();
+}, [location, navigate]);
 
     if (isProcessing) {
         return (
+            <>
+            <Navbar />
             <div className="min-h-screen flex items-center justify-center bg-gray-50">
                 <div className="bg-white p-8 rounded-2xl shadow-lg max-w-md w-full mx-4">
                     <div className="flex flex-col items-center">
@@ -70,11 +71,15 @@ const PaymentCallback = () => {
                     </div>
                 </div>
             </div>
+            <Footer />
+            </>
         );
     }
 
     if (error) {
         return (
+            <>
+            <Navbar />
             <div className="min-h-screen flex items-center justify-center bg-gray-50">
                 <div className="bg-white p-8 rounded-2xl shadow-lg max-w-md w-full mx-4">
                     <div className="flex flex-col items-center">
@@ -98,7 +103,9 @@ const PaymentCallback = () => {
                         </div>
                     </div>
                 </div>
-            </div>
+                </div>
+            <Footer />
+            </>
         );
     }
 
