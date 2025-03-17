@@ -425,159 +425,203 @@ const ProductList = ({ selectedSkinType, selectedCategory, sortOrder }) => {
 
       {/* Popup Thanh toán nhỏ gọn */}
       {showPaymentPopup && selectedProduct && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl shadow-2xl max-w-md w-full mx-auto overflow-hidden transform transition-all animate-fadeIn">
-            {/* Header */}
-            <div className="relative h-12 bg-gradient-to-r from-blue-500 to-blue-600">
-              <h3 className="text-white font-medium text-lg p-3">Thanh toán nhanh</h3>
-              <button 
-                onClick={() => setShowPaymentPopup(false)}
-                className="absolute right-3 top-3 text-white hover:text-gray-200 transition-colors"
-              >
-                <i className="fas fa-times"></i>
-              </button>
-            </div>
-
-            <div className="p-5">
-              {/* Thông tin sản phẩm */}
-              <div className="flex gap-4 mb-5">
-                <div className="w-1/3">
-                  <img
-                    src={selectedProduct.productsImages?.[0]?.imageUrl || selectedProduct.image}
-                    alt={selectedProduct.productName}
-                    className="w-full h-24 object-cover rounded-lg shadow-sm"
-                  />
-                </div>
-                
-                <div className="w-2/3">
-                  <h3 className="font-bold text-gray-800 text-lg mb-1 line-clamp-2">
-                    {selectedProduct.productName}
-                  </h3>
-                  <div className="text-blue-600 font-bold">
-                    {formatCurrency(selectedProduct.price)}
-                  </div>
-                </div>
+        <>
+          {/* Overlay với animation fade */}
+          <div 
+            className={`fixed inset-0 z-50 transition-opacity duration-300 ${
+              showPaymentPopup ? 'opacity-100' : 'opacity-0'
+            }`}
+          >
+            <div 
+              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+              onClick={() => setShowPaymentPopup(false)}
+            />
+            
+            {/* Panel thanh toán */}
+            <div 
+              className={`absolute top-0 right-0 h-full w-full sm:w-[480px] bg-white shadow-2xl transform transition-all duration-500 ease-out
+                ${showPaymentPopup ? 'translate-x-0 opacity-100' : 'translate-x-full opacity-0'}
+              `}
+            >
+              {/* Header với gradient animation */}
+              <div className="relative h-16 bg-gradient-to-r from-blue-500 via-blue-600 to-blue-500 bg-[length:200%_100%] animate-gradient flex items-center justify-between px-6">
+                <h3 className="text-white font-medium text-lg flex items-center gap-2">
+                  <i className="fas fa-shopping-cart"></i>
+                  <span className="animate-fadeIn">Thanh toán nhanh</span>
+                </h3>
+                <button 
+                  onClick={() => setShowPaymentPopup(false)}
+                  className="text-white/80 hover:text-white transition-colors p-2 hover:rotate-90 transform duration-300"
+                >
+                  <i className="fas fa-times text-xl"></i>
+                </button>
               </div>
 
-              {/* Form thông tin */}
-              <div className="space-y-3 mb-5">
-                {[
-                  { name: "name", label: "Họ tên", icon: "fas fa-user" },
-                  { name: "phone", label: "Số điện thoại", icon: "fas fa-phone" },
-                  { name: "address", label: "Địa chỉ", icon: "fas fa-map-marker-alt" }
-                ].map((field) => (
-                  <div key={field.name} className="relative">
-                    <div className="flex items-center bg-gray-50 rounded-lg border border-gray-200">
-                      <span className="pl-3">
-                        <i className={`${field.icon} text-gray-400`}></i>
-                      </span>
-                      <input
-                        className="w-full pl-3 pr-4 py-2 bg-transparent focus:outline-none disabled:text-gray-500 text-sm"
-                        type="text"
-                        placeholder={field.label}
-                        value={formData[field.name]}
-                        disabled={user !== null}
-                        readOnly
-                      />
+              {/* Content với scroll mượt */}
+              <div className="h-[calc(100vh-4rem)] overflow-y-auto scroll-smooth">
+                <div className="p-6 space-y-6">
+                  {/* Thông tin sản phẩm với animation */}
+                  <div className="bg-gray-50 rounded-xl p-4 transform transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5">
+                    <div className="flex gap-4">
+                      <div className="w-1/3 overflow-hidden rounded-lg">
+                        <img
+                          src={selectedProduct.productsImages?.[0]?.imageUrl || selectedProduct.image}
+                          alt={selectedProduct.productName}
+                          className="w-full h-24 object-cover transform transition-transform duration-500 hover:scale-110"
+                        />
+                      </div>
+                      
+                      <div className="w-2/3">
+                        <h3 className="font-bold text-gray-800 text-lg mb-1 line-clamp-2">
+                          {selectedProduct.productName}
+                        </h3>
+                        <div className="text-blue-600 font-bold animate-pulse">
+                          {formatCurrency(selectedProduct.price)}
+                        </div>
+                      </div>
                     </div>
                   </div>
-                ))}
-              </div>
 
-              {/* Phương thức thanh toán */}
-              <div className="mb-5">
-                <h4 className="text-sm font-medium text-gray-700 mb-3">Phương thức thanh toán</h4>
-                <div className="grid grid-cols-2 gap-2">
-                  <button
-                    onClick={() => setPaymentMethod("VNPay")}
-                    className={`flex items-center justify-center gap-2 px-3 py-2 rounded-lg border transition-all ${
-                      paymentMethod === "VNPay"
-                        ? "bg-blue-50 border-blue-500 text-blue-600"
-                        : "border-gray-200 hover:bg-gray-50"
-                    }`}
-                  >
-                    <div className="flex items-center gap-1">
-        <div className="relative flex items-center bg-blue-600 text-white px-2.5 py-1 rounded">
-          <span className="font-bold text-yellow-300 mr-0.5 text-sm">VN</span>
-          <span className="font-bold text-sm">PAY</span>
-          <div className="absolute -top-1 -right-1 w-2 h-2 bg-yellow-300 rounded-full animate-pulse"></div>
-        </div>
-      </div>
-                  </button>
-                  <button
-                    onClick={() => setPaymentMethod("Cash")}
-                    className={`flex items-center justify-center gap-2 px-3 py-2 rounded-lg border transition-all ${
-                      paymentMethod === "Cash"
-                        ? "bg-green-50 border-green-500 text-green-600"
-                        : "border-gray-200 hover:bg-gray-50"
-                    }`}
-                  >
-                    <i className="fas fa-money-bill text-lg"></i>
-                    <span className="text-sm font-medium">Tiền mặt</span>
-                  </button>
+                  {/* Form thông tin với animation khi focus */}
+                  <div className="space-y-4">
+                    <h4 className="font-medium text-gray-700 flex items-center gap-2">
+                      <i className="fas fa-user-circle text-blue-500"></i>
+                      Thông tin người nhận
+                    </h4>
+                    {[
+                      { name: "name", label: "Họ tên", icon: "fas fa-user" },
+                      { name: "phone", label: "Số điện thoại", icon: "fas fa-phone" },
+                      { name: "address", label: "Địa chỉ", icon: "fas fa-map-marker-alt" }
+                    ].map((field) => (
+                      <div key={field.name} className="relative transform transition-all duration-300 hover:-translate-y-0.5">
+                        <div className="flex items-center bg-gray-50 rounded-lg border-2 border-gray-200 hover:border-blue-500 focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-200 transition-all">
+                          <span className="pl-3">
+                            <i className={`${field.icon} text-gray-400 group-hover:text-blue-500 transition-colors`}></i>
+                          </span>
+                          <input
+                            className="w-full pl-3 pr-4 py-3 bg-transparent focus:outline-none disabled:text-gray-500 text-sm"
+                            type="text"
+                            placeholder={field.label}
+                            value={formData[field.name]}
+                            disabled={user !== null}
+                            readOnly
+                          />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Phương thức thanh toán với animation */}
+                  <div>
+                    <h4 className="font-medium text-gray-700 mb-3 flex items-center gap-2">
+                      <i className="fas fa-credit-card text-blue-500"></i>
+                      Phương thức thanh toán
+                    </h4>
+                    <div className="grid grid-cols-2 gap-3">
+                      <button
+                        onClick={() => setPaymentMethod("VNPay")}
+                        className={`group relative flex items-center justify-center gap-2 px-4 py-3 rounded-xl border-2 transition-all duration-300 transform hover:-translate-y-0.5 ${
+                          paymentMethod === "VNPay"
+                            ? "border-blue-500 bg-blue-50 text-blue-600 shadow-lg shadow-blue-100"
+                            : "border-gray-200 hover:border-blue-500 hover:bg-blue-50"
+                        }`}
+                      >
+                        <div className="flex items-center gap-1">
+                          <div className="relative flex items-center bg-blue-600 text-white px-2.5 py-1 rounded">
+                            <span className="font-bold text-yellow-300 mr-0.5 text-sm">VN</span>
+                            <span className="font-bold text-sm">PAY</span>
+                            <div className="absolute -top-1 -right-1 w-2 h-2 bg-yellow-300 rounded-full animate-ping"></div>
+                          </div>
+                        </div>
+                      </button>
+                      <button
+                        onClick={() => setPaymentMethod("Cash")}
+                        className={`group relative flex items-center justify-center gap-2 px-4 py-3 rounded-xl border-2 transition-all duration-300 transform hover:-translate-y-0.5 ${
+                          paymentMethod === "Cash"
+                            ? "border-green-500 bg-green-50 text-green-600 shadow-lg shadow-green-100"
+                            : "border-gray-200 hover:border-green-500 hover:bg-green-50"
+                        }`}
+                      >
+                        <i className="fas fa-money-bill-wave text-lg group-hover:scale-110 transition-transform"></i>
+                        <span className="font-medium">Tiền mặt</span>
+                      </button>
+                    </div>
+                  </div>
                 </div>
               </div>
 
-              {/* Thanh toán */}
-              <div className="bg-gray-50 -mx-5 -mb-5 p-5">
+              {/* Footer với animation */}
+              <div className="fixed bottom-0 right-0 w-full sm:w-[480px] bg-white border-t border-gray-200 p-4 backdrop-blur-lg bg-white/80">
                 <div className="flex items-center justify-between mb-4">
-                  <span className="text-sm text-gray-600">Tổng thanh toán</span>
-                  <span className="text-lg font-bold text-blue-600">
+                  <span className="text-gray-600">Tổng thanh toán</span>
+                  <span className="text-xl font-bold text-blue-600 animate-pulse">
                     {formatCurrency(selectedProduct.price)}
                   </span>
                 </div>
 
-                <div className="flex gap-2">
-                  <button
-                    onClick={handlePayment}
-                    className="flex-1 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2.5 rounded-lg font-medium text-sm transition-colors flex items-center justify-center gap-2"
-                  >
-                    {paymentMethod === "VNPay" ? (
-                      <>
-                        <i className="fas fa-lock text-xs"></i>
-                        Thanh toán VNPay
-                      </>
-                    ) : (
-                      <>
-                        <i className="fas fa-check text-xs"></i>
-                        Đặt hàng
-                      </>
-                    )}
-                  </button>
-                  <button
-                    onClick={() => setShowPaymentPopup(false)}
-                    className="px-4 py-2.5 border border-gray-300 rounded-lg hover:bg-gray-100 transition-colors text-sm font-medium text-gray-700"
-                  >
-                    Hủy
-                  </button>
-                </div>
+                <button
+                  onClick={handlePayment}
+                  className="w-full bg-gradient-to-r from-blue-500 via-blue-600 to-blue-500 bg-[length:200%_100%] animate-gradient hover:shadow-lg hover:shadow-blue-500/25 text-white py-3 rounded-xl font-medium transition-all duration-300 transform hover:-translate-y-0.5 flex items-center justify-center gap-2"
+                >
+                  {paymentMethod === "VNPay" ? (
+                    <>
+                      <i className="fas fa-lock animate-bounce"></i>
+                      Thanh toán VNPay
+                    </>
+                  ) : (
+                    <>
+                      <i className="fas fa-check animate-bounce"></i>
+                      Đặt hàng
+                    </>
+                  )}
+                </button>
               </div>
             </div>
           </div>
-        </div>
+        </>
       )}
 
       <style jsx>{`
+        @keyframes gradient {
+          0% { background-position: 0% 50%; }
+          50% { background-position: 100% 50%; }
+          100% { background-position: 0% 50%; }
+        }
+
+        .animate-gradient {
+          animation: gradient 3s ease infinite;
+        }
+
         @keyframes fadeIn {
-          from {
-            opacity: 0;
-            transform: scale(0.95);
-          }
-          to {
-            opacity: 1;
-            transform: scale(1);
-          }
+          from { opacity: 0; transform: translateY(-10px); }
+          to { opacity: 1; transform: translateY(0); }
         }
 
         .animate-fadeIn {
-          animation: fadeIn 0.2s ease-out;
+          animation: fadeIn 0.3s ease-out;
         }
 
-        .line-clamp-2 {
-          display: -webkit-box;
-          -webkit-line-clamp: 2;
-          -webkit-box-orient: vertical;
-          overflow: hidden;
+        /* Custom scrollbar */
+        .scroll-smooth {
+          scrollbar-width: thin;
+          scrollbar-color: rgba(156, 163, 175, 0.5) transparent;
+        }
+
+        .scroll-smooth::-webkit-scrollbar {
+          width: 6px;
+        }
+
+        .scroll-smooth::-webkit-scrollbar-track {
+          background: transparent;
+        }
+
+        .scroll-smooth::-webkit-scrollbar-thumb {
+          background-color: rgba(156, 163, 175, 0.5);
+          border-radius: 3px;
+        }
+
+        .scroll-smooth::-webkit-scrollbar-thumb:hover {
+          background-color: rgba(156, 163, 175, 0.7);
         }
       `}</style>
     </div>

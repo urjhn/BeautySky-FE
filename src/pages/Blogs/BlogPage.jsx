@@ -324,7 +324,7 @@ const Blogs = () => {
                 {/* Content */}
                 <div className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
                   <img
-                    src={selectedBlog.imgURL}
+                    src={selectedBlog.imgUrl}
                     alt={selectedBlog.title}
                     className="w-full h-[200px] sm:h-[300px] lg:h-[500px] object-cover rounded-xl mb-4 sm:mb-6 lg:mb-8 shadow-md"
                   />
