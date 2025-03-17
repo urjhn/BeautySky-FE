@@ -19,15 +19,13 @@ import { useNavigate } from "react-router-dom";
 
 // Chuẩn hóa ORDER_STATUS thành chữ thường
 const ORDER_STATUS = {
-  PENDING: "pending",
-  PROCESSING: "processing",
-  COMPLETED: "completed",
-  CANCELLED: "cancelled",
+  PENDING: "Pending",
+  COMPLETED: "Completed",
+  CANCELLED: "Cancelled"
 };
 
 const STATUS_MAP = {
   [ORDER_STATUS.PENDING]: "Chờ xử lý",
-  [ORDER_STATUS.PROCESSING]: "Đang xử lý",
   [ORDER_STATUS.COMPLETED]: "Đã hoàn thành",
   [ORDER_STATUS.CANCELLED]: "Đã hủy",
 };
@@ -52,16 +50,16 @@ const Order = () => {
       if (ordersData && ordersData.length > 0) {
         const processedOrders = ordersData.map((order) => {
           const userData = order.user || {};
-          const orderStatus = (order.status || "pending").toLowerCase();
-
+          
           return {
             ...order,
-            status: orderStatus,
+            status: order.status || ORDER_STATUS.PENDING, // Lấy status trực tiếp từ API
             userFullName: userData.fullName || "Không xác định",
             userPhone: userData.phone || "Không có",
             userAddress: userData.address || "Không có",
             userId: userData.userId || null,
             totalAmount: order.totalAmount || 0,
+            paymentStatus: order.paymentId ? "Confirmed" : "Pending" // Xác định trạng thái thanh toán dựa vào paymentId
           };
         });
 
@@ -108,6 +106,7 @@ const Order = () => {
         const response = await paymentsAPI.processAndConfirmPayment(orderId);
 
         if (response && response.data) {
+          // Cập nhật state ngay lập tức
           setOrders((prevOrders) =>
             prevOrders.map((order) =>
               order.orderId === orderId
@@ -115,12 +114,14 @@ const Order = () => {
                     ...order,
                     status: ORDER_STATUS.COMPLETED,
                     paymentStatus: "Confirmed",
-                    paymentId: response.data.paymentId,
-                    paymentDate: response.data.paymentDate,
+                    paymentId: response.data.paymentId
                   }
                 : order
             )
           );
+
+          // Tải lại dữ liệu từ server
+          await fetchOrdersData();
 
           await Swal.fire({
             icon: "success",
@@ -135,10 +136,7 @@ const Order = () => {
       Swal.fire({
         icon: "error",
         title: "Lỗi",
-        text:
-          error.response?.data ||
-          error.message ||
-          "Có lỗi xảy ra khi duyệt đơn hàng",
+        text: error.response?.data || error.message || "Có lỗi xảy ra khi duyệt đơn hàng",
       });
     }
   };
@@ -206,7 +204,7 @@ const Order = () => {
       setOrders((prevOrders) =>
         prevOrders.map((order) => {
           const result = results.find(
-            (r) => r.value?.orderId === order.orderId
+            (r) => r.value?.orderId === order.orderId && r.value?.success
           );
           if (result?.value?.success) {
             return {
@@ -221,6 +219,8 @@ const Order = () => {
         })
       );
 
+      await fetchOrdersData();
+
       await Swal.fire({
         icon: successful > 0 ? "success" : "warning",
         title: "Kết quả xử lý",
@@ -231,10 +231,6 @@ const Order = () => {
           </div>
         `,
       });
-
-      if (successful > 0) {
-        await fetchOrdersData();
-      }
     } catch (error) {
       console.error("Lỗi khi duyệt tất cả đơn hàng:", error);
       Swal.fire({
@@ -257,9 +253,10 @@ const Order = () => {
       order.status,
     ].some((field) => String(field).toLowerCase().includes(searchLower));
 
-    return (
-      matchesSearch && (filterStatus === "All" || order.status === filterStatus)
-    );
+    // Sửa lại logic lọc theo status
+    const matchesStatus = filterStatus === "All" || order.status === filterStatus;
+
+    return matchesSearch && matchesStatus;
   });
 
   const totalPages = Math.ceil(filteredOrders.length / ordersPerPage);
@@ -379,11 +376,9 @@ const Order = () => {
                 className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
                 <option value="All">Tất cả trạng thái</option>
-                {Object.entries(STATUS_MAP).map(([key, value]) => (
-                  <option key={key} value={key}>
-                    {value}
-                  </option>
-                ))}
+                <option value="Pending">Chờ xử lý</option>
+                <option value="Completed">Đã hoàn thành</option>
+                <option value="Cancelled">Đã hủy</option>
               </select>
             </div>
 
@@ -468,17 +463,16 @@ const Order = () => {
                   </td>
                   <td className="p-4 text-center">
                     <div className="flex items-center justify-center space-x-2">
-                      {order.status === ORDER_STATUS.PENDING &&
-                        !order.paymentId && (
-                          <button
-                            onClick={() => handleApproveOrder(order.orderId)}
-                            className="px-3 py-1.5 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors flex items-center gap-1"
-                            title="Duyệt đơn"
-                          >
-                            <FaCheckCircle className="w-4 h-4" />
-                            <span className="text-sm">Duyệt</span>
-                          </button>
-                        )}
+                      {order.status === ORDER_STATUS.PENDING && !order.paymentId && (
+                        <button
+                          onClick={() => handleApproveOrder(order.orderId)}
+                          className="px-3 py-1.5 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors flex items-center gap-1"
+                          title="Duyệt đơn"
+                        >
+                          <FaCheckCircle className="w-4 h-4" />
+                          <span className="text-sm">Duyệt</span>
+                        </button>
+                      )}
                     </div>
                   </td>
                 </tr>
@@ -491,19 +485,67 @@ const Order = () => {
         {totalPages > 1 && (
           <div className="flex justify-center mt-6">
             <nav className="flex items-center space-x-2">
-              {Array.from({ length: totalPages }, (_, i) => (
-                <button
-                  key={i + 1}
-                  onClick={() => setCurrentPage(i + 1)}
-                  className={`px-3 py-2 rounded-lg ${
-                    currentPage === i + 1
-                      ? "bg-blue-500 text-white"
-                      : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                  }`}
-                >
-                  {i + 1}
-                </button>
-              ))}
+              {/* Nút Previous */}
+              <button
+                onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                disabled={currentPage === 1}
+                className={`px-3 py-2 rounded-lg ${
+                  currentPage === 1
+                    ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                }`}
+              >
+                &lt;
+              </button>
+
+              {/* Các nút số trang */}
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => {
+                // Hiển thị trang đầu, trang cuối, trang hiện tại và các trang xung quanh
+                if (
+                  pageNum === 1 ||
+                  pageNum === totalPages ||
+                  (pageNum >= currentPage - 1 && pageNum <= currentPage + 1)
+                ) {
+                  return (
+                    <button
+                      key={pageNum}
+                      onClick={() => setCurrentPage(pageNum)}
+                      className={`px-3 py-2 rounded-lg ${
+                        currentPage === pageNum
+                          ? "bg-blue-500 text-white"
+                          : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                      }`}
+                    >
+                      {pageNum}
+                    </button>
+                  );
+                }
+                // Hiển thị dấu ... nếu có khoảng cách
+                if (
+                  pageNum === currentPage - 2 ||
+                  pageNum === currentPage + 2
+                ) {
+                  return (
+                    <span key={pageNum} className="px-3 py-2">
+                      ...
+                    </span>
+                  );
+                }
+                return null;
+              })}
+
+              {/* Nút Next */}
+              <button
+                onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                disabled={currentPage === totalPages}
+                className={`px-3 py-2 rounded-lg ${
+                  currentPage === totalPages
+                    ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                }`}
+              >
+                &gt;
+              </button>
             </nav>
           </div>
         )}
