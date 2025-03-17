@@ -212,7 +212,6 @@ const Customers = () => {
         return;
       }
 
-
       // Sử dụng hàm updateUser từ context thay vì gọi API trực tiếp
       const result = await updateUser(editingUser.userId, userPayload);
 
@@ -257,12 +256,12 @@ const Customers = () => {
       Swal.fire("Lỗi", "Vui lòng điền đầy đủ thông tin.", "error");
       return;
     }
-    
+
     if (newUser.password !== newUser.confirmPassword) {
       Swal.fire("Lỗi", "Mật khẩu và xác nhận mật khẩu không khớp.", "error");
       return;
     }
-    
+
     try {
       // Chuẩn bị dữ liệu đúng định dạng cho API
       const userPayload = {
@@ -274,12 +273,12 @@ const Customers = () => {
         phone: newUser.phone || "",
         address: newUser.address || "",
         roleId: parseInt(newUser.roleId),
-        isActive: true
+        isActive: true,
       };
-      
+
       const response = await usersAPI.createUser(userPayload);
-      
-      if (response && (response.status >= 200 && response.status < 300)) {
+
+      if (response && response.status >= 200 && response.status < 300) {
         Swal.fire("Thành công!", "Thành viên đã được thêm.", "success");
         await fetchUsers(); // Tải lại danh sách người dùng
         setShowAddUserModal(false);
@@ -298,13 +297,19 @@ const Customers = () => {
       }
     } catch (error) {
       console.error("Chi tiết lỗi:", error.response || error);
-      
-      const errorMessage = 
-        error.response?.data || 
-        error.message || 
+
+      const errorMessage =
+        error.response?.data ||
+        error.message ||
         "Không thể thêm thành viên. Vui lòng kiểm tra thông tin và thử lại.";
-      
-      Swal.fire("Lỗi!", typeof errorMessage === 'string' ? errorMessage : JSON.stringify(errorMessage), "error");
+
+      Swal.fire(
+        "Lỗi!",
+        typeof errorMessage === "string"
+          ? errorMessage
+          : JSON.stringify(errorMessage),
+        "error"
+      );
     }
   };
 
@@ -347,7 +352,9 @@ const Customers = () => {
           {/* Date Filters với thiết kế mới */}
           <div className="flex flex-col sm:flex-row gap-4 w-full">
             <div className="relative w-full">
-              <label className="block text-sm font-medium text-gray-700 mb-1 ml-1">Từ ngày</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1 ml-1">
+                Từ ngày
+              </label>
               <div className="relative">
                 <FaCalendarAlt className="absolute left-4 top-3.5 text-gray-400" />
                 <input
@@ -359,7 +366,9 @@ const Customers = () => {
               </div>
             </div>
             <div className="relative w-full">
-              <label className="block text-sm font-medium text-gray-700 mb-1 ml-1">Đến ngày</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1 ml-1">
+                Đến ngày
+              </label>
               <div className="relative">
                 <FaCalendarAlt className="absolute left-4 top-3.5 text-gray-400" />
                 <input
@@ -384,42 +393,44 @@ const Customers = () => {
               <FaUser className="text-3xl opacity-80" />
             </div>
           </div>
-          
+
           <div className="bg-gradient-to-r from-green-500 to-green-600 p-4 rounded-lg shadow-md text-white">
             <div className="flex justify-between items-center">
               <div>
                 <p className="text-sm opacity-80">Khách hàng hoạt động</p>
                 <p className="text-2xl font-bold">
-                  {filteredCustomers.filter(c => c.isActive).length}
+                  {filteredCustomers.filter((c) => c.isActive).length}
                 </p>
               </div>
               <FaUser className="text-3xl opacity-80" />
             </div>
           </div>
-          
+
           <div className="bg-gradient-to-r from-purple-500 to-purple-600 p-4 rounded-lg shadow-md text-white">
             <div className="flex justify-between items-center">
               <div>
                 <p className="text-sm opacity-80">Tổng đơn hàng</p>
                 <p className="text-2xl font-bold">
-                  {orders?.filter(order => order.status > 0).length || 0}
+                  {orders?.filter((order) => order.status > 0).length || 0}
                 </p>
               </div>
               <FaCalendarAlt className="text-3xl opacity-80" />
             </div>
           </div>
-          
+
           <div className="bg-gradient-to-r from-yellow-500 to-yellow-600 p-4 rounded-lg shadow-md text-white">
             <div className="flex justify-between items-center">
               <div>
                 <p className="text-sm opacity-80">Khách mới (30 ngày)</p>
                 <p className="text-2xl font-bold">
-                  {filteredCustomers.filter(c => {
-                    const date = new Date(c.dateCreate);
-                    const thirtyDaysAgo = new Date();
-                    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-                    return date >= thirtyDaysAgo;
-                  }).length}
+                  {
+                    filteredCustomers.filter((c) => {
+                      const date = new Date(c.dateCreate);
+                      const thirtyDaysAgo = new Date();
+                      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+                      return date >= thirtyDaysAgo;
+                    }).length
+                  }
                 </p>
               </div>
               <FaUser className="text-3xl opacity-80" />
@@ -435,60 +446,120 @@ const Customers = () => {
                 <table className="min-w-full divide-y divide-gray-200">
                   <thead className="bg-gradient-to-r from-gray-50 to-gray-100">
                     <tr>
-                      <th scope="col" className="p-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Tên</th>
-                      <th scope="col" className="p-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider hidden sm:table-cell">Email</th>
-                      <th scope="col" className="p-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Role</th>
-                      <th scope="col" className="p-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider hidden md:table-cell">Orders</th>
-                      <th scope="col" className="p-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider hidden sm:table-cell">Trạng thái</th>
-                      <th scope="col" className="p-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider hidden md:table-cell">Ngày Tạo</th>
-                      <th scope="col" className="p-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Hành động</th>
+                      <th
+                        scope="col"
+                        className="p-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider"
+                      >
+                        Tên
+                      </th>
+                      <th
+                        scope="col"
+                        className="p-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider hidden sm:table-cell"
+                      >
+                        Email
+                      </th>
+                      <th
+                        scope="col"
+                        className="p-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider"
+                      >
+                        Role
+                      </th>
+                      <th
+                        scope="col"
+                        className="p-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider hidden md:table-cell"
+                      >
+                        Orders
+                      </th>
+                      <th
+                        scope="col"
+                        className="p-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider hidden sm:table-cell"
+                      >
+                        Trạng thái
+                      </th>
+                      <th
+                        scope="col"
+                        className="p-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider hidden md:table-cell"
+                      >
+                        Ngày Tạo
+                      </th>
+                      <th
+                        scope="col"
+                        className="p-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider"
+                      >
+                        Hành động
+                      </th>
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
                     {currentCustomers.map((customer) => (
-                      <tr key={customer.id} className="hover:bg-gray-50 transition-colors duration-150">
+                      <tr
+                        key={customer.id}
+                        className="hover:bg-gray-50 transition-colors duration-150"
+                      >
                         <td className="p-3 whitespace-nowrap">
                           <div className="flex items-center gap-3">
                             <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
                               <FaUser className="text-blue-600" />
                             </div>
                             <div>
-                              <div className="text-sm font-medium text-gray-900">{customer.fullName}</div>
-                              <div className="text-xs text-gray-500 sm:hidden">{customer.email}</div>
+                              <div className="text-sm font-medium text-gray-900">
+                                {customer.fullName}
+                              </div>
+                              <div className="text-xs text-gray-500 sm:hidden">
+                                {customer.email}
+                              </div>
                             </div>
                           </div>
                         </td>
                         <td className="p-3 whitespace-nowrap hidden sm:table-cell">
-                          <span className="text-sm text-gray-600">{customer.email}</span>
+                          <span className="text-sm text-gray-600">
+                            {customer.email}
+                          </span>
                         </td>
                         <td className="p-3 whitespace-nowrap">
-                          <span className={`px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${getRoleName(customer.roleId).color} text-white shadow-sm`}>
+                          <span
+                            className={`px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                              getRoleName(customer.roleId).color
+                            } text-white shadow-sm`}
+                          >
                             {getRoleName(customer.roleId).name}
                           </span>
                         </td>
                         <td className="p-3 whitespace-nowrap hidden md:table-cell">
-                          <div className="text-sm text-gray-900 font-medium">{getOrderCount(customer.userId)}</div>
+                          <div className="text-sm text-gray-900 font-medium">
+                            {getOrderCount(customer.userId)}
+                          </div>
                           <div className="text-xs text-gray-500">đơn hàng</div>
                         </td>
                         <td className="p-3 whitespace-nowrap hidden sm:table-cell">
-                          <span className={`px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${customer.isActive ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}`}>
+                          <span
+                            className={`px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                              customer.isActive
+                                ? "bg-green-100 text-green-800"
+                                : "bg-red-100 text-red-800"
+                            }`}
+                          >
                             {customer.isActive ? "Active" : "Inactive"}
                           </span>
                         </td>
                         <td className="p-3 whitespace-nowrap hidden md:table-cell">
-                          <span className="text-sm text-gray-600">{formatDate(customer.dateCreate)}</span>
+                          <span className="text-sm text-gray-600">
+                            {formatDate(customer.dateCreate)}
+                          </span>
                         </td>
                         <td className="p-3 whitespace-nowrap">
                           <div className="flex gap-3">
-                            <button 
+                            <button
                               className="text-blue-600 hover:text-blue-800 transition-colors p-1 hover:bg-blue-100 rounded-full"
                               onClick={() => handleEditUser(customer)}
                             >
                               <FaEdit size={18} />
                             </button>
-                            <button 
+                            <button
                               className="text-red-600 hover:text-red-800 transition-colors p-1 hover:bg-red-100 rounded-full"
-                              onClick={() => handleDeleteUser(customer.userId || customer.id)}
+                              onClick={() =>
+                                handleDeleteUser(customer.userId || customer.id)
+                              }
                             >
                               <FaTrash size={18} />
                             </button>
@@ -504,44 +575,57 @@ const Customers = () => {
         ) : (
           <div className="text-center py-10 bg-gray-50 rounded-lg border border-gray-200">
             <FaUser className="mx-auto text-gray-300 text-5xl mb-3" />
-            <p className="text-gray-500 text-lg">Không tìm thấy khách hàng nào.</p>
-            <p className="text-gray-400 text-sm mt-1">Thử thay đổi bộ lọc tìm kiếm của bạn.</p>
+            <p className="text-gray-500 text-lg">
+              Không tìm thấy khách hàng nào.
+            </p>
+            <p className="text-gray-400 text-sm mt-1">
+              Thử thay đổi bộ lọc tìm kiếm của bạn.
+            </p>
           </div>
         )}
 
         {/* Pagination với thiết kế mới */}
         {totalPages > 0 && (
           <div className="flex justify-center mt-6">
-            <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+            <nav
+              className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px"
+              aria-label="Pagination"
+            >
               <button
                 onClick={() => currentPage > 1 && goToPage(currentPage - 1)}
                 disabled={currentPage === 1}
                 className={`relative inline-flex items-center px-3 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium ${
-                  currentPage === 1 ? 'text-gray-300 cursor-not-allowed' : 'text-gray-700 hover:bg-gray-50'
+                  currentPage === 1
+                    ? "text-gray-300 cursor-not-allowed"
+                    : "text-gray-700 hover:bg-gray-50"
                 }`}
               >
                 &laquo; Trước
               </button>
-              
+
               {Array.from({ length: totalPages }, (_, index) => (
                 <button
                   key={index + 1}
                   onClick={() => goToPage(index + 1)}
                   className={`relative inline-flex items-center px-4 py-2 border ${
                     currentPage === index + 1
-                      ? 'z-10 bg-blue-600 border-blue-600 text-white'
-                      : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'
+                      ? "z-10 bg-blue-600 border-blue-600 text-white"
+                      : "bg-white border-gray-300 text-gray-700 hover:bg-gray-50"
                   } text-sm font-medium transition-colors duration-150`}
                 >
                   {index + 1}
                 </button>
               ))}
-              
+
               <button
-                onClick={() => currentPage < totalPages && goToPage(currentPage + 1)}
+                onClick={() =>
+                  currentPage < totalPages && goToPage(currentPage + 1)
+                }
                 disabled={currentPage === totalPages}
                 className={`relative inline-flex items-center px-3 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium ${
-                  currentPage === totalPages ? 'text-gray-300 cursor-not-allowed' : 'text-gray-700 hover:bg-gray-50'
+                  currentPage === totalPages
+                    ? "text-gray-300 cursor-not-allowed"
+                    : "text-gray-700 hover:bg-gray-50"
                 }`}
               >
                 Tiếp &raquo;
@@ -560,7 +644,7 @@ const Customers = () => {
                 <h2 className="text-xl font-bold text-gray-800">
                   {editingUser ? "Chỉnh sửa thành viên" : "Thêm thành viên mới"}
                 </h2>
-                <button 
+                <button
                   className="text-gray-500 hover:text-gray-700 transition-colors"
                   onClick={() => {
                     setShowAddUserModal(false);
@@ -577,99 +661,152 @@ const Customers = () => {
                     });
                   }}
                 >
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-6 w-6"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M6 18L18 6M6 6l12 12"
+                    />
                   </svg>
                 </button>
               </div>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1 ml-1">Tên đăng nhập</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1 ml-1">
+                    Tên đăng nhập
+                  </label>
                   <input
                     type="text"
                     className="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
                     value={newUser.userName}
-                    onChange={(e) => setNewUser({...newUser, userName: e.target.value})}
+                    onChange={(e) =>
+                      setNewUser({ ...newUser, userName: e.target.value })
+                    }
                   />
                 </div>
-                
+
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1 ml-1">Họ tên</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1 ml-1">
+                    Họ tên
+                  </label>
                   <input
                     type="text"
                     className="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
                     value={newUser.fullName}
-                    onChange={(e) => setNewUser({...newUser, fullName: e.target.value})}
+                    onChange={(e) =>
+                      setNewUser({ ...newUser, fullName: e.target.value })
+                    }
                   />
                 </div>
-                
+
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1 ml-1">Email</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1 ml-1">
+                    Email
+                  </label>
                   <input
                     type="email"
                     className="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
                     value={newUser.email}
-                    onChange={(e) => setNewUser({...newUser, email: e.target.value})}
+                    onChange={(e) =>
+                      setNewUser({ ...newUser, email: e.target.value })
+                    }
                   />
                 </div>
-                
+
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1 ml-1">Số điện thoại</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1 ml-1">
+                    Số điện thoại
+                  </label>
                   <input
                     type="text"
                     className="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
                     value={newUser.phone}
-                    onChange={(e) => setNewUser({...newUser, phone: e.target.value})}
+                    onChange={(e) =>
+                      setNewUser({ ...newUser, phone: e.target.value })
+                    }
                   />
                 </div>
-                
+
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1 ml-1">Mật khẩu</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1 ml-1">
+                    Mật khẩu
+                  </label>
                   <input
                     type="password"
                     className="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
                     value={newUser.password}
-                    onChange={(e) => setNewUser({...newUser, password: e.target.value})}
-                    placeholder={editingUser ? "Để trống nếu không thay đổi" : ""}
+                    onChange={(e) =>
+                      setNewUser({ ...newUser, password: e.target.value })
+                    }
+                    placeholder={
+                      editingUser ? "Để trống nếu không thay đổi" : ""
+                    }
                   />
                 </div>
-                
+
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1 ml-1">Xác nhận mật khẩu</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1 ml-1">
+                    Xác nhận mật khẩu
+                  </label>
                   <input
                     type="password"
                     className="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
                     value={newUser.confirmPassword}
-                    onChange={(e) => setNewUser({...newUser, confirmPassword: e.target.value})}
-                    placeholder={editingUser ? "Để trống nếu không thay đổi" : ""}
+                    onChange={(e) =>
+                      setNewUser({
+                        ...newUser,
+                        confirmPassword: e.target.value,
+                      })
+                    }
+                    placeholder={
+                      editingUser ? "Để trống nếu không thay đổi" : ""
+                    }
                   />
                 </div>
-                
+
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1 ml-1">Vai trò</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1 ml-1">
+                    Vai trò
+                  </label>
                   <select
                     className="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
                     value={newUser.roleId}
-                    onChange={(e) => setNewUser({...newUser, roleId: parseInt(e.target.value)})}
+                    onChange={(e) =>
+                      setNewUser({
+                        ...newUser,
+                        roleId: parseInt(e.target.value),
+                      })
+                    }
                   >
                     <option value={1}>User</option>
                     <option value={2}>Staff</option>
                     <option value={3}>Manager</option>
                   </select>
                 </div>
-                
+
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1 ml-1">Địa chỉ</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1 ml-1">
+                    Địa chỉ
+                  </label>
                   <input
                     type="text"
                     className="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
                     value={newUser.address}
-                    onChange={(e) => setNewUser({...newUser, address: e.target.value})}
+                    onChange={(e) =>
+                      setNewUser({ ...newUser, address: e.target.value })
+                    }
                   />
                 </div>
               </div>
-              
+
               <div className="mt-8 flex justify-end space-x-3">
                 <button
                   className="px-5 py-2.5 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition-all duration-200 font-medium"
@@ -690,7 +827,7 @@ const Customers = () => {
                 >
                   Hủy
                 </button>
-                
+
                 <button
                   className="px-5 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all duration-200 font-medium shadow-md hover:shadow-lg"
                   onClick={editingUser ? handleUpdateUser : handleAddUser}
