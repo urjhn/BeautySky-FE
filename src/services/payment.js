@@ -137,63 +137,27 @@ const paymentsAPI = {
     }
     return response;
   },
-  createVNPayPayment: async (paymentInfo) => {
+  createVNPayPayment: async (paymentData) => {
     try {
-      // Validate dữ liệu đầu vào
-      if (!paymentInfo.orderId || !paymentInfo.amount) {
-        throw new Error('Thiếu thông tin thanh toán bắt buộc');
-      }
-
-      // Format dữ liệu trước khi gửi
-      const requestData = {
-        orderId: parseInt(paymentInfo.orderId),
-        amount: parseFloat(paymentInfo.amount),
-        orderInfo: paymentInfo.orderInfo || `Thanh toan don hang #${paymentInfo.orderId}`,
-        orderType: paymentInfo.orderType || "billpayment",
-        language: paymentInfo.language || "vn"
-      };
-
-      console.log("Sending payment request:", requestData);
-
-      const response = await axiosInstance.post(`${endPoint}/create-payment`, requestData);
-
-      console.log("VNPay API Response:", response);
-
-      if (response.data?.success && response.data?.paymentUrl) {
-        return {
-          success: true,
-          paymentUrl: response.data.paymentUrl
-        };
-      }
-
-      throw new Error(response.data?.message || 'Không thể tạo URL thanh toán');
+        const response = await axiosInstance.post(
+            `${endPoint}/create-payment`,
+            paymentData
+        );
+        return response.data;
     } catch (error) {
-      console.error("Chi tiết lỗi VNPay:", error.response || error);
-      
-      const errorMessage = error.response?.data?.message 
-        || error.message 
-        || 'Có lỗi xảy ra khi tạo thanh toán';
-        
-      throw new Error(errorMessage);
+        throw new Error(error.response?.data?.message || 'Lỗi tạo thanh toán');
     }
-  },
-  handlePaymentCallback: async (queryParams) => {
+},
+  handlePaymentCallback: async (queryString) => {
     try {
-      const response = await axiosInstance.get(`${endPoint}/payment-callback`, {
-        params: queryParams
-      });
-      return {
-        success: true,
-        data: response.data
-      };
+        const response = await axiosInstance.get(
+            `${endPoint}/payment-callback?${queryString}`
+        );
+        return response.data;
     } catch (error) {
-      console.error("Lỗi khi xử lý callback từ VNPay:", error);
-      return {
-        success: false,
-        error: error.response?.data?.message || 'Có lỗi xảy ra khi xử lý thanh toán'
-      };
+        throw new Error(error.response?.data?.message || 'Lỗi xử lý callback');
     }
-  }
+}
 };
 
 export default paymentsAPI;

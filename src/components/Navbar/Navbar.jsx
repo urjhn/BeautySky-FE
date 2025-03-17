@@ -400,17 +400,17 @@ const Navbar = () => {
           {/* User Section */}
           {user ? (
             <Popover content={menu} trigger="click" placement="bottomRight">
-              <img
-                src={
-                  user.avatar ||
-                  `https://api.dicebear.com/9.x/adventurer/svg?seed=${
-                    user.userName || `user-${Math.random()}`
-                  }`
-                }
-                alt={user.fullName || "Người dùng ẩn danh"}
-                className="w-8 h-8 lg:w-10 lg:h-10 rounded-full object-cover border cursor-pointer"
-              />
-            </Popover>
+            <img
+              src={
+                user.avatar ||
+                `https://api.dicebear.com/9.x/adventurer/svg?seed=${
+                  user.userId || user.userName || 'default'
+                }`
+              }
+              alt={user.fullName || "Người dùng"}
+              className="w-8 h-8 lg:w-10 lg:h-10 rounded-full object-cover border cursor-pointer"
+            />
+          </Popover>
           ) : (
             <div className="flex gap-2 lg:gap-4">
               <Link

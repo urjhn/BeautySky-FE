@@ -353,7 +353,7 @@ const Navbar = () => {
                           ) : (
                             <img
                               src={`https://api.dicebear.com/9.x/adventurer/svg?seed=${
-                                item.userName || `user-${Math.random()}`
+                                item.userName || item.email || item.id || 'default-avatar'
                               }`}
                               alt="Avatar ảo"
                               className="w-16 h-16 object-cover rounded-full 
@@ -411,7 +411,7 @@ const Navbar = () => {
               ) : (
                 <img
                   src={`https://api.dicebear.com/9.x/adventurer/svg?seed=${
-                    user.userName || `user-${Math.random()}`
+                    user.userName || user.email || user.id || 'default-avatar'
                   }`}
                   alt="Avatar ảo"
                   className="w-10 h-10 rounded-full border cursor-pointer"
@@ -496,7 +496,7 @@ const Navbar = () => {
                 ) : (
                   <img
                     src={`https://api.dicebear.com/9.x/adventurer/svg?seed=${
-                      user.userName || `user-${Math.random()}`
+                      user.userName || user.email || user.id || 'default-avatar'
                     }`}
                     alt="Avatar ảo"
                     className="w-10 h-10 rounded-full border"
