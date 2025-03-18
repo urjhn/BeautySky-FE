@@ -216,7 +216,13 @@ const OrderHistory = () => {
                 <div className="space-y-3">
                   <p className="text-gray-600">
                     <i className="far fa-calendar-alt mr-2"></i>
-                    {dayjs(order.orderDate).format("DD/MM/YYYY HH:mm")}
+                    {order.status === "Cancelled"
+                      ? `Ngày hủy: ${dayjs(order.cancelDate).format(
+                          "DD/MM/YYYY HH:mm"
+                        )}`
+                      : `Ngày đặt: ${dayjs(order.orderDate).format(
+                          "DD/MM/YYYY HH:mm"
+                        )}`}
                   </p>
                   <p className="font-bold text-xl text-blue-600">
                     {formatCurrency(order.finalAmount)}
@@ -262,7 +268,7 @@ const OrderHistory = () => {
                       Mã đơn hàng
                     </th>
                     <th className="px-6 py-4 text-left text-sm font-medium tracking-wider">
-                      Ngày đặt
+                      Thời gian
                     </th>
                     <th className="px-6 py-4 text-left text-sm font-medium tracking-wider">
                       Trạng thái
@@ -286,7 +292,13 @@ const OrderHistory = () => {
                         #{order.orderId}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        {dayjs(order.orderDate).format("DD/MM/YYYY HH:mm")}
+                        {order.status === "Cancelled"
+                          ? `Ngày hủy: ${dayjs(order.cancelDate).format(
+                              "DD/MM/YYYY HH:mm"
+                            )}`
+                          : `Ngày đặt: ${dayjs(order.orderDate).format(
+                              "DD/MM/YYYY HH:mm"
+                            )}`}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span
@@ -334,27 +346,78 @@ const OrderHistory = () => {
             </motion.div>
           </div>
 
-          {/* Pagination - Cải thiện thiết kế */}
+          {/* Pagination - Cải thiện thiết kế với giới hạn trang */}
           {totalPages > 1 && (
             <motion.div
               variants={itemVariants}
-              className="flex justify-center mt-8 gap-3"
+              className="flex justify-center mt-8 gap-3 items-center"
             >
-              {[...Array(totalPages)].map((_, i) => (
-                <motion.button
-                  key={i}
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.9 }}
-                  onClick={() => setCurrentPage(i + 1)}
-                  className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 ${
-                    currentPage === i + 1
-                      ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-md"
-                      : "bg-white text-gray-700 hover:bg-gray-50 shadow"
-                  }`}
-                >
-                  {i + 1}
-                </motion.button>
-              ))}
+              {/* Nút Previous */}
+              <motion.button
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+                onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 ${
+                  currentPage === 1
+                    ? "bg-gray-200 text-gray-500 cursor-not-allowed"
+                    : "bg-white text-gray-700 hover:bg-gray-100 shadow"
+                }`}
+                disabled={currentPage === 1}
+              >
+                ‹
+              </motion.button>
+
+              {/* Hiển thị các số trang */}
+              {[...Array(totalPages)].map((_, i) => {
+                if (
+                  i + 1 === 1 || // Trang đầu tiên
+                  i + 1 === totalPages || // Trang cuối cùng
+                  (i + 1 >= currentPage - 2 && i + 1 <= currentPage + 2) // Giới hạn hiển thị 5 trang xung quanh trang hiện tại
+                ) {
+                  return (
+                    <motion.button
+                      key={i}
+                      whileHover={{ scale: 1.1 }}
+                      whileTap={{ scale: 0.9 }}
+                      onClick={() => setCurrentPage(i + 1)}
+                      className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 ${
+                        currentPage === i + 1
+                          ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-md"
+                          : "bg-white text-gray-700 hover:bg-gray-100 shadow"
+                      }`}
+                    >
+                      {i + 1}
+                    </motion.button>
+                  );
+                } else if (
+                  i + 1 === currentPage - 3 ||
+                  i + 1 === currentPage + 3
+                ) {
+                  return (
+                    <span key={i} className="px-2 text-gray-500">
+                      ...
+                    </span>
+                  );
+                }
+                return null;
+              })}
+
+              {/* Nút Next */}
+              <motion.button
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+                onClick={() =>
+                  setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+                }
+                className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 ${
+                  currentPage === totalPages
+                    ? "bg-gray-200 text-gray-500 cursor-not-allowed"
+                    : "bg-white text-gray-700 hover:bg-gray-100 shadow"
+                }`}
+                disabled={currentPage === totalPages}
+              >
+                ›
+              </motion.button>
             </motion.div>
           )}
         </>
