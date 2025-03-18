@@ -30,8 +30,6 @@ import OrderDetail from "./pages/Orders/OrderDetail.jsx";
 import ProtectedRoute from "./context/ProtectedRoute.jsx";
 import ProfileAdmin from "./pages/DashBoard/pages/ProfileAdmin.jsx";
 import ProfileLayout from "./pages/Profile/ProfileLayout.jsx";
-import Security from "./pages/Profile/pages/Security2FA.jsx";
-import Notifications from "./pages/Profile/pages/Notifications.jsx";
 import Unauthorized from "./pages/Unauthorized/unauthorized.jsx";
 import UpdateProfile from './components/Google/UpdateProfile';
 import GoogleCallback from './components/Google/GoogleCallback';
@@ -108,8 +106,6 @@ const App = () => (
       <Route index element={<UserProfile />} />
       <Route path="historyorder" element={<HistoryOrder />} />
       <Route path="orderdetail/:orderId" element={<OrderDetail />} />
-      <Route path="security" element={<Security />} />
-      <Route path="notifications" element={<Notifications />} />
       <Route path="my-routines" element={<UserRoutinePage />} />
     </Route>
   </Routes>

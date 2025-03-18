@@ -7,6 +7,7 @@ import Swal from "sweetalert2";
 import { useAuth } from "../../context/AuthContext";
 import orderAPI from "../../services/order";
 import paymentAPI from "../../services/payment";
+import promotionsAPI from "../../services/promotions";
 
 const ITEMS_PER_PAGE = 12;
 
@@ -27,6 +28,8 @@ const ProductList = ({ selectedSkinType, selectedCategory, sortOrder }) => {
   });
 
   const [paymentMethod, setPaymentMethod] = useState("VNPay");
+  const [promotions, setPromotions] = useState([]);
+  const [selectedVoucher, setSelectedVoucher] = useState(null);
 
   useEffect(() => {
     fetchProduct();
@@ -40,6 +43,23 @@ const ProductList = ({ selectedSkinType, selectedCategory, sortOrder }) => {
         phone: user.phone || "",
         address: user.address || "",
       });
+    }
+  }, [user]);
+
+  useEffect(() => {
+    const fetchPromotions = async () => {
+      try {
+        const response = await promotionsAPI.getAll();
+        if (response.status === 200) {
+          setPromotions(response.data);
+        }
+      } catch (error) {
+        console.error("Lỗi khi tải danh sách khuyến mãi:", error);
+      }
+    };
+
+    if (user) {
+      fetchPromotions();
     }
   }, [user]);
 
@@ -119,6 +139,11 @@ const ProductList = ({ selectedSkinType, selectedCategory, sortOrder }) => {
     setShowPaymentPopup(true);
   };
 
+  const discountedPrice = selectedVoucher
+    ? selectedProduct?.price - 
+      (selectedProduct?.price * selectedVoucher.discountPercentage) / 100
+    : selectedProduct?.price;
+
   const handlePayment = async () => {
     try {
       Swal.fire({
@@ -136,13 +161,14 @@ const ProductList = ({ selectedSkinType, selectedCategory, sortOrder }) => {
         },
       ];
 
-      const orderResponse = await orderAPI.createOrder(null, orderProducts);
+      const promotionId = selectedVoucher ? Number(selectedVoucher.promotionId) : null;
+      const orderResponse = await orderAPI.createOrder(promotionId, orderProducts);
 
       if (orderResponse.orderId) {
         if (paymentMethod === "VNPay") {
           const paymentRequest = {
             orderId: orderResponse.orderId,
-            amount: parseInt(selectedProduct.price),
+            amount: parseInt(discountedPrice),
             orderInfo: `Thanh toan don hang #${orderResponse.orderId}`,
             orderType: "other",
             language: "vn",
@@ -159,7 +185,7 @@ const ProductList = ({ selectedSkinType, selectedCategory, sortOrder }) => {
               "pendingOrder",
               JSON.stringify({
                 orderId: orderResponse.orderId,
-                amount: parseInt(selectedProduct.price),
+                amount: parseInt(discountedPrice),
                 products: [
                   {
                     ...selectedProduct,
@@ -188,7 +214,7 @@ const ProductList = ({ selectedSkinType, selectedCategory, sortOrder }) => {
             productId: selectedProduct.productId,
             productName: selectedProduct.productName,
             quantity: 1,
-            price: selectedProduct.price, // Giữ nguyên giá gốc
+            price: selectedProduct.price,
             productImage:
               selectedProduct.productsImages?.[0]?.imageUrl ||
               selectedProduct.image,
@@ -197,9 +223,10 @@ const ProductList = ({ selectedSkinType, selectedCategory, sortOrder }) => {
           const orderInfo = {
             orderId: orderResponse.orderId,
             totalAmount: selectedProduct.price,
-            discountAmount: 0,
-            finalAmount: selectedProduct.price,
-            products: [productInfo], // Sử dụng object sản phẩm đã tạo
+            discountAmount: selectedVoucher ? 
+              (selectedProduct.price * selectedVoucher.discountPercentage) / 100 : 0,
+            finalAmount: discountedPrice,
+            products: [productInfo],
             paymentMethod: "Cash",
           };
 
@@ -451,7 +478,7 @@ const ProductList = ({ selectedSkinType, selectedCategory, sortOrder }) => {
 
             {/* Panel thanh toán */}
             <div
-              className={`absolute top-0 right-0 h-full w-full sm:w-[480px] bg-white shadow-2xl transform transition-all duration-500 ease-out
+              className={`fixed top-0 right-0 h-full w-full sm:w-[480px] bg-white shadow-2xl transform transition-all duration-500 ease-out flex flex-col
                 ${
                   showPaymentPopup
                     ? "translate-x-0 opacity-100"
@@ -474,7 +501,7 @@ const ProductList = ({ selectedSkinType, selectedCategory, sortOrder }) => {
               </div>
 
               {/* Content với scroll mượt */}
-              <div className="h-[calc(100vh-4rem)] overflow-y-auto scroll-smooth">
+              <div className="flex-grow overflow-y-auto scroll-smooth pb-[140px]">
                 <div className="p-6 space-y-6">
                   {/* Thông tin sản phẩm với animation */}
                   <div className="bg-gray-50 rounded-xl p-4 transform transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5">
@@ -482,28 +509,108 @@ const ProductList = ({ selectedSkinType, selectedCategory, sortOrder }) => {
                       <div className="w-1/3 overflow-hidden rounded-lg">
                         <img
                           src={
-                            selectedProduct.productsImages?.[0]?.imageUrl ||
-                            selectedProduct.image
+                            selectedProduct?.productsImages?.[0]?.imageUrl ||
+                            selectedProduct?.image
                           }
-                          alt={selectedProduct.productName}
+                          alt={selectedProduct?.productName}
                           className="w-full h-24 object-cover transform transition-transform duration-500 hover:scale-110"
                         />
                       </div>
 
                       <div className="w-2/3">
                         <h3 className="font-bold text-gray-800 text-lg mb-1 line-clamp-2">
-                          {selectedProduct.productName}
+                          {selectedProduct?.productName}
                         </h3>
                         <div className="text-blue-600 font-bold animate-pulse">
-                          {formatCurrency(selectedProduct.price)}
+                          {formatCurrency(selectedProduct?.price)}
                         </div>
                       </div>
                     </div>
                   </div>
 
+                  {/* Mã giảm giá */}
+                  {user && promotions.length > 0 && (
+                    <div className="bg-gray-50 rounded-xl p-4 transform transition-all duration-300 hover:shadow-lg">
+                      <h4 className="font-medium text-gray-700 mb-3 flex items-center gap-2">
+                        <i className="fas fa-tag text-blue-500"></i>
+                        Mã giảm giá
+                      </h4>
+                      <select
+                        className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-300 focus:border-blue-500 transition-all"
+                        onChange={(e) =>
+                          setSelectedVoucher(
+                            e.target.value 
+                              ? promotions.find(v => v.promotionId === parseInt(e.target.value))
+                              : null
+                          )
+                        }
+                      >
+                        <option value="">Không sử dụng</option>
+                        {promotions
+                          .filter((promo) => promo.isActive)
+                          .map((promo) => (
+                            <option
+                              key={promo.promotionId}
+                              value={promo.promotionId}
+                            >
+                              {promo.promotionName} - {promo.discountPercentage}%
+                            </option>
+                          ))}
+                      </select>
+                      
+                      {selectedVoucher && (
+                        <div className="mt-2 text-green-600 text-sm font-medium flex justify-between">
+                          <span>Giảm giá {selectedVoucher.discountPercentage}%:</span>
+                          <span>-{formatCurrency((selectedProduct?.price * selectedVoucher.discountPercentage) / 100)}</span>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Phương thức thanh toán - THÊM PHẦN NÀY */}
+                  <div className="bg-gray-50 rounded-xl p-4 transform transition-all duration-300 hover:shadow-lg">
+                    <h4 className="font-medium text-gray-700 mb-3 flex items-center gap-2">
+                      <i className="fas fa-credit-card text-blue-500"></i>
+                      Phương thức thanh toán
+                    </h4>
+                    <div className="grid grid-cols-2 gap-3">
+                      <button
+                        onClick={() => setPaymentMethod("VNPay")}
+                        className={`group relative flex flex-col items-center justify-center gap-2 px-4 py-3 rounded-xl border-2 transition-all duration-300 transform hover:-translate-y-0.5 ${
+                          paymentMethod === "VNPay"
+                            ? "border-blue-500 bg-blue-50 text-blue-600 shadow-lg shadow-blue-100"
+                            : "border-gray-200 hover:border-blue-500 hover:bg-blue-50"
+                        }`}
+                      >
+                        <div className="flex items-center gap-1">
+                          <div className="relative flex items-center bg-blue-600 text-white px-2.5 py-1 rounded">
+                            <span className="font-bold text-yellow-300 mr-0.5 text-sm">
+                              VN
+                            </span>
+                            <span className="font-bold text-sm">PAY</span>
+                            <div className="absolute -top-1 -right-1 w-2 h-2 bg-yellow-300 rounded-full animate-ping"></div>
+                          </div>
+                        </div>
+                        <span className="text-sm mt-1">Thanh toán online</span>
+                      </button>
+                      
+                      <button
+                        onClick={() => setPaymentMethod("Cash")}
+                        className={`group relative flex flex-col items-center justify-center gap-2 px-4 py-3 rounded-xl border-2 transition-all duration-300 transform hover:-translate-y-0.5 ${
+                          paymentMethod === "Cash"
+                            ? "border-green-500 bg-green-50 text-green-600 shadow-lg shadow-green-100"
+                            : "border-gray-200 hover:border-green-500 hover:bg-green-50"
+                        }`}
+                      >
+                        <i className="fas fa-money-bill-wave text-lg group-hover:scale-110 transition-transform"></i>
+                        <span className="text-sm mt-1">Tiền mặt khi nhận hàng</span>
+                      </button>
+                    </div>
+                  </div>
+
                   {/* Form thông tin với animation khi focus */}
-                  <div className="space-y-4">
-                    <h4 className="font-medium text-gray-700 flex items-center gap-2">
+                  <div className="bg-gray-50 rounded-xl p-4 transform transition-all duration-300 hover:shadow-lg">
+                    <h4 className="font-medium text-gray-700 mb-3 flex items-center gap-2">
                       <i className="fas fa-user-circle text-blue-500"></i>
                       Thông tin người nhận
                     </h4>
@@ -522,9 +629,9 @@ const ProductList = ({ selectedSkinType, selectedCategory, sortOrder }) => {
                     ].map((field) => (
                       <div
                         key={field.name}
-                        className="relative transform transition-all duration-300 hover:-translate-y-0.5"
+                        className="relative transform transition-all duration-300 hover:-translate-y-0.5 mb-3 last:mb-0"
                       >
-                        <div className="flex items-center bg-gray-50 rounded-lg border-2 border-gray-200 hover:border-blue-500 focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-200 transition-all">
+                        <div className="flex items-center bg-white rounded-lg border-2 border-gray-200 hover:border-blue-500 focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-200 transition-all">
                           <span className="pl-3">
                             <i
                               className={`${field.icon} text-gray-400 group-hover:text-blue-500 transition-colors`}
@@ -542,45 +649,6 @@ const ProductList = ({ selectedSkinType, selectedCategory, sortOrder }) => {
                       </div>
                     ))}
                   </div>
-
-                  {/* Phương thức thanh toán với animation */}
-                  <div>
-                    <h4 className="font-medium text-gray-700 mb-3 flex items-center gap-2">
-                      <i className="fas fa-credit-card text-blue-500"></i>
-                      Phương thức thanh toán
-                    </h4>
-                    <div className="grid grid-cols-2 gap-3">
-                      <button
-                        onClick={() => setPaymentMethod("VNPay")}
-                        className={`group relative flex items-center justify-center gap-2 px-4 py-3 rounded-xl border-2 transition-all duration-300 transform hover:-translate-y-0.5 ${
-                          paymentMethod === "VNPay"
-                            ? "border-blue-500 bg-blue-50 text-blue-600 shadow-lg shadow-blue-100"
-                            : "border-gray-200 hover:border-blue-500 hover:bg-blue-50"
-                        }`}
-                      >
-                        <div className="flex items-center gap-1">
-                          <div className="relative flex items-center bg-blue-600 text-white px-2.5 py-1 rounded">
-                            <span className="font-bold text-yellow-300 mr-0.5 text-sm">
-                              VN
-                            </span>
-                            <span className="font-bold text-sm">PAY</span>
-                            <div className="absolute -top-1 -right-1 w-2 h-2 bg-yellow-300 rounded-full animate-ping"></div>
-                          </div>
-                        </div>
-                      </button>
-                      <button
-                        onClick={() => setPaymentMethod("Cash")}
-                        className={`group relative flex items-center justify-center gap-2 px-4 py-3 rounded-xl border-2 transition-all duration-300 transform hover:-translate-y-0.5 ${
-                          paymentMethod === "Cash"
-                            ? "border-green-500 bg-green-50 text-green-600 shadow-lg shadow-green-100"
-                            : "border-gray-200 hover:border-green-500 hover:bg-green-50"
-                        }`}
-                      >
-                        <i className="fas fa-money-bill-wave text-lg group-hover:scale-110 transition-transform"></i>
-                        <span className="font-medium">Tiền mặt</span>
-                      </button>
-                    </div>
-                  </div>
                 </div>
               </div>
 
@@ -588,14 +656,25 @@ const ProductList = ({ selectedSkinType, selectedCategory, sortOrder }) => {
               <div className="fixed bottom-0 right-0 w-full sm:w-[480px] bg-white border-t border-gray-200 p-4 backdrop-blur-lg bg-white/80">
                 <div className="flex items-center justify-between mb-4">
                   <span className="text-gray-600">Tổng thanh toán</span>
-                  <span className="text-xl font-bold text-blue-600 animate-pulse">
-                    {formatCurrency(selectedProduct.price)}
-                  </span>
+                  {selectedVoucher ? (
+                    <div className="text-right">
+                      <span className="text-sm text-gray-500 line-through mr-2">
+                        {formatCurrency(selectedProduct?.price)}
+                      </span>
+                      <span className="text-xl font-bold text-blue-600 animate-pulse">
+                        {formatCurrency(discountedPrice)}
+                      </span>
+                    </div>
+                  ) : (
+                    <span className="text-xl font-bold text-blue-600 animate-pulse">
+                      {formatCurrency(selectedProduct?.price)}
+                    </span>
+                  )}
                 </div>
 
                 <button
                   onClick={handlePayment}
-                  className="w-full bg-gradient-to-r from-blue-500 via-blue-600 to-blue-500 bg-[length:200%_100%] animate-gradient hover:shadow-lg hover:shadow-blue-500/25 text-white py-3 rounded-xl font-medium transition-all duration-300 transform hover:-translate-y-0.5 flex items-center justify-center gap-2"
+                  className="w-full bg-gradient-to-r from-blue-500 via-blue-600 to-blue-500 bg-[length:200%_100%] animate-gradient hover:shadow-lg hover:shadow-blue-500/25 text-white py-3.5 rounded-xl font-medium transition-all duration-300 transform hover:-translate-y-0.5 flex items-center justify-center gap-2"
                 >
                   {paymentMethod === "VNPay" ? (
                     <>
@@ -605,7 +684,7 @@ const ProductList = ({ selectedSkinType, selectedCategory, sortOrder }) => {
                   ) : (
                     <>
                       <i className="fas fa-check animate-bounce"></i>
-                      Đặt hàng
+                      Đặt hàng (COD)
                     </>
                   )}
                 </button>
