@@ -50,6 +50,16 @@ const RoutineController = () => {
     step.stepName.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+
+  const sortedFilteredSteps = [...filteredSteps].sort((a, b) => {
+    // First sort by carePlanId
+    if (a.carePlanId !== b.carePlanId) {
+      return a.carePlanId - b.carePlanId;
+    }
+    // Then sort by stepOrder within the same carePlanId
+    return a.stepOrder - b.stepOrder;
+  });
+
   const handleDelete = async (stepId) => {
     const result = await Swal.fire({
       title: "Bạn có chắc chắn muốn xóa bước này?",
@@ -77,8 +87,7 @@ const RoutineController = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Submitting form with data:", formData);
-  
+    
     setIsLoading(true);
     setError(null);
   
@@ -95,8 +104,11 @@ const RoutineController = () => {
           Swal.fire("Cập Nhật Thành Công!", "Bước đã được cập nhật.", "success");
         }
       } else {
-        // Add new step
-        const response = await CarePlansAPI.createCarePlanSteps(formData);
+        // Add new step - remove stepId field
+        const newStepData = { ...formData };
+        delete newStepData.stepId; // Remove stepId for new records
+        
+        const response = await CarePlansAPI.createCarePlanSteps(newStepData);
         if (response.data) {
           setSteps([...steps, response.data]);
           Swal.fire("Thêm Mới Thành Công!", "Bước mới đã được thêm.", "success");
@@ -106,8 +118,8 @@ const RoutineController = () => {
       setIsModalOpen(false);
       setFormData({ stepId: "", carePlanId: 1, stepOrder: "", stepName: "", stepDescription: "" });
     } catch (err) {
+      // Error handling remains the same
       console.error("Error submitting form:", err);
-      // Get more detailed error information
       if (err.response && err.response.data) {
         console.error("Server error details:", err.response.data);
         setError(`Lỗi: ${JSON.stringify(err.response.data)}`);
@@ -173,9 +185,9 @@ const RoutineController = () => {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {filteredSteps.map((step) => (
+                {sortedFilteredSteps.map((step, index) => (
                   <tr key={step.stepId} className="hover:bg-gray-50">
-                    <td className="px-6 py-4">{step.stepId}</td>
+                    <td className="px-6 py-4">{index + 1}</td>
                     <td className="px-6 py-4">
                       <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${getSkinTypeColor(step.carePlanId)}`}>
                         {skinTypes[step.carePlanId] || `Loại ${step.carePlanId}`}
