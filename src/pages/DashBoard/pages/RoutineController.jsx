@@ -1,204 +1,290 @@
 import React, { useState, useEffect } from "react";
 import { FiSearch, FiEdit2, FiTrash2, FiPlus } from "react-icons/fi";
-import { BsShare } from "react-icons/bs";
-import { BiSpa } from "react-icons/bi";
+import CarePlansAPI from "../../../services/careplansteps";
+import Swal from "sweetalert2"; // Import SweetAlert2
 
 const RoutineController = () => {
-  const [routines, setRoutines] = useState([
-    {
-      id: 1,
-      name: "Routine Buổi Sáng Cơ Bản",
-      steps: ["Sữa Rửa Mặt", "Toner", "Kem Chống Nắng"],
-    },
-    {
-      id: 2,
-      name: "Routine Buổi Tối Chuyên Sâu",
-      steps: ["Tẩy Trang", "Sữa Rửa Mặt", "Serum", "Kem Dưỡng"],
-    },
-  ]);
-
+  const [steps, setSteps] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [currentPage, setCurrentPage] = useState(1);
   const [formData, setFormData] = useState({
-    name: "",
-    steps: [],
+    stepId: "",
+    carePlanId: 1,
+    stepOrder: "",
+    stepName: "",
+    stepDescription: "",
   });
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
 
-  const itemsPerPage = 5;
+  // Define skin type mapping
+  const skinTypes = {
+    1: "Da Dầu",
+    2: "Da Khô",
+    3: "Da Thường",
+    4: "Da Hỗn Hợp",
+    5: "Da Nhạy Cảm"
+  };
 
-  const filteredRoutines = routines.filter((routine) =>
-    routine.name.toLowerCase().includes(searchTerm.toLowerCase())
+  useEffect(() => {
+    fetchSteps();
+  }, []);
+
+  const fetchSteps = async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const response = await CarePlansAPI.getAll();
+      if (response.data) {
+        setSteps(response.data);
+      }
+    } catch (err) {
+      console.error("Error fetching steps:", err);
+      setError("Không thể tải danh sách các bước. Vui lòng thử lại sau.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const filteredSteps = steps.filter((step) =>
+    step.stepName.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const indexOfLastItem = currentPage * itemsPerPage;
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentItems = filteredRoutines.slice(indexOfFirstItem, indexOfLastItem);
+  const handleDelete = async (stepId) => {
+    const result = await Swal.fire({
+      title: "Bạn có chắc chắn muốn xóa bước này?",
+      text: "Dữ liệu này sẽ không thể phục hồi!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Xóa",
+      cancelButtonText: "Hủy",
+    });
 
-  const handleDelete = (id) => {
-    if (window.confirm("Bạn có chắc chắn muốn xóa routine này?")) {
-      setRoutines(routines.filter((routine) => routine.id !== id));
+    if (result.isConfirmed) {
+      setIsLoading(true);
+      try {
+        await CarePlansAPI.deleteCarePlanSteps(stepId);
+        setSteps(steps.filter((step) => step.stepId !== stepId));
+        Swal.fire("Đã xóa!", "Bước đã được xóa thành công.", "success");
+      } catch (err) {
+        console.error("Error deleting step:", err);
+        Swal.fire("Lỗi!", "Không thể xóa bước. Vui lòng thử lại sau.", "error");
+      } finally {
+        setIsLoading(false);
+      }
     }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (formData.id) {
-      setRoutines(
-        routines.map((routine) =>
-          routine.id === formData.id ? { ...formData } : routine
-        )
-      );
-    } else {
-      setRoutines([ ...routines, { ...formData, id: routines.length + 1 } ]);
+    console.log("Submitting form with data:", formData);
+  
+    setIsLoading(true);
+    setError(null);
+  
+    try {
+      if (formData.stepId) {
+        // Update existing step
+        const response = await CarePlansAPI.editCarePlanSteps(formData.stepId, formData);
+        if (response.data) {
+          setSteps(
+            steps.map((step) =>
+              step.stepId === formData.stepId ? { ...formData } : step
+            )
+          );
+          Swal.fire("Cập Nhật Thành Công!", "Bước đã được cập nhật.", "success");
+        }
+      } else {
+        // Add new step
+        const response = await CarePlansAPI.createCarePlanSteps(formData);
+        if (response.data) {
+          setSteps([...steps, response.data]);
+          Swal.fire("Thêm Mới Thành Công!", "Bước mới đã được thêm.", "success");
+        }
+      }
+  
+      setIsModalOpen(false);
+      setFormData({ stepId: "", carePlanId: 1, stepOrder: "", stepName: "", stepDescription: "" });
+    } catch (err) {
+      console.error("Error submitting form:", err);
+      // Get more detailed error information
+      if (err.response && err.response.data) {
+        console.error("Server error details:", err.response.data);
+        setError(`Lỗi: ${JSON.stringify(err.response.data)}`);
+      } else {
+        setError("Không thể lưu bước. Vui lòng thử lại sau.");
+      }
+      Swal.fire("Lỗi!", "Không thể lưu bước. Vui lòng thử lại sau.", "error");
+    } finally {
+      setIsLoading(false);
     }
-    setIsModalOpen(false);
-    setFormData({ name: "", steps: [] });
   };
-
+  
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 p-6">
-      <header className="text-center mb-10">
-        <div className="flex items-center justify-center gap-3 mb-4">
-          <BiSpa className="text-5xl text-blue-600" />
-          <h1 className="text-3xl font-semibold text-gray-800">
-            Quản Lý Chế Độ Chăm Sóc Da
-          </h1>
-        </div>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-100 p-6">
+      <header className="text-center mb-12">
+        <h1 className="text-4xl font-semibold text-gray-800 tracking-wide">Quản Lý Các Bước Chăm Sóc Da</h1>
       </header>
 
-      <div className="max-w-6xl mx-auto bg-white rounded-xl shadow-xl p-6">
-        <div className="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
+      <div className="max-w-6xl mx-auto bg-white rounded-2xl shadow-xl p-8">
+        {error && (
+          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+            {error}
+          </div>
+        )}
+        
+        <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
           <div className="relative flex-1 w-full">
-            <FiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+            <FiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500" />
             <input
               type="text"
-              placeholder="Tìm kiếm routine..."
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="Tìm kiếm bước..."
+              className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
           <button
             onClick={() => setIsModalOpen(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            className="flex items-center gap-2 px-5 py-3 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-colors"
+            disabled={isLoading}
           >
-            <FiPlus /> Thêm Routine Mới
+            <FiPlus /> Thêm Bước Mới
           </button>
         </div>
 
-        <div className="overflow-x-auto">
-          <table className="w-full table-auto border-separate border-spacing-0">
-            <thead>
-              <tr className="bg-blue-600 text-white">
-                <th className="px-6 py-3 text-left text-sm font-medium">Tên Routine</th>
-                <th className="px-6 py-3 text-left text-sm font-medium">Các Bước Chính</th>
-                <th className="px-6 py-3 text-left text-sm font-medium">Hành Động</th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {currentItems.map((routine) => (
-                <tr key={routine.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap">{routine.name}</td>
-                  <td className="px-6 py-4">
-                    <div className="flex flex-wrap gap-2">
-                      {routine.steps.map((step, index) => (
-                        <span
-                          key={index}
-                          className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-sm"
-                        >
-                          {step}
-                        </span>
-                      ))}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex items-center gap-3">
-                      <button
-                        onClick={() => {
-                          setFormData(routine);
-                          setIsModalOpen(true);
-                        }}
-                        className="text-blue-600 hover:text-blue-800 transition-all"
-                      >
-                        <FiEdit2 />
-                      </button>
-                      <button
-                        onClick={() => handleDelete(routine.id)}
-                        className="text-red-600 hover:text-red-800 transition-all"
-                      >
-                        <FiTrash2 />
-                      </button>
-                      <button className="text-gray-600 hover:text-gray-800 transition-all">
-                        <BsShare />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-
-        {filteredRoutines.length === 0 && (
+        {isLoading && (
           <div className="text-center py-10">
-            <BiSpa className="text-6xl text-gray-300 mx-auto mb-4" />
-            <p className="text-gray-500">Không tìm thấy routine nào</p>
+            <p className="text-gray-500">Đang tải...</p>
           </div>
         )}
 
-        <div className="mt-6 flex justify-center gap-2">
-          {Array.from(
-            { length: Math.ceil(filteredRoutines.length / itemsPerPage) },
-            (_, i) => (
-              <button
-                key={i}
-                onClick={() => setCurrentPage(i + 1)}
-                className={`px-3 py-1 rounded-md text-sm font-semibold transition-all ${currentPage === i + 1
-                  ? "bg-blue-600 text-white"
-                  : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-                  }`}
-              >
-                {i + 1}
-              </button>
-            )
-          )}
-        </div>
+        {!isLoading && (
+          <div className="overflow-x-auto">
+            <table className="w-full table-auto border-separate space-y-6">
+              <thead>
+                <tr className="bg-indigo-100 text-gray-600">
+                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">ID</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Loại Da</th>
+                  <th className="px-6 py-3 text-center text-xs font-medium uppercase tracking-wider">Thứ tự bước trong mỗi loại da</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Tên Bước</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Mô Tả</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Hành Động</th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {filteredSteps.map((step) => (
+                  <tr key={step.stepId} className="hover:bg-gray-50">
+                    <td className="px-6 py-4">{step.stepId}</td>
+                    <td className="px-6 py-4">
+                      <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${getSkinTypeColor(step.carePlanId)}`}>
+                        {skinTypes[step.carePlanId] || `Loại ${step.carePlanId}`}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 text-center">{step.stepOrder}</td>
+                    <td className="px-6 py-4">{step.stepName}</td>
+                    <td className="px-6 py-4">{step.stepDescription}</td>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-3">
+                        <button
+                          onClick={() => {
+                            setFormData(step);
+                            setIsModalOpen(true);
+                          }}
+                          className="text-indigo-600 hover:text-indigo-800 transition-colors"
+                        >
+                          <FiEdit2 />
+                        </button>
+                        <button
+                          onClick={() => handleDelete(step.stepId)}
+                          className="text-red-600 hover:text-red-800 transition-colors"
+                        >
+                          <FiTrash2 />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+
+        {!isLoading && filteredSteps.length === 0 && (
+          <div className="text-center py-10">
+            <p className="text-gray-500">Không tìm thấy bước nào</p>
+          </div>
+        )}
       </div>
 
       {isModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-xl p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <h2 className="text-2xl font-bold mb-6 text-center text-gray-800">
-              {formData.id ? "Chỉnh Sửa" : "Thêm"} Routine
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-6">
+          <div className="bg-white rounded-2xl p-8 max-w-2xl w-full shadow-xl">
+            <h2 className="text-3xl font-semibold mb-6 text-gray-900">
+              {formData.stepId ? "Chỉnh Sửa" : "Thêm"} Bước
             </h2>
             <form onSubmit={handleSubmit} className="space-y-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Tên Routine
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Loại Da</label>
+                <select
+                  required
+                  value={formData.carePlanId}
+                  onChange={(e) => setFormData({ ...formData, carePlanId: parseInt(e.target.value) })}
+                  className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                >
+                  {Object.entries(skinTypes).map(([id, name]) => (
+                    <option key={id} value={id}>
+                      {name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Thứ tự bước</label>
+                <input
+                  type="number"
+                  required
+                  min="1"
+                  value={formData.stepOrder}
+                  onChange={(e) => setFormData({ ...formData, stepOrder: e.target.value })}
+                  className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Tên Bước</label>
                 <input
                   type="text"
                   required
-                  value={formData.name}
-                  onChange={(e) =>
-                    setFormData({ ...formData, name: e.target.value })
-                  }
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                  value={formData.stepName}
+                  onChange={(e) => setFormData({ ...formData, stepName: e.target.value })}
+                  className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Mô Tả</label>
+                <textarea
+                  required
+                  value={formData.stepDescription}
+                  onChange={(e) => setFormData({ ...formData, stepDescription: e.target.value })}
+                  className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                  rows="3"
                 />
               </div>
 
               <div className="flex gap-4">
                 <button
                   type="submit"
-                  className="flex-1 bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors"
+                  className="flex-1 bg-indigo-600 text-white py-3 px-6 rounded-xl hover:bg-indigo-700 transition-all"
+                  disabled={isLoading}
                 >
-                  {formData.id ? "Cập Nhật" : "Thêm Mới"}
+                  {isLoading ? "Đang xử lý..." : formData.stepId ? "Cập Nhật" : "Thêm Mới"}
                 </button>
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="flex-1 bg-gray-200 text-gray-800 py-2 px-4 rounded-lg hover:bg-gray-300 transition-colors"
+                  className="flex-1 bg-gray-200 text-gray-800 py-3 px-6 rounded-xl hover:bg-gray-300 transition-all"
+                  disabled={isLoading}
                 >
                   Hủy
                 </button>
@@ -209,6 +295,24 @@ const RoutineController = () => {
       )}
     </div>
   );
+};
+
+// Helper function to get appropriate background color for each skin type
+const getSkinTypeColor = (carePlanId) => {
+  switch (carePlanId) {
+    case 1:
+      return "bg-green-100 text-green-800"; // Da Dầu
+    case 2:
+      return "bg-blue-100 text-blue-800"; // Da Khô
+    case 3:
+      return "bg-yellow-100 text-yellow-800"; // Da Thường
+    case 4:
+      return "bg-purple-100 text-purple-800"; // Da Hỗn Hợp
+    case 5:
+      return "bg-red-100 text-red-800"; // Da Nhạy Cảm
+    default:
+      return "bg-gray-100 text-gray-800";
+  }
 };
 
 export default RoutineController;
