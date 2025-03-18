@@ -222,6 +222,49 @@ const Viewcart = () => {
     }
   };
 
+  const handleClearCart = async () => {
+    const result = await Swal.fire({
+      title: "Xóa tất cả?",
+      text: "Bạn có chắc chắn muốn xóa tất cả sản phẩm khỏi giỏ hàng?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "Xóa tất cả",
+      cancelButtonText: "Hủy",
+    });
+
+    if (result.isConfirmed) {
+      try {
+        Swal.fire({
+          title: "Đang xử lý...",
+          allowOutsideClick: false,
+          didOpen: () => {
+            Swal.showLoading();
+          },
+        });
+
+        const promises = cartItems.map(item => removeFromCart(item.productId));
+        await Promise.all(promises);
+
+        Swal.fire({
+          icon: "success",
+          title: "Đã xóa!",
+          text: "Giỏ hàng của bạn đã được xóa.",
+          timer: 1500,
+          showConfirmButton: false,
+        });
+      } catch (error) {
+        console.error("Lỗi khi xóa giỏ hàng:", error);
+        Swal.fire({
+          icon: "error",
+          title: "Lỗi!",
+          text: "Có lỗi xảy ra khi xóa giỏ hàng.",
+        });
+      }
+    }
+  };
+
   return (
     <>
       <Navbar />
@@ -252,19 +295,30 @@ const Viewcart = () => {
                 <h2 className="text-xl font-bold">
                   Sản phẩm ({cartItems.length})
                 </h2>
-                <div className="flex items-center">
-                  <input
-                    type="checkbox"
-                    className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
-                    checked={
-                      cartItems.length > 0 &&
-                      cartItems.every((item) => selectedItems[item.productId])
-                    }
-                    onChange={(e) => handleSelectAll(e.target.checked)}
-                  />
-                  <span className="ml-2 text-sm text-gray-600">
-                    Chọn tất cả
-                  </span>
+                <div className="flex items-center gap-4">
+                  <div className="flex items-center">
+                    <input
+                      type="checkbox"
+                      className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
+                      checked={
+                        cartItems.length > 0 &&
+                        cartItems.every((item) => selectedItems[item.productId])
+                      }
+                      onChange={(e) => handleSelectAll(e.target.checked)}
+                    />
+                    <span className="ml-2 text-sm text-gray-600">
+                      Chọn tất cả
+                    </span>
+                  </div>
+                  {cartItems.length > 0 && (
+                    <button
+                      onClick={handleClearCart}
+                      className="flex items-center gap-1 text-red-500 hover:text-red-700 text-sm font-medium bg-red-50 hover:bg-red-100 px-3 py-1.5 rounded-lg transition-colors"
+                    >
+                      <FaTrash size={14} />
+                      <span>Xóa tất cả</span>
+                    </button>
+                  )}
                 </div>
               </div>
 
