@@ -509,7 +509,7 @@ const Viewcart = () => {
                   !hasSelectedItems ? "opacity-50 cursor-not-allowed" : ""
                 }`}
               >
-                Thanh toán <FaArrowRight className="ml-2" />
+                Hoàn tất đơn hàng <FaArrowRight className="ml-2" />
               </button>
             </div>
           </div>
