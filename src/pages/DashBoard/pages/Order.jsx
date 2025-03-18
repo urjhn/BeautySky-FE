@@ -269,6 +269,12 @@ const Order = () => {
     currentPage * ordersPerPage
   );
 
+  const sortedOrders = [...currentOrders].sort((a, b) => {
+    const dateA = a.orderDate ? dayjs(a.orderDate).valueOf() : 0;
+    const dateB = b.orderDate ? dayjs(b.orderDate).valueOf() : 0;
+    return dateB - dateA;
+  });
+
   // Hàm hiển thị trạng thái và màu sắc
   const getStatusDisplay = (status) => {
     return STATUS_MAP[status] || "Chờ xử lý";
@@ -431,7 +437,7 @@ const Order = () => {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {currentOrders.map((order) => (
+              {sortedOrders.map((order) => (
                 <tr key={order.orderId} className="hover:bg-gray-50">
                   <td className="p-4 text-sm">#{order.orderId}</td>
                   <td className="p-4 text-sm">{order.userFullName}</td>

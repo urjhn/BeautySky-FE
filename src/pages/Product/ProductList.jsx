@@ -4,7 +4,7 @@ import { useCart } from "../../context/CartContext";
 import { useDataContext } from "../../context/DataContext";
 import { formatCurrency } from "../../utils/formatCurrency";
 import Swal from "sweetalert2";
-import { useAuth } from "../../context/AuthContext"; 
+import { useAuth } from "../../context/AuthContext";
 import orderAPI from "../../services/order";
 import paymentAPI from "../../services/payment";
 
@@ -16,7 +16,7 @@ const ProductList = ({ selectedSkinType, selectedCategory, sortOrder }) => {
   const { products, fetchProduct, isLoading } = useDataContext();
   const { user } = useAuth();
   const [currentPage, setCurrentPage] = useState(1);
-  
+
   const [showPaymentPopup, setShowPaymentPopup] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [formData, setFormData] = useState({
@@ -76,10 +76,10 @@ const ProductList = ({ selectedSkinType, selectedCategory, sortOrder }) => {
   const handleAddToCart = async (product) => {
     if (product.quantity === 0) {
       Swal.fire({
-        icon: 'error',
-        title: 'Hết hàng',
-        text: 'Sản phẩm này hiện đã hết hàng!',
-        confirmButtonColor: '#3085d6'
+        icon: "error",
+        title: "Hết hàng",
+        text: "Sản phẩm này hiện đã hết hàng!",
+        confirmButtonColor: "#3085d6",
       });
       return;
     }
@@ -90,18 +90,17 @@ const ProductList = ({ selectedSkinType, selectedCategory, sortOrder }) => {
         quantity: 1,
         price: product.price,
         productName: product.productName,
-        productImage: product.productsImages?.[0]?.imageUrl || product.image
+        productImage: product.productsImages?.[0]?.imageUrl || product.image,
       };
 
       await addToCart(cartItem);
-      
     } catch (error) {
       console.error("Error adding to cart:", error);
       Swal.fire({
-        icon: 'error',
-        title: 'Lỗi',
-        text: error.response?.data || 'Không thể thêm sản phẩm vào giỏ hàng',
-        confirmButtonColor: '#3085d6'
+        icon: "error",
+        title: "Lỗi",
+        text: error.response?.data || "Không thể thêm sản phẩm vào giỏ hàng",
+        confirmButtonColor: "#3085d6",
       });
     }
   };
@@ -109,10 +108,10 @@ const ProductList = ({ selectedSkinType, selectedCategory, sortOrder }) => {
   const handleBuyNow = (product) => {
     if (product.quantity === 0) {
       Swal.fire({
-        icon: 'error',
-        title: 'Hết hàng',
-        text: 'Sản phẩm này hiện đã hết hàng!',
-        confirmButtonColor: '#3085d6'
+        icon: "error",
+        title: "Hết hàng",
+        text: "Sản phẩm này hiện đã hết hàng!",
+        confirmButtonColor: "#3085d6",
       });
       return;
     }
@@ -123,17 +122,19 @@ const ProductList = ({ selectedSkinType, selectedCategory, sortOrder }) => {
   const handlePayment = async () => {
     try {
       Swal.fire({
-        title: 'Đang xử lý...',
+        title: "Đang xử lý...",
         allowOutsideClick: false,
         didOpen: () => {
           Swal.showLoading();
-        }
+        },
       });
 
-      const orderProducts = [{
-        productID: Number(selectedProduct.productId),
-        quantity: 1
-      }];
+      const orderProducts = [
+        {
+          productID: Number(selectedProduct.productId),
+          quantity: 1,
+        },
+      ];
 
       const orderResponse = await orderAPI.createOrder(null, orderProducts);
 
@@ -146,33 +147,40 @@ const ProductList = ({ selectedSkinType, selectedCategory, sortOrder }) => {
             orderType: "other",
             language: "vn",
             name: formData.name,
-            orderDescription: `Don hang ${orderResponse.orderId}`
+            orderDescription: `Don hang ${orderResponse.orderId}`,
           };
 
-          const vnpayResponse = await paymentAPI.createVNPayPayment(paymentRequest);
-          
+          const vnpayResponse = await paymentAPI.createVNPayPayment(
+            paymentRequest
+          );
+
           if (vnpayResponse.paymentUrl) {
-            localStorage.setItem('pendingOrder', JSON.stringify({
-              orderId: orderResponse.orderId,
-              amount: parseInt(selectedProduct.price),
-              products: [{
-                ...selectedProduct,
-                price: parseInt(selectedProduct.price)
-              }]
-            }));
-            
+            localStorage.setItem(
+              "pendingOrder",
+              JSON.stringify({
+                orderId: orderResponse.orderId,
+                amount: parseInt(selectedProduct.price),
+                products: [
+                  {
+                    ...selectedProduct,
+                    price: parseInt(selectedProduct.price),
+                  },
+                ],
+              })
+            );
+
             window.location.href = vnpayResponse.paymentUrl;
           }
         } else {
           // Xử lý thanh toán tiền mặt
           Swal.close();
-          
+
           await Swal.fire({
-            icon: 'success',
-            title: 'Đặt hàng thành công!',
-            text: 'Cảm ơn bạn đã đặt hàng. Chúng tôi sẽ liên hệ với bạn sớm nhất!',
-            confirmButtonColor: '#3085d6',
-            confirmButtonText: 'Đồng ý'
+            icon: "success",
+            title: "Đặt hàng thành công!",
+            text: "Cảm ơn bạn đã đặt hàng. Chúng tôi sẽ liên hệ với bạn sớm nhất!",
+            confirmButtonColor: "#3085d6",
+            confirmButtonText: "Đồng ý",
           });
 
           // Tạo object sản phẩm với đầy đủ thông tin
@@ -181,7 +189,9 @@ const ProductList = ({ selectedSkinType, selectedCategory, sortOrder }) => {
             productName: selectedProduct.productName,
             quantity: 1,
             price: selectedProduct.price, // Giữ nguyên giá gốc
-            productImage: selectedProduct.productsImages?.[0]?.imageUrl || selectedProduct.image
+            productImage:
+              selectedProduct.productsImages?.[0]?.imageUrl ||
+              selectedProduct.image,
           };
 
           const orderInfo = {
@@ -190,13 +200,13 @@ const ProductList = ({ selectedSkinType, selectedCategory, sortOrder }) => {
             discountAmount: 0,
             finalAmount: selectedProduct.price,
             products: [productInfo], // Sử dụng object sản phẩm đã tạo
-            paymentMethod: "Cash"
+            paymentMethod: "Cash",
           };
 
           navigate("/ordersuccess", {
             state: {
-              orderDetails: orderInfo
-            }
+              orderDetails: orderInfo,
+            },
           });
         }
       }
@@ -207,7 +217,7 @@ const ProductList = ({ selectedSkinType, selectedCategory, sortOrder }) => {
         icon: "error",
         title: "Lỗi!",
         text: error.message || "Đã có lỗi xảy ra khi thanh toán.",
-        confirmButtonColor: '#3085d6'
+        confirmButtonColor: "#3085d6",
       });
     }
   };
@@ -302,7 +312,9 @@ const ProductList = ({ selectedSkinType, selectedCategory, sortOrder }) => {
                       onClick={() => handleBuyNow(product)}
                       disabled={product.quantity === 0}
                       className={`w-full bg-gradient-to-r from-green-400 to-green-500 hover:from-green-600 hover:to-green-700 text-white py-2 sm:py-2.5 rounded-xl text-sm sm:text-base font-semibold transition-all duration-300 shadow-lg hover:shadow-green-500/50 ${
-                        product.quantity === 0 ? "opacity-50 cursor-not-allowed" : ""
+                        product.quantity === 0
+                          ? "opacity-50 cursor-not-allowed"
+                          : ""
                       }`}
                     >
                       <i className="fas fa-bolt mr-2"></i>
@@ -427,20 +439,24 @@ const ProductList = ({ selectedSkinType, selectedCategory, sortOrder }) => {
       {showPaymentPopup && selectedProduct && (
         <>
           {/* Overlay với animation fade */}
-          <div 
+          <div
             className={`fixed inset-0 z-50 transition-opacity duration-300 ${
-              showPaymentPopup ? 'opacity-100' : 'opacity-0'
+              showPaymentPopup ? "opacity-100" : "opacity-0"
             }`}
           >
-            <div 
+            <div
               className="absolute inset-0 bg-black/60 backdrop-blur-sm"
               onClick={() => setShowPaymentPopup(false)}
             />
-            
+
             {/* Panel thanh toán */}
-            <div 
+            <div
               className={`absolute top-0 right-0 h-full w-full sm:w-[480px] bg-white shadow-2xl transform transition-all duration-500 ease-out
-                ${showPaymentPopup ? 'translate-x-0 opacity-100' : 'translate-x-full opacity-0'}
+                ${
+                  showPaymentPopup
+                    ? "translate-x-0 opacity-100"
+                    : "translate-x-full opacity-0"
+                }
               `}
             >
               {/* Header với gradient animation */}
@@ -449,7 +465,7 @@ const ProductList = ({ selectedSkinType, selectedCategory, sortOrder }) => {
                   <i className="fas fa-shopping-cart"></i>
                   <span className="animate-fadeIn">Thanh toán nhanh</span>
                 </h3>
-                <button 
+                <button
                   onClick={() => setShowPaymentPopup(false)}
                   className="text-white/80 hover:text-white transition-colors p-2 hover:rotate-90 transform duration-300"
                 >
@@ -465,12 +481,15 @@ const ProductList = ({ selectedSkinType, selectedCategory, sortOrder }) => {
                     <div className="flex gap-4">
                       <div className="w-1/3 overflow-hidden rounded-lg">
                         <img
-                          src={selectedProduct.productsImages?.[0]?.imageUrl || selectedProduct.image}
+                          src={
+                            selectedProduct.productsImages?.[0]?.imageUrl ||
+                            selectedProduct.image
+                          }
                           alt={selectedProduct.productName}
                           className="w-full h-24 object-cover transform transition-transform duration-500 hover:scale-110"
                         />
                       </div>
-                      
+
                       <div className="w-2/3">
                         <h3 className="font-bold text-gray-800 text-lg mb-1 line-clamp-2">
                           {selectedProduct.productName}
@@ -490,13 +509,26 @@ const ProductList = ({ selectedSkinType, selectedCategory, sortOrder }) => {
                     </h4>
                     {[
                       { name: "name", label: "Họ tên", icon: "fas fa-user" },
-                      { name: "phone", label: "Số điện thoại", icon: "fas fa-phone" },
-                      { name: "address", label: "Địa chỉ", icon: "fas fa-map-marker-alt" }
+                      {
+                        name: "phone",
+                        label: "Số điện thoại",
+                        icon: "fas fa-phone",
+                      },
+                      {
+                        name: "address",
+                        label: "Địa chỉ",
+                        icon: "fas fa-map-marker-alt",
+                      },
                     ].map((field) => (
-                      <div key={field.name} className="relative transform transition-all duration-300 hover:-translate-y-0.5">
+                      <div
+                        key={field.name}
+                        className="relative transform transition-all duration-300 hover:-translate-y-0.5"
+                      >
                         <div className="flex items-center bg-gray-50 rounded-lg border-2 border-gray-200 hover:border-blue-500 focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-200 transition-all">
                           <span className="pl-3">
-                            <i className={`${field.icon} text-gray-400 group-hover:text-blue-500 transition-colors`}></i>
+                            <i
+                              className={`${field.icon} text-gray-400 group-hover:text-blue-500 transition-colors`}
+                            ></i>
                           </span>
                           <input
                             className="w-full pl-3 pr-4 py-3 bg-transparent focus:outline-none disabled:text-gray-500 text-sm"
@@ -528,7 +560,9 @@ const ProductList = ({ selectedSkinType, selectedCategory, sortOrder }) => {
                       >
                         <div className="flex items-center gap-1">
                           <div className="relative flex items-center bg-blue-600 text-white px-2.5 py-1 rounded">
-                            <span className="font-bold text-yellow-300 mr-0.5 text-sm">VN</span>
+                            <span className="font-bold text-yellow-300 mr-0.5 text-sm">
+                              VN
+                            </span>
                             <span className="font-bold text-sm">PAY</span>
                             <div className="absolute -top-1 -right-1 w-2 h-2 bg-yellow-300 rounded-full animate-ping"></div>
                           </div>
@@ -583,9 +617,15 @@ const ProductList = ({ selectedSkinType, selectedCategory, sortOrder }) => {
 
       <style jsx>{`
         @keyframes gradient {
-          0% { background-position: 0% 50%; }
-          50% { background-position: 100% 50%; }
-          100% { background-position: 0% 50%; }
+          0% {
+            background-position: 0% 50%;
+          }
+          50% {
+            background-position: 100% 50%;
+          }
+          100% {
+            background-position: 0% 50%;
+          }
         }
 
         .animate-gradient {
@@ -593,8 +633,14 @@ const ProductList = ({ selectedSkinType, selectedCategory, sortOrder }) => {
         }
 
         @keyframes fadeIn {
-          from { opacity: 0; transform: translateY(-10px); }
-          to { opacity: 1; transform: translateY(0); }
+          from {
+            opacity: 0;
+            transform: translateY(-10px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
         }
 
         .animate-fadeIn {
