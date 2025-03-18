@@ -203,14 +203,17 @@ const RoutineBuilderPage = () => {
                 </p>
               </div>
 
-              <div className="space-y-6">
-                {carePlan.steps.map((step) => (
-                  <div
-                    key={step.stepOrder}
-                    className="bg-gray-50 p-6 rounded-xl shadow-md hover:shadow-lg transition-shadow"
-                  >
+              <div className="space-y-6 relative">
+                {/* Đường kết nối dọc giữa các bước */}
+                {carePlan.steps.length > 1 && (
+                  <div className="absolute left-4 top-8 bottom-8 w-0.5 bg-blue-400 z-0"></div>
+                )}
+                
+                {carePlan.steps.map((step, index) => (
+                  <div key={step.stepOrder} className="relative z-10">
                     <div className="flex items-start mb-4">
-                      <div className="w-8 h-8 flex items-center justify-center bg-blue-500 text-white rounded-full mr-4">
+                      {/* Thay đổi hình tròn số */}
+                      <div className="w-10 h-10 flex items-center justify-center bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-full mr-4 shadow-lg font-bold border-2 border-white">
                         {step.stepOrder}
                       </div>
                       <div className="flex-1">
@@ -221,13 +224,13 @@ const RoutineBuilderPage = () => {
                           {step.products.map((product) => (
                             <li
                               key={product.productId}
-                              className="flex items-center bg-white p-4 rounded-lg shadow-md hover:shadow-lg transition-shadow cursor-pointer"
+                              className="flex items-center bg-white p-4 rounded-lg shadow-md hover:shadow-lg transition-shadow cursor-pointer border border-gray-100"
                               onClick={() => handleProductClick(product.productId)}
                             >
                               <img
                                 src={product.productImage || '/default-product-image.jpg'}
                                 alt={product.productName}
-                                className="w-16 h-16 rounded-full mr-4 object-cover"
+                                className="w-16 h-16 rounded-full mr-4 object-cover border-2 border-blue-100"
                                 onError={(e) => {
                                   e.target.onerror = null;
                                   e.target.src = '/default-product-image.jpg';
@@ -246,6 +249,13 @@ const RoutineBuilderPage = () => {
                         </ul>
                       </div>
                     </div>
+                    
+                    {/* Thêm nút kết nối giữa các bước nếu không phải bước cuối cùng */}
+                    {index < carePlan.steps.length - 1 && (
+                      <div className="absolute left-5 -bottom-3 w-0 h-6 flex items-center justify-center z-0">
+                        <div className="w-2 h-2 rounded-full bg-blue-500"></div>
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
@@ -265,6 +275,7 @@ const RoutineBuilderPage = () => {
             >
               🏠 Về trang chủ
             </button>
+            
           </div>
         </div>
       </div>
