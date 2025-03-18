@@ -117,11 +117,48 @@ useEffect(() => {
 }, [fetchQuestions, fetchAnswers]);
 
   // Filter sets based on search term
-  const filteredSets = qaSets.filter((set) =>
-    set.questions.some(q => 
-      q.questionText && q.questionText.toLowerCase().includes(searchTerm.toLowerCase())
-    )
-  );
+  const filteredSets = qaSets.filter((set) => {
+    const searchLower = searchTerm.toLowerCase().trim();
+    
+    // Nếu không có từ khóa tìm kiếm, hiển thị tất cả bộ câu hỏi
+    if (!searchLower) return true;
+    
+    // Tìm trong các câu hỏi của bộ
+    return set.questions.some(q => {
+      // Tìm trong nội dung câu hỏi
+      if (q.questionText && q.questionText.toLowerCase().includes(searchLower)) 
+        return true;
+      
+      // Tìm trong ID câu hỏi
+      if (q.questionId && q.questionId.toString().includes(searchLower)) 
+        return true;
+      
+      // Tìm trong thứ tự câu hỏi
+      if (q.orderNumber && q.orderNumber.toString().includes(searchLower)) 
+        return true;
+      
+      // Tìm trong các câu trả lời
+      return q.answers.some(a => {
+        // Tìm trong nội dung câu trả lời
+        if (a.answerText && a.answerText.toLowerCase().includes(searchLower)) 
+          return true;
+        
+        // Tìm trong loại da
+        if (a.skinTypeId && a.skinTypeId.toString().toLowerCase().includes(searchLower)) 
+          return true;
+        
+        // Tìm trong điểm số
+        if (a.point && a.point.toString().includes(searchLower)) 
+          return true;
+        
+        // Tìm trong ID câu trả lời
+        if (a.answerId && a.answerId.toString().includes(searchLower)) 
+          return true;
+        
+        return false;
+      });
+    });
+  });
   
   const totalPages = Math.ceil(filteredSets.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
@@ -518,7 +555,7 @@ const handleDelete = async (questionId) => {
             <FiSearch className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" />
             <input
               type="text"
-              placeholder="Tìm kiếm câu hỏi..."
+              placeholder="Tìm theo câu hỏi, câu trả lời, loại da, điểm số..."
               className="w-full pl-12 pr-4 py-3 border-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}

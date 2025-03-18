@@ -33,7 +33,7 @@ ChartJS.register(
   ChartLegend
 );
 
-const CustomerChart = ({ customerGrowth }) => {
+const CustomersChart = ({ customerGrowth }) => {
   // Kiểm tra dữ liệu trước khi render
   if (!customerGrowth || customerGrowth.length === 0) {
     return (
@@ -46,7 +46,7 @@ const CustomerChart = ({ customerGrowth }) => {
   return (
     <div className="bg-white p-4 sm:p-6 rounded-2xl shadow-lg hover:shadow-2xl transition duration-300">
       <h3 className="text-base sm:text-lg font-semibold text-gray-800 mb-2 sm:mb-4">
-        📊 Customer Growth Trend
+        📊 Tăng trưởng khách hàng
       </h3>
       <div className="h-[250px] sm:h-[300px] w-full">
         <ResponsiveContainer width="100%" height="100%">
@@ -119,4 +119,4 @@ const CustomerChart = ({ customerGrowth }) => {
   );
 };
 
-export default CustomerChart;
+export default CustomersChart;
