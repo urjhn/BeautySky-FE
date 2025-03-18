@@ -247,9 +247,9 @@ const Viewcart = () => {
               </div>
               
               <div className="space-y-4">
-                {cartItems.map((item) => (
+                {cartItems.map((item, index) => (
                   <div
-                    key={item.productId}
+                    key={`${item.productId}-${index}`}
                     className="flex flex-col sm:flex-row items-start sm:items-center justify-between border-b pb-4 hover:bg-gray-50 transition-colors rounded-lg p-2"
                   >
                     <div className="flex items-center space-x-4">
@@ -447,7 +447,7 @@ const Viewcart = () => {
                 disabled={!hasSelectedItems}
                 className={`mt-6 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-6 py-3 rounded-lg w-full flex items-center justify-center text-lg font-medium transition duration-300 shadow-md hover:shadow-lg ${!hasSelectedItems ? 'opacity-50 cursor-not-allowed' : ''}`}
               >
-                Thanh toán <FaArrowRight className="ml-2" />
+                Hoàn tất đơn hàng <FaArrowRight className="ml-2" />
               </button>
             </div>
           </div>
