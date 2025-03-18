@@ -17,6 +17,7 @@ const QuizPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [showConfirmLoginPopup, setShowConfirmLoginPopup] = useState(false);
+  const [showResultPopup, setShowResultPopup] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -86,10 +87,18 @@ const QuizPage = () => {
       const response = await resultAPI.createQuiz(payload);
       if (response.data) {
         setResult(response.data);
+        setShowResultPopup(true);
       }
     } catch (error) {
       console.error("Error submitting quiz:", error);
     }
+  };
+
+  const handleRestartQuiz = () => {
+    setSelectedAnswers({});
+    setCurrentQuestionIndex(0);
+    setResult(null);
+    setShowResultPopup(false);
   };
 
   const handleViewRoutine = () => {
@@ -125,36 +134,6 @@ const QuizPage = () => {
         <div className="bg-white shadow-xl p-10 sm:p-6 rounded-2xl w-full max-w-2xl text-center">
           {loading ? (
             <p>Đang tải câu hỏi...</p>
-          ) : result ? (
-            <div className="text-center">
-              <h2 className="text-4xl sm:text-3xl font-bold text-green-600">
-                🎉 Kết quả của bạn
-              </h2>
-              <p className="text-2xl sm:text-xl mt-4 font-semibold">
-                Loại da của bạn:{" "}
-                <span className="text-blue-500">
-                  {result.bestSkinType.skinTypeName}
-                </span>
-              </p>
-              <div className="mt-6 flex flex-col sm:flex-row justify-center items-center gap-4">
-                <button
-                  className="bg-gray-400 text-white py-3 px-8 rounded-xl font-semibold shadow-md hover:bg-gray-500 transition-all w-full sm:w-auto"
-                  onClick={() => {
-                    setResult(null);
-                    setSelectedAnswers({});
-                    setCurrentQuestionIndex(0);
-                  }}
-                >
-                  🔄 Làm lại bài kiểm tra
-                </button>
-                <button
-                  className="bg-blue-400 text-white py-3 px-8 rounded-xl font-semibold shadow-md hover:bg-blue-500 transition-all w-full sm:w-auto"
-                  onClick={handleViewRoutine}
-                >
-                  📍 Xem lộ trình
-                </button>
-              </div>
-            </div>
           ) : questions.length > 0 ? (
             <div>
               <div className="flex justify-center items-center my-4 space-x-2 flex-wrap gap-y-2">
@@ -164,6 +143,8 @@ const QuizPage = () => {
                     className={`w-7 h-7 sm:w-6 sm:h-6 flex items-center justify-center rounded-full text-sm font-medium border-2 ${
                       index === currentQuestionIndex
                         ? "bg-blue-500 text-white border-blue-500"
+                        : index < currentQuestionIndex
+                        ? "bg-green-500 text-white border-green-500"
                         : "bg-gray-100 border-gray-300"
                     }`}
                   >
@@ -237,34 +218,117 @@ const QuizPage = () => {
           ) : (
             <p>Không có câu hỏi nào!</p>
           )}
+        </div>
 
-          {showConfirmLoginPopup && (
-            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-              <div className="bg-white p-6 rounded-lg w-96 text-center">
-                <h2 className="text-xl font-bold">Bạn có muốn đăng nhập?</h2>
-                <p className="mt-4">
-                  Bạn cần đăng nhập để xem lộ trình chăm sóc da.
-                </p>
-                <div className="mt-6 flex justify-center gap-4">
-                  <button
-                    className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors"
-                    onClick={handleConfirmLogin}
-                  >
-                    Có, đăng nhập
-                  </button>
-                  <button
-                    className="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition-colors"
-                    onClick={handleCancelLogin}
-                  >
-                    Không, cảm ơn
-                  </button>
+        {showResultPopup && result && (
+          <div className="fixed inset-0 bg-black bg-opacity-70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-xl transform transition-all animate-fadeIn">
+              <div className="relative p-6 text-center">
+                <div className="bg-gradient-to-r from-blue-300 via-purple-400 to-blue-500 absolute top-0 left-0 right-0 h-28 rounded-t-2xl"></div>
+
+                <div className="relative pt-14 pb-6 px-8">
+                  <div className="bg-white w-24 h-24 rounded-full mx-auto shadow-lg flex items-center justify-center border-4 border-purple-100">
+                    <span className="text-5xl">🌟</span>
+                  </div>
+
+                  <h2 className="text-3xl font-bold text-gray-800 mt-6 mb-3">
+                    Kết quả phân tích da của bạn
+                  </h2>
+
+                  <div className="bg-blue-50 rounded-xl p-6 mb-6 mt-4 shadow-inner">
+                    <p className="text-xl font-medium text-gray-700">
+                      Loại da của bạn là:
+                    </p>
+                    <p className="text-3xl font-bold text-blue-600 mt-2 mb-2">
+                      {result.bestSkinType.skinTypeName}
+                    </p>
+                    <p className="text-gray-600 text-sm mt-2">
+                      Kết quả được xác định dựa trên các câu trả lời của bạn
+                      trong bài kiểm tra
+                    </p>
+                  </div>
+
+                  <div className="bg-yellow-50 rounded-xl p-5 mb-6 max-w-2xl mx-auto border border-yellow-100">
+                    <h3 className="font-semibold text-gray-800 mb-2">
+                      Đặc điểm của loại da {result.bestSkinType.skinTypeName}:
+                    </h3>
+                    <p className="text-gray-700">
+                      {result.bestSkinType.skinTypeName === "Da khô" &&
+                        "Da thường xuyên cảm thấy căng, thiếu độ ẩm. Dễ bong tróc, đặc biệt khi thời tiết lạnh hoặc khô."}
+                      {result.bestSkinType.skinTypeName === "Da dầu" &&
+                        "Da tiết nhiều dầu, đặc biệt ở vùng chữ T (trán, mũi, cằm). Dễ bị mụn và lỗ chân lông to."}
+                      {result.bestSkinType.skinTypeName === "Da hỗn hợp" &&
+                        "Da vừa có vùng dầu (thường là vùng chữ T), vừa có vùng khô (hai má). Cần chăm sóc cân bằng."}
+                      {result.bestSkinType.skinTypeName === "Da thường" &&
+                        "Da cân bằng, không quá dầu cũng không quá khô. Ít gặp vấn đề và dễ chăm sóc nhất."}
+                      {result.bestSkinType.skinTypeName === "Da nhạy cảm" &&
+                        "Da dễ bị kích ứng, đỏ hoặc ngứa khi tiếp xúc với một số sản phẩm. Cần những sản phẩm dịu nhẹ."}
+                    </p>
+                  </div>
+
+                  <div className="flex flex-wrap justify-center gap-4 mt-4">
+                    <button
+                      onClick={handleRestartQuiz}
+                      className="px-6 py-3 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition-all duration-200 font-medium"
+                    >
+                      🔄 Làm lại bài kiểm tra
+                    </button>
+
+                    <button
+                      onClick={handleViewRoutine}
+                      className="px-6 py-3 bg-gradient-to-r from-blue-400 to-purple-500 text-white rounded-lg hover:from-blue-600 hover:to-purple-700 transition-all duration-200 font-medium shadow-md"
+                    >
+                      📍 Xem lộ trình chăm sóc da
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
-          )}
-        </div>
+          </div>
+        )}
+
+        {showConfirmLoginPopup && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white p-6 rounded-lg w-96 text-center">
+              <h2 className="text-xl font-bold">Bạn có muốn đăng nhập?</h2>
+              <p className="mt-4">
+                Bạn cần đăng nhập để xem lộ trình chăm sóc da.
+              </p>
+              <div className="mt-6 flex justify-center gap-4">
+                <button
+                  className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors"
+                  onClick={handleConfirmLogin}
+                >
+                  Có, đăng nhập
+                </button>
+                <button
+                  className="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition-colors"
+                  onClick={handleCancelLogin}
+                >
+                  Không, cảm ơn
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
       <Footer />
+      <style jsx>{`
+        @keyframes fadeIn {
+          from {
+            opacity: 0;
+            transform: translateY(-20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+
+        .animate-fadeIn {
+          animation: fadeIn 0.3s ease-out forwards;
+        }
+      `}</style>
     </>
   );
 };

@@ -245,35 +245,35 @@ const Order = () => {
   };
 
   // Lọc và phân trang đơn hàng
-  const filteredOrders = orders.filter((order) => {
-    const searchLower = searchTerm.toLowerCase();
-    const matchesSearch = [
-      order.orderId,
-      order.userFullName,
-      order.userPhone,
-      order.userAddress,
-      order.finalAmount,
-      order.status,
-    ].some((field) => String(field).toLowerCase().includes(searchLower));
+  const filteredOrders = orders
+    .sort((a, b) => {
+      const dateA = a.orderDate ? dayjs(a.orderDate).valueOf() : 0;
+      const dateB = b.orderDate ? dayjs(b.orderDate).valueOf() : 0;
+      return dateB - dateA; // Sắp xếp từ mới nhất đến cũ nhất
+    })
+    .filter((order) => {
+      const searchLower = searchTerm.toLowerCase();
+      const matchesSearch = [
+        order.orderId,
+        order.userFullName,
+        order.userPhone,
+        order.userAddress,
+        order.finalAmount,
+        order.status,
+      ].some((field) => String(field).toLowerCase().includes(searchLower));
 
-    // Sửa lại logic lọc theo status
-    const matchesStatus =
-      filterStatus === "All" || order.status === filterStatus;
+      // Sửa lại logic lọc theo status
+      const matchesStatus =
+        filterStatus === "All" || order.status === filterStatus;
 
-    return matchesSearch && matchesStatus;
-  });
+      return matchesSearch && matchesStatus;
+    });
 
   const totalPages = Math.ceil(filteredOrders.length / ordersPerPage);
   const currentOrders = filteredOrders.slice(
     (currentPage - 1) * ordersPerPage,
     currentPage * ordersPerPage
   );
-
-  const sortedOrders = [...currentOrders].sort((a, b) => {
-    const dateA = a.orderDate ? dayjs(a.orderDate).valueOf() : 0;
-    const dateB = b.orderDate ? dayjs(b.orderDate).valueOf() : 0;
-    return dateB - dateA;
-  });
 
   // Hàm hiển thị trạng thái và màu sắc
   const getStatusDisplay = (status) => {
@@ -437,7 +437,7 @@ const Order = () => {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {sortedOrders.map((order) => (
+              {currentOrders.map((order) => (
                 <tr key={order.orderId} className="hover:bg-gray-50">
                   <td className="p-4 text-sm">#{order.orderId}</td>
                   <td className="p-4 text-sm">{order.userFullName}</td>
