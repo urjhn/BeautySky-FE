@@ -477,8 +477,11 @@ const Order = () => {
                         !order.paymentId && (
                           <button
                             onClick={() => handleApproveOrder(order.orderId)}
-                            className="px-3 py-1.5 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors flex items-center gap-1"
+                            className="px-3 py-1.5 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-transform transform hover:-translate-y-1 hover:shadow-lg flex items-center gap-1"
                             title="Duyệt đơn"
+                            style={{
+                              boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08)",
+                            }}
                           >
                             <FaCheckCircle className="w-4 h-4" />
                             <span className="text-sm">Duyệt</span>

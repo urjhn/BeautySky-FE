@@ -14,7 +14,7 @@ const SalesChart = ({ salesData, leadData }) => {
     labels: labels,
     datasets: [
       {
-        label: "Sales",
+        label: "Bán hàng",
         data: salesValues,
         borderColor: "#FF5733",
         backgroundColor: "rgba(255, 87, 51, 0.2)",
@@ -23,7 +23,7 @@ const SalesChart = ({ salesData, leadData }) => {
         pointBackgroundColor: "#FF5733",
       },
       {
-        label: "Leads",
+        label: "Khách hàng tiềm năng",
         data: leadsValues,
         borderColor: "#82ca9d",
         backgroundColor: "rgba(130, 202, 157, 0.2)",
@@ -85,7 +85,7 @@ const SalesChart = ({ salesData, leadData }) => {
   return (
     <div className="bg-white p-4 md:p-6 rounded-2xl shadow-lg hover:scale-105 transition">
       <h3 className="text-base md:text-lg font-semibold mb-2 md:mb-4 text-gray-800">
-        Sales & Leads Overview
+        Tổng quan bán hàng & khách hàng tiềm năng
       </h3>
       <div className="h-[300px] md:h-[400px] lg:h-[450px]">
         <Line data={data} options={options} />

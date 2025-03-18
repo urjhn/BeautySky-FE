@@ -1,8 +1,8 @@
 import React from "react";
-import { FaEdit, FaTrash, FaPlus } from "react-icons/fa";
+import { FaEdit, FaTrash, FaPlus, FaSearch } from "react-icons/fa";
 import { formatCurrency } from "../../../utils/formatCurrency";
 import { useDataContext } from "../../../context/DataContext";
-import { Button, Table, Space, Modal, Select } from "antd";
+import { Button, Table, Space, Modal, Select, Input } from "antd";
 import productApi from "../../../services/product";
 import Swal from "sweetalert2";
 import ProductForm from "./ProductForm";
@@ -19,6 +19,7 @@ const Products = () => {
   const [showAddModal, setShowAddModal] = React.useState(false);
   const [sortOrder, setSortOrder] = React.useState(null);
   const [loading, setLoading] = React.useState(false);
+  const [searchTerm, setSearchTerm] = React.useState("");
   const productsPerPage = 10;
   const [newProduct, setNewProduct] = React.useState({
     productId: 0,
@@ -52,18 +53,59 @@ const Products = () => {
      }
    };
 
-
-
-
   const filteredProducts = React.useMemo(() => {
     let updatedProducts = [...products];
 
+    // Tìm kiếm sản phẩm
+    if (searchTerm.trim() !== "") {
+      const searchLower = searchTerm.toLowerCase().trim();
+      updatedProducts = updatedProducts.filter((product) => {
+        // Tìm theo tên sản phẩm
+        if (product.productName && product.productName.toLowerCase().includes(searchLower)) 
+          return true;
+        
+        // Tìm theo giá
+        if (product.price && product.price.toString().includes(searchLower)) 
+          return true;
+        
+        // Tìm theo số lượng
+        if (product.quantity && product.quantity.toString().includes(searchLower)) 
+          return true;
+        
+        // Tìm theo ID sản phẩm
+        if (product.productId && product.productId.toString().includes(searchLower)) 
+          return true;
+        
+        // Tìm theo mô tả
+        if (product.description && product.description.toLowerCase().includes(searchLower)) 
+          return true;
+        
+        // Tìm theo thành phần
+        if (product.ingredient && product.ingredient.toLowerCase().includes(searchLower)) 
+          return true;
+        
+        // Tìm theo loại da
+        const skinType = skinTypes.find(s => s.skinTypeId === product.skinTypeId);
+        if (skinType && skinType.skinTypeName && skinType.skinTypeName.toLowerCase().includes(searchLower)) 
+          return true;
+        
+        // Tìm theo danh mục
+        const category = categories.find(c => c.categoryId === product.categoryId);
+        if (category && category.categoryName && category.categoryName.toLowerCase().includes(searchLower)) 
+          return true;
+        
+        return false;
+      });
+    }
+
+    // Lọc theo trạng thái
     if (filter !== "All") {
       updatedProducts = updatedProducts.filter((p) =>
         filter === "Còn hàng" ? p.quantity > 0 : p.quantity === 0
       );
     }
 
+    // Sắp xếp theo giá
     if (sortOrder) {
       updatedProducts.sort((a, b) =>
         sortOrder === "asc" ? a.price - b.price : b.price - a.price
@@ -71,10 +113,7 @@ const Products = () => {
     }
 
     return updatedProducts;
-  }, [products, filter, sortOrder]);
-
-
-
+  }, [products, filter, sortOrder, searchTerm, skinTypes, categories]);
 
   const displayedProducts = React.useMemo(
     () =>
@@ -344,6 +383,19 @@ const handleSaveEdit = async (formData) => {
           </span>{" "}
           sản phẩm
         </div>
+
+        {/* Thêm ô tìm kiếm */}
+        <div className="relative w-full md:w-64 mb-4 md:mb-0">
+          <Input
+            placeholder="Tìm kiếm sản phẩm..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            prefix={<FaSearch className="text-gray-400" />}
+            className="w-full rounded-lg"
+            allowClear
+          />
+        </div>
+
         <Space className="w-full md:w-auto flex flex-col sm:flex-row gap-2">
           <Select
             className="w-full sm:w-40"

@@ -46,10 +46,29 @@ const RoutineController = () => {
     }
   };
 
-  const filteredSteps = steps.filter((step) =>
-    step.stepName.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
+  // Cập nhật hàm lọc để tìm kiếm trên tất cả thông tin
+  const filteredSteps = steps.filter((step) => {
+    const searchLower = searchTerm.toLowerCase().trim();
+    
+    // Nếu không có từ khóa tìm kiếm, hiển thị tất cả bước
+    if (!searchLower) return true;
+    
+    // Tìm kiếm trên tất cả các trường thông tin
+    return (
+      // Tìm theo ID
+      (step.stepId && step.stepId.toString().includes(searchLower)) ||
+      // Tìm theo tên bước
+      (step.stepName && step.stepName.toLowerCase().includes(searchLower)) ||
+      // Tìm theo mô tả bước
+      (step.stepDescription && step.stepDescription.toLowerCase().includes(searchLower)) ||
+      // Tìm theo thứ tự bước
+      (step.stepOrder && step.stepOrder.toString().includes(searchLower)) ||
+      // Tìm theo loại da (bằng ID)
+      (step.carePlanId && step.carePlanId.toString().includes(searchLower)) ||
+      // Tìm theo tên loại da
+      (skinTypes[step.carePlanId] && skinTypes[step.carePlanId].toLowerCase().includes(searchLower))
+    );
+  });
 
   const sortedFilteredSteps = [...filteredSteps].sort((a, b) => {
     // First sort by carePlanId
@@ -150,7 +169,7 @@ const RoutineController = () => {
             <FiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500" />
             <input
               type="text"
-              placeholder="Tìm kiếm bước..."
+              placeholder="Tìm theo tên bước, mô tả, thứ tự, loại da..."
               className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
