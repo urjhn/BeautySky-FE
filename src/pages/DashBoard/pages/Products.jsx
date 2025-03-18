@@ -271,7 +271,9 @@ const handleSaveEdit = async (formData) => {
         dataIndex: "productName",
         key: "productName",
         render: (text) => (
-          <span className="font-medium text-gray-800 break-words">{text}</span>
+          <span className="font-medium text-gray-800 break-words whitespace-normal">
+            {text}
+          </span>
         ),
       },
       {
@@ -280,7 +282,7 @@ const handleSaveEdit = async (formData) => {
         key: "price",
         responsive: ['sm'],
         render: (price) => (
-          <span className="font-medium text-indigo-600">
+          <span className="font-medium text-indigo-600 whitespace-nowrap">
             {formatCurrency(price)}
           </span>
         ),
@@ -293,7 +295,9 @@ const handleSaveEdit = async (formData) => {
         key: "quantity",
         responsive: ['lg'],
         render: (quantity) => (
-          <span className="font-semibold text-gray-700">{quantity}</span>
+          <span className="font-semibold text-gray-700 whitespace-nowrap">
+            {quantity}
+          </span>
         ),
       },
       {
@@ -303,12 +307,27 @@ const handleSaveEdit = async (formData) => {
         responsive: ['sm'],
         render: (quantity) =>
           quantity > 0 ? (
-            <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-semibold">
+            <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-semibold whitespace-nowrap">
               Còn hàng
             </span>
           ) : (
-            <span className="px-3 py-1 bg-red-100 text-red-700 rounded-full text-xs font-semibold">
+            <span className="px-3 py-1 bg-red-100 text-red-700 rounded-full text-xs font-semibold whitespace-nowrap">
               Hết hàng
+            </span>
+          ),
+      },
+      {
+        title: "Trạng thái hoạt động",
+        dataIndex: "isActive",
+        key: "isActive",
+        render: (isActive) =>
+          isActive ? (
+            <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-semibold whitespace-nowrap">
+              Hoạt động
+            </span>
+          ) : (
+            <span className="px-3 py-1 bg-red-100 text-red-700 rounded-full text-xs font-semibold whitespace-nowrap">
+              Không hoạt động
             </span>
           ),
       },
