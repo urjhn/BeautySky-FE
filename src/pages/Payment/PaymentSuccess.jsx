@@ -50,7 +50,7 @@ const PaymentSuccess = () => {
                 {/* Nút điều hướng */}
                 <div className="flex flex-col sm:flex-row gap-4 mt-6">
                     <button 
-                        onClick={() => navigate('/orders')}
+                        onClick={() => navigate('/profilelayout/historyorder')}
                         className="flex-1 flex items-center justify-center gap-2 bg-green-500 hover:bg-green-600 text-white py-3 px-6 rounded-lg transition duration-300 shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
                     >
                         <FaClipboardList className="text-lg" />
