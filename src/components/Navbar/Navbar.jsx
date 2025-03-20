@@ -82,7 +82,7 @@ const Navbar = () => {
         id: item.blogId,
         title: item.title,
         description: item.content?.substring(0, 100) || "",
-        image: item.imgURL,
+        image: item.imgUrl,
         categoryName: item.category,
         skinTypeName: item.skinType,
         type: "blog", // Đánh dấu là blog
