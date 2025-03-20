@@ -15,7 +15,7 @@ import Blog from "./pages/Blogs/BlogPage.jsx";
 import UserProfile from "./pages/Profile/pages/ProfileForm.jsx";
 import Contact from "./pages/Contact/Contact.jsx";
 import DashboardLayout from "./pages/DashBoard/DashboardLayout.jsx";
-import Dashboard from "./pages/DashBoard/pages/DashBoard.jsx";
+import Dashboard from "./pages/DashBoard/pages/DashBoardControll/pages/Dashboard.jsx";
 import Customers from "./pages/DashBoard/pages/Customers.jsx";
 import Order from "./pages/DashBoard/pages/Order.jsx";
 import Products from "./pages/DashBoard/pages/Products.jsx";

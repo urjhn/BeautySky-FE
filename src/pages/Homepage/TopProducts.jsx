@@ -34,7 +34,7 @@ const TopProducts = () => {
   // Sắp xếp sản phẩm theo rating (cao nhất trước)
   const topRatedProducts = [...products]
     .filter(
-      (product) => product.rating !== null && product.rating !== undefined
+      (product) => product.isActive && product.rating !== null && product.rating !== undefined
     )
     .sort((a, b) => b.rating - a.rating) // Sắp xếp giảm dần theo rating
     .slice(0, 10); // Lấy top 10 sản phẩm có rating cao nhất

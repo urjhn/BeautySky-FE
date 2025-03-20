@@ -66,6 +66,8 @@ const ProductList = ({ selectedSkinType, selectedCategory, sortOrder }) => {
   const filteredProducts = useMemo(() => {
     return products
       .filter((product) => {
+        if (!product.isActive) return false;
+
         const productSkinType = product.skinTypeName?.toLowerCase() || "";
         const productCategory = product.categoryName?.toLowerCase() || "";
 

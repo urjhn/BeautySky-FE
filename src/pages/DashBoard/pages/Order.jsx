@@ -103,10 +103,12 @@ const Order = () => {
           didOpen: () => Swal.showLoading(),
         });
 
-        const response = await paymentsAPI.processAndConfirmPayment(orderId);
+        try {
+          // Gọi API để xử lý thanh toán và xác nhận đơn hàng
+          const response = await paymentsAPI.processAndConfirmPayment(orderId);
+          console.log("API Response:", response); // Ghi log để debug
 
-        if (response && response.data) {
-          // Cập nhật state ngay lập tức
+          // Cập nhật state ngay lập tức - đã sửa cách truy cập dữ liệu
           setOrders((prevOrders) =>
             prevOrders.map((order) =>
               order.orderId === orderId
@@ -114,7 +116,8 @@ const Order = () => {
                     ...order,
                     status: ORDER_STATUS.COMPLETED,
                     paymentStatus: "Confirmed",
-                    paymentId: response.data.paymentId,
+                    // Kiểm tra nhiều cấu trúc phản hồi có thể có
+                    paymentId: response.paymentId || (response.data && response.data.paymentId) || 0,
                   }
                 : order
             )
@@ -129,6 +132,13 @@ const Order = () => {
             text: "Đã duyệt và thanh toán đơn hàng thành công",
             timer: 1500,
           });
+        } catch (apiError) {
+          console.error("Lỗi API khi duyệt đơn:", apiError);
+          Swal.fire({
+            icon: "error",
+            title: "Lỗi",
+            text: apiError.response?.data || apiError.message || "Có lỗi xảy ra khi duyệt đơn hàng",
+          });
         }
       }
     } catch (error) {
@@ -136,10 +146,7 @@ const Order = () => {
       Swal.fire({
         icon: "error",
         title: "Lỗi",
-        text:
-          error.response?.data ||
-          error.message ||
-          "Có lỗi xảy ra khi duyệt đơn hàng",
+        text: error.response?.data || error.message || "Có lỗi xảy ra khi duyệt đơn hàng",
       });
     }
   };
@@ -186,12 +193,17 @@ const Order = () => {
             const response = await paymentsAPI.processAndConfirmPayment(
               order.orderId
             );
+            // Ghi log phản hồi API cho từng đơn hàng
+            console.log(`Phản hồi API cho đơn hàng ${order.orderId}:`, response);
+            
             return {
               orderId: order.orderId,
               success: true,
-              data: response.data,
+              // Kiểm tra nhiều cấu trúc dữ liệu có thể có
+              data: response.data || response
             };
           } catch (error) {
+            console.error(`Lỗi khi xử lý đơn hàng ${order.orderId}:`, error);
             return {
               orderId: order.orderId,
               success: false,
@@ -201,21 +213,24 @@ const Order = () => {
         })
       );
 
-      const successful = results.filter((r) => r.value?.success).length;
-      const failed = results.filter((r) => !r.value?.success).length;
+      const successful = results.filter((r) => r.status === "fulfilled" && r.value?.success).length;
+      const failed = pendingOrders.length - successful;
 
       setOrders((prevOrders) =>
         prevOrders.map((order) => {
-          const result = results.find(
-            (r) => r.value?.orderId === order.orderId && r.value?.success
+          const resultItem = results.find(
+            (r) => r.status === "fulfilled" && r.value?.orderId === order.orderId && r.value?.success
           );
-          if (result?.value?.success) {
+          
+          if (resultItem) {
+            const resultData = resultItem.value.data;
             return {
               ...order,
               status: ORDER_STATUS.COMPLETED,
               paymentStatus: "Confirmed",
-              paymentId: result.value.data.paymentId,
-              paymentDate: result.value.data.paymentDate,
+              // Xử lý nhiều cấu trúc dữ liệu có thể có
+              paymentId: resultData.paymentId || (resultData.data && resultData.data.paymentId) || 0,
+              paymentDate: resultData.paymentDate || (resultData.data && resultData.data.paymentDate) || new Date().toISOString(),
             };
           }
           return order;
