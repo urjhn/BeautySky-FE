@@ -117,7 +117,6 @@ function Login() {
       });
 
       addNotification("Bạn đã đăng nhập thành công! 🎉");
-      navigate("/");
     } catch (error) {
       console.error('Login error:', error);
       Swal.fire({

@@ -39,26 +39,41 @@ export const AuthProvider = ({ children }) => {
     try {
       if (userData.token) {
         const decoded = jwtDecode(userData.token);
+        console.log("Decoded token:", decoded);
+        console.log("User data:", userData);
+        
         const userInfo = {
-          userId: decoded.id,
+          userId: Number(decoded.userId || decoded.id || decoded.sub),
           name: decoded.name,
           email: decoded.email,
-          role: decoded.role,
+          role: decoded.role || "Customer",
           token: userData.token,
-          roleId: userData.user.roleId,
+          roleId: userData.user?.roleId || 
+                 (decoded.role === "Customer" ? 1 : 
+                  decoded.role === "Staff" ? 2 : 
+                  decoded.role === "Manager" ? 3 : 1),
           phone: decoded.phone || "",
           address: decoded.address || "",
         };
 
+        console.log("User info being set:", userInfo);
+
         setUser(userInfo);
         localStorage.setItem("token", userData.token);
-        localStorage.setItem("roleId", userData.user.roleId);
+        localStorage.setItem("roleId", userInfo.roleId);
+
+        // Chuyển hướng dựa vào roleId
+        if (userInfo.roleId === 2 || userInfo.roleId === 3) {
+          navigate("/dashboardlayout");
+        } else {
+          navigate("/");
+        }
       } else {
         const data = await authAPI.login(userData, navigate);
         const roleId = parseInt(data.roleId, 10);
         const decoded = jwtDecode(data.token);
-        setUser({
-          userId: decoded.userId,
+        const userInfo = {
+          userId: decoded.userId || decoded.id,
           name: decoded.name,
           email: decoded.email,
           role: decoded.role,
@@ -66,9 +81,18 @@ export const AuthProvider = ({ children }) => {
           roleId: roleId,
           phone: decoded.phone,
           address: decoded.address,
-        });
+        };
+        
+        setUser(userInfo);
         localStorage.setItem("token", data.token);
         localStorage.setItem("roleId", roleId);
+
+        // Chuyển hướng dựa vào roleId
+        if (roleId === 2 || roleId === 3) {
+          navigate("/dashboardlayout");
+        } else {
+          navigate("/");
+        }
       }
     } catch (err) {
       console.error("Login failed", err);
