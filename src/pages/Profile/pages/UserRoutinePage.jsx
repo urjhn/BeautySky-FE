@@ -25,9 +25,6 @@ const UserRoutinePage = () => {
         setLoading(true);
         const response = await GetCarePlanAPI.getCarePlanById(user.userId);
 
-        // Kiểm tra và log dữ liệu trả về
-        console.log("API response:", response.data);
-
         // Đảm bảo userRoutines luôn là mảng
         if (Array.isArray(response.data)) {
           setUserRoutines(response.data);

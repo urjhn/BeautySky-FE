@@ -19,9 +19,7 @@ const paymentsAPI = {
           }
         }
       );
-      
-      console.log('API response:', response); // Kiểm tra phản hồi
-      
+           
       // Xử lý dựa trên status và trả về dữ liệu phù hợp
       if (response.status >= 200 && response.status < 300) {
         return response.data;

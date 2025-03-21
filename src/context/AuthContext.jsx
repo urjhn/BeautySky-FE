@@ -39,31 +39,33 @@ export const AuthProvider = ({ children }) => {
     try {
       if (userData.token) {
         const decoded = jwtDecode(userData.token);
-        console.log("Decoded token:", decoded);
-        console.log("User data:", userData);
         
+        // Đảm bảo userId luôn là số
+        const userId = Number(decoded.userId || decoded.id || decoded.sub);
+        
+        // Xác định roleId một cách chính xác
+        const roleId = userData.user?.roleId || 
+                      (decoded.role === "Customer" ? 1 : 
+                       decoded.role === "Staff" ? 2 : 
+                       decoded.role === "Manager" ? 3 : 1);
+
         const userInfo = {
-          userId: Number(decoded.userId || decoded.id || decoded.sub),
+          userId: userId,
           name: decoded.name,
           email: decoded.email,
           role: decoded.role || "Customer",
           token: userData.token,
-          roleId: userData.user?.roleId || 
-                 (decoded.role === "Customer" ? 1 : 
-                  decoded.role === "Staff" ? 2 : 
-                  decoded.role === "Manager" ? 3 : 1),
+          roleId: roleId,
           phone: decoded.phone || "",
           address: decoded.address || "",
         };
 
-        console.log("User info being set:", userInfo);
-
         setUser(userInfo);
         localStorage.setItem("token", userData.token);
-        localStorage.setItem("roleId", userInfo.roleId);
+        localStorage.setItem("roleId", roleId.toString());
 
         // Chuyển hướng dựa vào roleId
-        if (userInfo.roleId === 2 || userInfo.roleId === 3) {
+        if (roleId === 2 || roleId === 3) {
           navigate("/dashboardlayout");
         } else {
           navigate("/");
@@ -85,7 +87,7 @@ export const AuthProvider = ({ children }) => {
         
         setUser(userInfo);
         localStorage.setItem("token", data.token);
-        localStorage.setItem("roleId", roleId);
+        localStorage.setItem("roleId", roleId.toString());
 
         // Chuyển hướng dựa vào roleId
         if (roleId === 2 || roleId === 3) {

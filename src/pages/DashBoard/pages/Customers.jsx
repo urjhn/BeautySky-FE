@@ -36,18 +36,21 @@ const Customers = () => {
   });
 
   useEffect(() => {
-    fetchUsers();
-    const fetchOrdersData = async () => {
+    const fetchData = async () => {
       try {
-        const data = await orderAPI.getAll();
-        setOrders(data);
+        // Fetch users
+        await fetchUsers();
+        
+        // Fetch orders
+        const ordersData = await orderAPI.getAll();
+        setOrders(ordersData);
       } catch (error) {
-        console.error("Error fetching orders:", error);
+        console.error("Error fetching data:", error);
       }
     };
 
-    fetchOrdersData();
-  }, [fetchUsers]);
+    fetchData();
+  }, []);
 
   useEffect(() => {
     setCurrentPage(1);
@@ -120,7 +123,6 @@ const Customers = () => {
   };
 
   const handleDeleteUser = async (userId) => {
-    console.log("Đang xóa người dùng với ID:", userId);
 
     if (!userId) {
       Swal.fire({
@@ -147,7 +149,6 @@ const Customers = () => {
         try {
           // Chi tiết hóa lỗi từ phản hồi
           const response = await usersAPI.deleteUser(userId);
-          console.log("Phản hồi xóa người dùng:", response);
 
           await fetchUsers(); // Tải lại danh sách người dùng
           Swal.fire({
@@ -244,11 +245,19 @@ const Customers = () => {
 
   const getOrderCount = (customerId) => {
     if (!orders || !Array.isArray(orders)) {
+
       return 0;
     }
-    return orders.filter(
-      (order) => order.userId === customerId && order.status > 0
-    ).length;
+
+    const count = orders.filter(order => {
+      const orderUserId = order.userId || order.user?.userId;
+      const isMatch = orderUserId === customerId;
+      
+      
+      return isMatch && order.status !== "Cancelled";
+    }).length;
+
+    return count;
   };
 
   const handleAddUser = async () => {
@@ -411,7 +420,10 @@ const Customers = () => {
               <div>
                 <p className="text-sm opacity-80">Tổng đơn hàng</p>
                 <p className="text-2xl font-bold">
-                  {orders?.filter((order) => order.status > 0).length || 0}
+                  {orders?.filter(order => 
+                    order.status === "Pending" || 
+                    order.status === "Completed"
+                  ).length || 0}
                 </p>
               </div>
               <FaCalendarAlt className="text-3xl opacity-80" />
@@ -468,7 +480,7 @@ const Customers = () => {
                         scope="col"
                         className="p-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider hidden md:table-cell"
                       >
-                        Orders
+                        Đơn hàng
                       </th>
                       <th
                         scope="col"
@@ -491,82 +503,90 @@ const Customers = () => {
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
-                    {currentCustomers.map((customer) => (
-                      <tr
-                        key={customer.id}
-                        className="hover:bg-gray-50 transition-colors duration-150"
-                      >
-                        <td className="p-3 whitespace-nowrap">
-                          <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
-                              <FaUser className="text-blue-600" />
-                            </div>
-                            <div>
-                              <div className="text-sm font-medium text-gray-900">
-                                {customer.fullName}
+                    {currentCustomers.map((customer) => {
+                      const orderCount = getOrderCount(customer.userId);
+
+                      return (
+                        <tr
+                          key={customer.id}
+                          className="hover:bg-gray-50 transition-colors duration-150"
+                        >
+                          <td className="p-3 whitespace-nowrap">
+                            <div className="flex items-center gap-3">
+                              <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
+                                <FaUser className="text-blue-600" />
                               </div>
-                              <div className="text-xs text-gray-500 sm:hidden">
-                                {customer.email}
+                              <div>
+                                <div className="text-sm font-medium text-gray-900">
+                                  {customer.fullName}
+                                </div>
+                                <div className="text-xs text-gray-500 sm:hidden">
+                                  {customer.email}
+                                </div>
                               </div>
                             </div>
-                          </div>
-                        </td>
-                        <td className="p-3 whitespace-nowrap hidden sm:table-cell">
-                          <span className="text-sm text-gray-600">
-                            {customer.email}
-                          </span>
-                        </td>
-                        <td className="p-3 whitespace-nowrap">
-                          <span
-                            className={`px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                              getRoleName(customer.roleId).color
-                            } text-white shadow-sm`}
-                          >
-                            {getRoleName(customer.roleId).name}
-                          </span>
-                        </td>
-                        <td className="p-3 whitespace-nowrap hidden md:table-cell">
-                          <div className="text-sm text-gray-900 font-medium">
-                            {getOrderCount(customer.userId)}
-                          </div>
-                          <div className="text-xs text-gray-500">đơn hàng</div>
-                        </td>
-                        <td className="p-3 whitespace-nowrap hidden sm:table-cell">
-                          <span
-                            className={`px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                              customer.isActive
-                                ? "bg-green-100 text-green-800"
-                                : "bg-red-100 text-red-800"
-                            }`}
-                          >
-                            {customer.isActive ? "Active" : "Inactive"}
-                          </span>
-                        </td>
-                        <td className="p-3 whitespace-nowrap hidden md:table-cell">
-                          <span className="text-sm text-gray-600">
-                            {formatDate(customer.dateCreate)}
-                          </span>
-                        </td>
-                        <td className="p-3 whitespace-nowrap">
-                          <div className="flex gap-3">
-                            <button
-                              className="text-blue-600 hover:text-blue-800 transition-colors p-1 hover:bg-blue-100 rounded-full"
-                              onClick={() => handleEditUser(customer)}
+                          </td>
+                          <td className="p-3 whitespace-nowrap hidden sm:table-cell">
+                            <span className="text-sm text-gray-600">
+                              {customer.email}
+                            </span>
+                          </td>
+                          <td className="p-3 whitespace-nowrap">
+                            <span
+                              className={`px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                                getRoleName(customer.roleId).color
+                              } text-white shadow-sm`}
                             >
-                              <FaEdit size={18} />
-                            </button>
-                            <button
-                              className="text-red-600 hover:text-red-800 transition-colors p-1 hover:bg-red-100 rounded-full"
-                              onClick={() =>
-                                handleDeleteUser(customer.userId || customer.id)
-                              }
+                              {getRoleName(customer.roleId).name}
+                            </span>
+                          </td>
+                          <td className="p-3 whitespace-nowrap hidden md:table-cell">
+                            <div className="flex flex-col">
+                              <span className="text-sm font-medium text-gray-900">
+                                {orderCount}
+                              </span>
+                              <span className="text-xs text-gray-500">
+                                đơn hàng
+                              </span>
+                            </div>
+                          </td>
+                          <td className="p-3 whitespace-nowrap hidden sm:table-cell">
+                            <span
+                              className={`px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                                customer.isActive
+                                  ? "bg-green-100 text-green-800"
+                                  : "bg-red-100 text-red-800"
+                              }`}
                             >
-                              <FaTrash size={18} />
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
+                              {customer.isActive ? "Active" : "Inactive"}
+                            </span>
+                          </td>
+                          <td className="p-3 whitespace-nowrap hidden md:table-cell">
+                            <span className="text-sm text-gray-600">
+                              {formatDate(customer.dateCreate)}
+                            </span>
+                          </td>
+                          <td className="p-3 whitespace-nowrap">
+                            <div className="flex gap-3">
+                              <button
+                                className="text-blue-600 hover:text-blue-800 transition-colors p-1 hover:bg-blue-100 rounded-full"
+                                onClick={() => handleEditUser(customer)}
+                              >
+                                <FaEdit size={18} />
+                              </button>
+                              <button
+                                className="text-red-600 hover:text-red-800 transition-colors p-1 hover:bg-red-100 rounded-full"
+                                onClick={() =>
+                                  handleDeleteUser(customer.userId || customer.id)
+                                }
+                              >
+                                <FaTrash size={18} />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>

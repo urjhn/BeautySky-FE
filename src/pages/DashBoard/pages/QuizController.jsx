@@ -169,9 +169,6 @@ useEffect(() => {
     if (!response) {
       throw new Error("No response received");
     }
-    
-    console.log("Full response structure:", response);
-    
     // Check if response has data property
     if (response.data) {
       return response.data;
@@ -204,7 +201,6 @@ useEffect(() => {
         orderNumber: maxOrder + 1,
         quizId: quizId === null ? null : Number(quizId) // Đảm bảo quizId là số hoặc null
       };
-      console.log("Creating question with data:", newQuestionData);
       const newQuestionResponse = await questionsAPI.createQuestions(newQuestionData);
       
     
@@ -243,8 +239,6 @@ useEffect(() => {
               skinTypeId: answer.skinTypeId || "",
               point: answer.point || "0"
             };
-            
-            console.log("Creating answer with data:", answerData);
             return answersAPI.createAnswers(answerData);
           });
       
@@ -416,13 +410,9 @@ const handleDelete = async (questionId) => {
       if (!questionToDelete) {
         throw new Error("Không tìm thấy câu hỏi để xóa");
       }
-      
-      console.log(`Đang xóa câu hỏi ID: ${questionId}`);
-      
       // Delete related answers first
       const questionAnswers = answers.filter(a => a.questionId === questionId);
       for (const answer of questionAnswers) {
-        console.log(`Đang xóa câu trả lời ID: ${answer.answerId}`);
         await answersAPI.deleteAnswers(answer.answerId);
       }
       
