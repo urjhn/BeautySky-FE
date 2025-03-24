@@ -31,6 +31,7 @@ const Products = () => {
     categoryId: 0,
     skinTypeId: 0,
     productsImages: [],
+    isActive: true,
   });
 
   const handleImageUpload = async ({ File}) => {
@@ -134,13 +135,13 @@ const Products = () => {
     }
 
     const result = await Swal.fire({
-      title: "Bạn có chắc chắn muốn xóa?",
-      text: "Hành động này không thể hoàn tác!",
+      title: "Bạn có chắc chắn muốn vô hiệu hóa sản phẩm này?",
+      text: "Sản phẩm sẽ chuyển sang trạng thái không hoạt động!",
       icon: "warning",
       showCancelButton: true,
       confirmButtonColor: "#d33",
       cancelButtonColor: "#3085d6",
-      confirmButtonText: "Xóa",
+      confirmButtonText: "Vô hiệu hóa",
       cancelButtonText: "Hủy",
     });
 
@@ -148,18 +149,60 @@ const Products = () => {
       try {
         setLoading(true);
         const response = await productApi.deleteProduct(productId);
+        
         if (response.status >= 200 && response.status < 300) {
-          setProducts((prev) => prev.filter((p) => p.productId !== productId));
-          Swal.fire("Xóa thành công!", "Sản phẩm đã được xóa.", "success");
-        } else {
-          Swal.fire("Lỗi!", "Không thể xóa sản phẩm.", "error");
+          setProducts(prevProducts => 
+            prevProducts.map(product => 
+              product.productId === productId 
+                ? { ...product, isActive: false }
+                : product
+            )
+          );
+          
+          Swal.fire({
+            title: "Thành công!",
+            text: "Sản phẩm đã được vô hiệu hóa.",
+            icon: "success",
+          });
+          
+          fetchProduct();
         }
       } catch (error) {
-        console.error("Lỗi xóa sản phẩm:", error);
-        Swal.fire("Lỗi!", "Đã xảy ra lỗi khi xóa sản phẩm.", "error");
+        console.error("Lỗi vô hiệu hóa sản phẩm:", error);
+        Swal.fire("Lỗi!", "Đã xảy ra lỗi khi vô hiệu hóa sản phẩm.", "error");
       } finally {
         setLoading(false);
       }
+    }
+  };
+
+  const handleReactivate = async (productId) => {
+    try {
+      setLoading(true);
+      const response = await productApi.editProduct(productId, { isActive: true });
+      
+      if (response.status >= 200 && response.status < 300) {
+        setProducts(prevProducts => 
+          prevProducts.map(product => 
+            product.productId === productId 
+              ? { ...product, isActive: true }
+              : product
+          )
+        );
+        
+        Swal.fire({
+          title: "Thành công!",
+          text: "Sản phẩm đã được kích hoạt lại.",
+          icon: "success",
+        });
+        
+        fetchProduct();
+      }
+    } catch (error) {
+      console.error("Lỗi kích hoạt sản phẩm:", error);
+      Swal.fire("Lỗi!", "Đã xảy ra lỗi khi kích hoạt sản phẩm.", "error");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -343,14 +386,25 @@ const handleSaveEdit = async (formData) => {
             >
               <FaEdit />
             </Button>
-            <Button
-              type="danger"
-              onClick={() => handleDelete(record.productId)}
-              disabled={loading}
-              className="flex items-center justify-center bg-red-500 hover:bg-red-600 border-red-500 text-white"
-            >
-              <FaTrash />
-            </Button>
+            {record.isActive ? (
+              <Button
+                type="danger"
+                onClick={() => handleDelete(record.productId)}
+                disabled={loading}
+                className="flex items-center justify-center bg-red-500 hover:bg-red-600 border-red-500 text-white"
+              >
+                <FaTrash />
+              </Button>
+            ) : (
+              <Button
+                type="primary"
+                onClick={() => handleReactivate(record.productId)}
+                disabled={loading}
+                className="flex items-center justify-center bg-green-500 hover:bg-green-600 border-green-500 text-white"
+              >
+                Kích hoạt
+              </Button>
+            )}
           </Space>
         ),
       },
