@@ -25,6 +25,7 @@ const Navbar = () => {
   const [showProductDropdown, setShowProductDropdown] = useState(false);
   const dropdownRef = useRef(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -48,6 +49,19 @@ const Navbar = () => {
 
     return () => clearTimeout(delayDebounce);
   }, [searchQuery]);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.scrollY > 0) {
+        setIsScrolled(true);
+      } else {
+        setIsScrolled(false);
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   const handleSearch = async () => {
     try {
@@ -121,7 +135,13 @@ const Navbar = () => {
   );
 
   return (
-    <nav className="bg-white shadow-md pr-1 pl-1 relative">
+    <nav className={`
+      fixed top-0 left-0 right-0 z-50
+      transition-all duration-300
+      ${isScrolled 
+        ? 'bg-white/95 backdrop-blur-sm shadow-md' 
+        : 'bg-white shadow-md'}
+    `}>
       <div className="container mx-auto flex justify-between items-center py-4 px-1">
         {/* Logo */}
         <div className="flex items-center">

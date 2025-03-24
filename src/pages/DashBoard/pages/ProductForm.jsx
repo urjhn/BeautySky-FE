@@ -12,6 +12,7 @@ import {
   Row,
   Col,
   Upload,
+  Switch,
 } from "antd";
 import { PlusOutlined } from "@ant-design/icons";
 
@@ -39,6 +40,7 @@ const ProductForm = ({
         ingredient: item.ingredient || "",
         categoryId: item.categoryId,
         skinTypeId: item.skinTypeId,
+        isActive: item.isActive ?? true,
       });
 
       // Initialize preview images if editing an existing product
@@ -72,6 +74,7 @@ const ProductForm = ({
     formData.append("ingredient", values.ingredient || "");
     formData.append("categoryId", values.categoryId);
     formData.append("skinTypeId", values.skinTypeId);
+    formData.append("isActive", values.isActive ?? true);
 
     // Add the image file if it exists
     // Only add the first file in the list (as your backend seems to handle one image)
@@ -105,6 +108,7 @@ const ProductForm = ({
         initialValues={{
           description: "",
           ingredient: "",
+          isActive: true,
         }}
       >
         <Form.Item
@@ -200,6 +204,19 @@ const ProductForm = ({
             </Form.Item>
           </Col>
         </Row>
+
+        <Form.Item
+          label="Trạng thái hoạt động"
+          name="isActive"
+          valuePropName="checked"
+        >
+          <Switch
+            checkedChildren="Hoạt động"
+            unCheckedChildren="Không hoạt động"
+            defaultChecked={true}
+            className="bg-gray-300"
+          />
+        </Form.Item>
 
         <Form.Item
           label={<span className="text-gray-700 font-medium">Hình ảnh</span>}

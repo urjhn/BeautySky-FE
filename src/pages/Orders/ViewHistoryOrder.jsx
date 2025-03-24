@@ -110,37 +110,88 @@ const OrderHistory = () => {
 
   const handleCancelOrder = async (orderId) => {
     try {
-      // Hiển thị modal nhập lý do hủy đơn
+      // Danh sách các lý do hủy đơn phổ biến
+      const cancelReasons = [
+        'Muốn thay đổi sản phẩm',
+        'Muốn thay đổi địa chỉ giao hàng',
+        'Tìm thấy sản phẩm giá tốt hơn',
+        'Đặt nhầm sản phẩm',
+        'Thay đổi phương thức thanh toán',
+        'Không đủ kinh phí thanh toán',
+        'Lý do khác'
+      ];
+
+      // Tạo HTML cho radio buttons
+      const radioOptions = cancelReasons
+        .map((reason, index) => `
+          <div class="flex items-center mb-3">
+            <input type="radio" id="reason${index}" name="cancelReason" value="${reason}" 
+                   class="w-4 h-4 text-blue-600 cursor-pointer">
+            <label for="reason${index}" class="ml-2 text-gray-700 cursor-pointer">${reason}</label>
+          </div>
+        `)
+        .join('');
+
+      // Hiển thị modal với radio buttons và text area cho "Lý do khác"
       const { value: cancelReason, isConfirmed } = await Swal.fire({
         title: 'Xác nhận hủy đơn hàng',
         html: `
           <div class="text-left">
-            <p class="mb-2 text-gray-600">Vui lòng cho chúng tôi biết lý do bạn muốn hủy đơn hàng:</p>
-            <textarea 
-              id="cancelReason" 
-              class="w-full p-2 border rounded-lg focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-              placeholder="Nhập lý do hủy đơn hàng..."
-              rows="3"
-            ></textarea>
+            <p class="mb-4 text-gray-600 font-medium">Vui lòng chọn lý do hủy đơn hàng:</p>
+            <div class="max-h-48 overflow-y-auto mb-4 px-2">
+              ${radioOptions}
+            </div>
+            <div id="otherReasonContainer" class="hidden mt-4">
+              <p class="mb-2 text-gray-600">Vui lòng nêu rõ lý do:</p>
+              <textarea 
+                id="otherReason" 
+                class="w-full p-2 border rounded-lg focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                placeholder="Nhập lý do hủy đơn hàng..."
+                rows="3"
+              ></textarea>
+            </div>
           </div>
         `,
+        didOpen: () => {
+          // Xử lý hiển thị/ẩn textarea khi chọn "Lý do khác"
+          const radioButtons = document.getElementsByName('cancelReason');
+          const otherReasonContainer = document.getElementById('otherReasonContainer');
+          
+          radioButtons.forEach(radio => {
+            radio.addEventListener('change', (e) => {
+              if (e.target.value === 'Lý do khác') {
+                otherReasonContainer.classList.remove('hidden');
+              } else {
+                otherReasonContainer.classList.add('hidden');
+              }
+            });
+          });
+        },
         showCancelButton: true,
         confirmButtonText: 'Xác nhận hủy',
         cancelButtonText: 'Đóng',
         confirmButtonColor: '#d33',
         cancelButtonColor: '#3085d6',
         preConfirm: () => {
-          const reason = document.getElementById('cancelReason').value;
-          if (!reason.trim()) {
-            Swal.showValidationMessage('Vui lòng nhập lý do hủy đơn hàng');
+          const selectedReason = document.querySelector('input[name="cancelReason"]:checked')?.value;
+          if (!selectedReason) {
+            Swal.showValidationMessage('Vui lòng chọn lý do hủy đơn hàng');
             return false;
           }
-          return reason;
+          if (selectedReason === 'Lý do khác') {
+            const otherReason = document.getElementById('otherReason').value.trim();
+            if (!otherReason) {
+              Swal.showValidationMessage('Vui lòng nhập lý do hủy đơn hàng');
+              return false;
+            }
+            return otherReason;
+          }
+          return selectedReason;
         },
         allowOutsideClick: () => !Swal.isLoading()
       });
 
-      // Nếu người dùng xác nhận và nhập lý do
+      // Nếu người dùng xác nhận và chọn lý do
       if (isConfirmed && cancelReason) {
         // Hiển thị loading
         Swal.fire({
@@ -163,7 +214,7 @@ const OrderHistory = () => {
                   ...order,
                   status: 'Cancelled',
                   cancelledDate: new Date().toISOString(),
-                  cancelledReason: response.cancelledReason// Thêm cancelDate để hiển thị
+                  cancelledReason: cancelReason
                 }
               : order
           )

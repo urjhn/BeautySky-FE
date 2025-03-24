@@ -531,114 +531,210 @@ const handleDelete = async (questionId) => {
 };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-100 via-purple-50 to-pink-100 p-8">
-      <header className="text-center mb-12">
-      <div className="w-20 h-20 mx-auto mb-6 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full flex items-center justify-center transform hover:scale-105 transition-transform duration-300 shadow-lg">
-          <FiSearch className="w-8 h-8 text-white" />
+    <div className="min-h-screen bg-gradient-to-br from-indigo-100 via-purple-50 to-pink-100 p-4 md:p-8">
+      <header className="text-center mb-8 md:mb-12">
+        <div className="w-16 h-16 md:w-20 md:h-20 mx-auto mb-4 md:mb-6 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full flex items-center justify-center transform hover:scale-105 transition-transform duration-300 shadow-lg">
+          <FiSearch className="w-6 h-6 md:w-8 md:h-8 text-white" />
         </div>
-        <h1 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">Quản lý Q&A</h1>
+        <h1 className="text-2xl md:text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">
+          Quản lý Q&A
+        </h1>
       </header>
 
-      <div className="max-w-6xl mx-auto bg-white rounded-xl shadow-2xl p-8 backdrop-blur-sm bg-opacity-90">
-        <div className="flex flex-col md:flex-row gap-6 mb-8">
+      <div className="max-w-6xl mx-auto bg-white rounded-xl shadow-2xl p-4 md:p-8 backdrop-blur-sm bg-opacity-90">
+        <div className="flex flex-col md:flex-row gap-4 md:gap-6 mb-6 md:mb-8">
           <div className="flex-1 relative">
             <FiSearch className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" />
             <input
               type="text"
-              placeholder="Tìm theo câu hỏi, câu trả lời, loại da, điểm số..."
-              className="w-full pl-12 pr-4 py-3 border-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300"
+              placeholder="Tìm kiếm..."
+              className="w-full pl-12 pr-4 py-2 md:py-3 border-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
           <button
             onClick={handleAddNewQA}
-            className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-8 py-3 rounded-xl flex items-center gap-3 hover:from-blue-700 hover:to-purple-700 transition-all duration-300 shadow-md hover:shadow-lg transform hover:scale-105"
+            className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-4 md:px-8 py-2 md:py-3 rounded-xl flex items-center justify-center gap-2 md:gap-3 hover:from-blue-700 hover:to-purple-700 transition-all duration-300 shadow-md hover:shadow-lg transform hover:scale-105"
           >
-            <FiPlus className="w-5 h-5" /> Thêm mới Q&A
+            <FiPlus className="w-5 h-5" /> 
+            <span>Thêm mới Q&A</span>
           </button>
         </div>
 
-        {displayedSets.length === 0 ? (
-          <div className="text-center py-16 bg-gray-50 rounded-xl">
-            <p className="text-gray-600 text-xl mb-4 font-semibold">Không tìm thấy câu hỏi nào</p>
-            <p className="text-gray-400">Hãy tạo câu hỏi đầu tiên của bạn!</p>
-          </div>
-        ) :  (
-          <div className="overflow-x-auto rounded-xl border border-gray-100">
-            <table className="w-full">
-              <thead>
-                <tr className="bg-gradient-to-r from-gray-50 to-gray-100">
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">STT</th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">Câu hỏi</th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">Câu trả lời</th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">Loại da</th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">Điểm</th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">Thao tác</th>
-                </tr>
-              </thead>
-              <tbody>
-                {displayedSets.map((set) => (
-                  set.questions.map((question, qIndex) => (
-                    <tr key={question.questionId} className="border-b hover:bg-gray-50 transition-colors duration-200">
-                      <td className="px-6 py-5 font-medium">{question.orderNumber}</td>
-                      <td className="px-6 py-5">{question.questionText}</td>
-                      <td className="px-6 py-5">
-                        <div className="grid grid-cols-1 gap-2">
-                          {question.answers.map((answer, i) => (
-                            answer.answerText && <div key={answer.answerId || i} className="text-sm">{answer.answerText}</div>
-                          ))}
+        <div className="md:hidden">
+          {displayedSets.map((set) =>
+            set.questions.map((question, qIndex) => (
+              <div
+                key={question.questionId}
+                className="bg-white rounded-lg shadow-md p-4 mb-4 border border-gray-100"
+              >
+                <div className="flex justify-between items-start mb-3">
+                  <span className="bg-blue-100 text-blue-800 text-sm font-medium px-2.5 py-0.5 rounded">
+                    #{question.orderNumber}
+                  </span>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => handleEdit(set)}
+                      className="text-blue-600 p-2 hover:bg-blue-50 rounded-full"
+                    >
+                      <FiEdit2 className="w-5 h-5" />
+                    </button>
+                    <button
+                      onClick={() => handleDelete(question.questionId)}
+                      className="text-red-600 p-2 hover:bg-red-50 rounded-full"
+                    >
+                      <FiTrash2 className="w-5 h-5" />
+                    </button>
+                  </div>
+                </div>
+
+                <h3 className="font-medium text-gray-800 mb-3">
+                  {question.questionText}
+                </h3>
+
+                <div className="space-y-2">
+                  {question.answers.map((answer, i) => (
+                    answer.answerText && (
+                      <div
+                        key={answer.answerId || i}
+                        className="bg-gray-50 p-3 rounded-lg"
+                      >
+                        <p className="text-sm text-gray-700">{answer.answerText}</p>
+                        <div className="flex justify-between mt-2 text-xs text-gray-500">
+                          <span>Loại da: {answer.skinTypeId || "N/A"}</span>
+                          <span>Điểm: {answer.point || "0"}</span>
                         </div>
-                      </td>
-                      <td className="px-6 py-5">
-                        <div className="grid grid-cols-1 gap-2">
-                          {question.answers.map((answer, i) => (
-                            answer.answerText && <div key={answer.answerId || i} className="text-sm">{answer.skinTypeId}</div>
-                          ))}
-                        </div>
-                      </td>
-                      <td className="px-6 py-5">
-                        <div className="grid grid-cols-1 gap-2">
-                          {question.answers.map((answer, i) => (
-                            answer.answerText && <div key={answer.answerId || i} className="text-sm">{answer.point}</div>
-                          ))}
-                        </div>
-                      </td>
-                      <td className="px-6 py-5">
-                        <div className="flex gap-4">
-                          <button
-                            onClick={() => handleEdit(set)}
-                            className="text-blue-600 hover:text-blue-800 p-2 hover:bg-blue-50 rounded-full transition-all duration-200"
-                          >
-                            <FiEdit2 className="w-5 h-5" />
-                          </button>
-                          <button
-                            onClick={() => handleDelete(question.questionId)}
-                            className="text-red-600 hover:text-red-800 p-2 hover:bg-red-50 rounded-full transition-all duration-200"
-                          >
-                            <FiTrash2 className="w-5 h-5" />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))
-                ))}
-              </tbody>
-            </table>
+                      </div>
+                    )
+                  ))}
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+
+        <div className="hidden md:block overflow-x-auto rounded-xl border border-gray-100">
+          <table className="w-full">
+            <thead>
+              <tr className="bg-gradient-to-r from-gray-50 to-gray-100">
+                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">STT</th>
+                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">Câu hỏi</th>
+                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">Câu trả lời</th>
+                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">Loại da</th>
+                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">Điểm</th>
+                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">Thao tác</th>
+              </tr>
+            </thead>
+            <tbody>
+              {displayedSets.map((set) => (
+                set.questions.map((question, qIndex) => (
+                  <tr key={question.questionId} className="border-b hover:bg-gray-50 transition-colors duration-200">
+                    <td className="px-6 py-5 font-medium">{question.orderNumber}</td>
+                    <td className="px-6 py-5">{question.questionText}</td>
+                    <td className="px-6 py-5">
+                      <div className="grid grid-cols-1 gap-2">
+                        {question.answers.map((answer, i) => (
+                          answer.answerText && <div key={answer.answerId || i} className="text-sm">{answer.answerText}</div>
+                        ))}
+                      </div>
+                    </td>
+                    <td className="px-6 py-5">
+                      <div className="grid grid-cols-1 gap-2">
+                        {question.answers.map((answer, i) => (
+                          answer.answerText && <div key={answer.answerId || i} className="text-sm">{answer.skinTypeId}</div>
+                        ))}
+                      </div>
+                    </td>
+                    <td className="px-6 py-5">
+                      <div className="grid grid-cols-1 gap-2">
+                        {question.answers.map((answer, i) => (
+                          answer.answerText && <div key={answer.answerId || i} className="text-sm">{answer.point}</div>
+                        ))}
+                      </div>
+                    </td>
+                    <td className="px-6 py-5">
+                      <div className="flex gap-4">
+                        <button
+                          onClick={() => handleEdit(set)}
+                          className="text-blue-600 hover:text-blue-800 p-2 hover:bg-blue-50 rounded-full transition-all duration-200"
+                        >
+                          <FiEdit2 className="w-5 h-5" />
+                        </button>
+                        <button
+                          onClick={() => handleDelete(question.questionId)}
+                          className="text-red-600 hover:text-red-800 p-2 hover:bg-red-50 rounded-full transition-all duration-200"
+                        >
+                          <FiTrash2 className="w-5 h-5" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        {totalPages > 1 && (
+          <div className="mt-6 md:mt-8 flex justify-center gap-2 md:gap-3 flex-wrap">
+            <button
+              onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+              className={`w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center transition-all duration-300 ${
+                currentPage === 1
+                  ? "bg-gray-200 text-gray-500 cursor-not-allowed"
+                  : "bg-white text-gray-700 hover:bg-gray-100 shadow"
+              }`}
+              disabled={currentPage === 1}
+            >
+              ‹
+            </button>
+
+            {[...Array(totalPages)].map((_, i) => {
+              if (
+                i + 1 === 1 ||
+                i + 1 === totalPages ||
+                (i + 1 >= currentPage - 1 && i + 1 <= currentPage + 1)
+              ) {
+                return (
+                  <button
+                    key={i}
+                    onClick={() => setCurrentPage(i + 1)}
+                    className={`w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center transition-all duration-300 ${
+                      currentPage === i + 1
+                        ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-md"
+                        : "bg-white text-gray-700 hover:bg-gray-100 shadow"
+                    }`}
+                  >
+                    {i + 1}
+                  </button>
+                );
+              }
+              if (i + 1 === currentPage - 2 || i + 1 === currentPage + 2) {
+                return (
+                  <span key={i} className="px-1 text-gray-500">
+                    ...
+                  </span>
+                );
+              }
+              return null;
+            })}
+
+            <button
+              onClick={() =>
+                setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+              }
+              className={`w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center transition-all duration-300 ${
+                currentPage === totalPages
+                  ? "bg-gray-200 text-gray-500 cursor-not-allowed"
+                  : "bg-white text-gray-700 hover:bg-gray-100 shadow"
+              }`}
+              disabled={currentPage === totalPages}
+            >
+              ›
+            </button>
           </div>
         )}
-
-        <div className="mt-8 flex justify-center gap-3">
-          {Array.from({ length: totalPages }, (_, i) => (
-            <button
-              key={i + 1}
-              onClick={() => setCurrentPage(i + 1)}
-              className={`px-4 py-2 rounded-lg transition-all duration-300 ${currentPage === i + 1 ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-md" : "bg-gray-100 hover:bg-gray-200"}`}
-            >
-              {i + 1}
-            </button>
-          ))}
-        </div>
       </div>
 
       {isModalOpen && (

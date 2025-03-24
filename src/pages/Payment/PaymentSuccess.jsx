@@ -6,9 +6,8 @@ import Navbar from '../../components/Navbar/Navbar.jsx';
 import Footer from '../../components/Footer/Footer.jsx';
 
 const PaymentSuccess = () => {
-    const location = useLocation();
+    const { state } = useLocation();
     const navigate = useNavigate();
-    const { orderId, message } = location.state || {};
 
     // Hiệu ứng confetti khi component được mount
     React.useEffect(() => {
@@ -38,13 +37,12 @@ const PaymentSuccess = () => {
                 <div className="space-y-4 mb-8">
                     <div className="bg-gray-50 p-4 rounded-lg">
                         <p className="text-gray-600">Mã đơn hàng:</p>
-                        <p className="font-bold text-gray-800 text-lg">{orderId}</p>
+                        <p className="font-bold text-gray-800 text-lg">{state?.orderId}</p>
                     </div>
-                    {message && (
-                        <div className="bg-green-50 border border-green-100 rounded-lg p-4">
-                            <p className="text-green-600">{message}</p>
-                        </div>
-                    )}
+                    <div className="bg-gray-50 p-4 rounded-lg">
+                        <p className="text-gray-600">Trạng thái:</p>
+                        <p className="font-bold text-gray-800 text-lg">{state?.status}</p>
+                    </div>
                 </div>
 
                 {/* Nút điều hướng */}

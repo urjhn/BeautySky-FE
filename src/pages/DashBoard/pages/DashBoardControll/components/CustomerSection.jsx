@@ -4,22 +4,22 @@ import CustomersChart from '../../../charts/CustomersChart';
 
 const CustomerSection = ({ customerGrowth, users }) => {
   return (
-    <div className="bg-white p-6 rounded-xl shadow-lg hover:shadow-xl transition-shadow">
-      <div className="flex items-center justify-between mb-6">
+    <div className="bg-white p-4 md:p-6 rounded-xl shadow-lg hover:shadow-xl transition-shadow">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 md:mb-6 gap-3">
         <div className="flex items-center gap-3">
-          <div className="p-2.5 bg-purple-500/10 rounded-lg">
-            <FaUsers className="text-purple-600 text-xl" />
+          <div className="p-2 md:p-2.5 bg-purple-500/10 rounded-lg">
+            <FaUsers className="text-purple-600 text-lg md:text-xl" />
           </div>
           <div>
-            <h3 className="text-lg font-semibold text-gray-800">Phân tích Khách hàng</h3>
-            <p className="text-sm text-gray-500">
+            <h3 className="text-base md:text-lg font-semibold text-gray-800">Phân tích Khách hàng</h3>
+            <p className="text-xs md:text-sm text-gray-500">
               Tổng số khách hàng: {users.length}
             </p>
           </div>
         </div>
       </div>
 
-      <div className="w-full h-[400px] relative">
+      <div className="w-full h-[300px] md:h-[400px] relative">
         {customerGrowth.length > 0 ? (
           <CustomersChart 
             customerGrowth={customerGrowth}
