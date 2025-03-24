@@ -2,6 +2,7 @@ import { useState } from "react";
 import Navbar from "../../components/Navbar/Navbar";
 import Footer from "../../components/Footer/Footer";
 import emailjs from "@emailjs/browser";
+import Swal from "sweetalert2";
 
 function Contact() {
   const [formData, setFormData] = useState({
@@ -14,24 +15,53 @@ function Contact() {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    emailjs
-      .send(
+
+    Swal.fire({
+      title: 'Đang gửi tin nhắn...',
+      allowOutsideClick: false,
+      didOpen: () => {
+        Swal.showLoading();
+      },
+    });
+
+    try {
+      await emailjs.send(
         "service_edmj94n",
         "template_k2jb624",
         formData,
         "e2x2f8jJ_FfGoarLU"
-      )
-      .then(
-        () => {
-          alert("Tin nhắn đã được gửi thành công!");
-          setFormData({ name: "", email: "", message: "" });
-        },
-        (error) => {
-          console.error("Email gửi thất bại: ", error.text);
-        }
       );
+
+      await Swal.fire({
+        icon: 'success',
+        title: 'Thành công!',
+        text: 'Tin nhắn của bạn đã được gửi thành công.',
+        showConfirmButton: false,
+        timer: 1500,
+        background: '#fff',
+        customClass: {
+          popup: 'animated fadeInDown'
+        }
+      });
+
+      setFormData({ name: "", email: "", message: "" });
+
+    } catch (error) {
+      console.error("Email gửi thất bại: ", error.text);
+      
+      await Swal.fire({
+        icon: 'error',
+        title: 'Có lỗi xảy ra!',
+        text: 'Không thể gửi tin nhắn của bạn. Vui lòng thử lại sau.',
+        confirmButtonColor: '#6bbcfe',
+        background: '#fff',
+        customClass: {
+          popup: 'animated fadeInDown'
+        }
+      });
+    }
   };
 
   return (

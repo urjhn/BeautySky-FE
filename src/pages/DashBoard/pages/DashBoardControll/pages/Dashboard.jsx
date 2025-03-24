@@ -24,25 +24,14 @@ const Dashboard = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
-      <div className="flex-1 flex flex-col p-4 md:p-6 space-y-6 md:space-y-8">
-        <Header 
-          timeFrame={timeFrame} 
-          onTimeFrameChange={setTimeFrame} 
-        />
+      <div className="flex-1 flex flex-col p-4 md:p-6 space-y-4 md:space-y-8">
+        <Header timeFrame={timeFrame} onTimeFrameChange={setTimeFrame} />
 
-        <StatisticsCards 
-          users={users} 
-          orders={orders} 
-          products={products} 
-          revenue={revenue} 
-        />
+        <StatisticsCards users={users} orders={orders} products={products} revenue={revenue} />
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-8">
           <RevenueSection revenueGrowth={revenueGrowth} />
-          <CustomerSection 
-            customerGrowth={customerGrowth} 
-            users={users} 
-          />
+          <CustomerSection customerGrowth={customerGrowth} users={users} />
         </div>
 
         <InsightsSection 

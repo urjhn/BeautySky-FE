@@ -152,32 +152,34 @@ const RoutineController = () => {
   };
   
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-100 p-6">
-      <header className="text-center mb-12">
-        <h1 className="text-4xl font-semibold text-gray-800 tracking-wide">Quản Lý Các Bước Chăm Sóc Da</h1>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-100 p-4 md:p-6">
+      <header className="text-center mb-8 md:mb-12">
+        <h1 className="text-2xl md:text-4xl font-semibold text-gray-800 tracking-wide">
+          Quản Lý Các Bước Chăm Sóc Da
+        </h1>
       </header>
 
-      <div className="max-w-6xl mx-auto bg-white rounded-2xl shadow-xl p-8">
+      <div className="max-w-6xl mx-auto bg-white rounded-2xl shadow-xl p-4 md:p-8">
         {error && (
           <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
             {error}
           </div>
         )}
         
-        <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
+        <div className="flex flex-col md:flex-row justify-between items-center mb-6 md:mb-8 gap-4">
           <div className="relative flex-1 w-full">
             <FiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500" />
             <input
               type="text"
-              placeholder="Tìm theo tên bước, mô tả, thứ tự, loại da..."
-              className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
+              placeholder="Tìm kiếm..."
+              className="w-full pl-10 pr-4 py-2 md:py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
           <button
             onClick={() => setIsModalOpen(true)}
-            className="flex items-center gap-2 px-5 py-3 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-colors"
+            className="w-full md:w-auto flex items-center justify-center gap-2 px-5 py-3 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-colors"
             disabled={isLoading}
           >
             <FiPlus /> Thêm Bước Mới
@@ -190,56 +192,105 @@ const RoutineController = () => {
           </div>
         )}
 
-        {!isLoading && (
-          <div className="overflow-x-auto">
-            <table className="w-full table-auto border-separate space-y-6">
-              <thead>
-                <tr className="bg-indigo-100 text-gray-600">
-                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">ID</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Loại Da</th>
-                  <th className="px-6 py-3 text-center text-xs font-medium uppercase tracking-wider">Thứ tự bước trong mỗi loại da</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Tên Bước</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Mô Tả</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Hành Động</th>
+        {/* Mobile View */}
+        <div className="md:hidden">
+          {sortedFilteredSteps.map((step, index) => (
+            <div key={step.stepId} className="bg-white rounded-lg shadow-md p-4 mb-4 border border-gray-100">
+              <div className="flex justify-between items-start mb-3">
+                <div>
+                  <span className="bg-gray-100 text-gray-600 text-xs font-medium px-2 py-1 rounded-full">
+                    #{index + 1}
+                  </span>
+                  <span className={`ml-2 inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${getSkinTypeColor(step.carePlanId)}`}>
+                    {skinTypes[step.carePlanId] || `Loại ${step.carePlanId}`}
+                  </span>
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => {
+                      setFormData(step);
+                      setIsModalOpen(true);
+                    }}
+                    className="p-2 text-indigo-600 hover:bg-indigo-50 rounded-full"
+                  >
+                    <FiEdit2 className="w-5 h-5" />
+                  </button>
+                  <button
+                    onClick={() => handleDelete(step.stepId)}
+                    className="p-2 text-red-600 hover:bg-red-50 rounded-full"
+                  >
+                    <FiTrash2 className="w-5 h-5" />
+                  </button>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <div>
+                  <label className="text-xs text-gray-500">Thứ tự bước:</label>
+                  <p className="font-medium">{step.stepOrder}</p>
+                </div>
+                <div>
+                  <label className="text-xs text-gray-500">Tên bước:</label>
+                  <p className="font-medium">{step.stepName}</p>
+                </div>
+                <div>
+                  <label className="text-xs text-gray-500">Mô tả:</label>
+                  <p className="text-sm text-gray-600">{step.stepDescription}</p>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Desktop/Tablet View */}
+        <div className="hidden md:block overflow-x-auto">
+          <table className="w-full table-auto border-separate space-y-6">
+            <thead>
+              <tr className="bg-indigo-100 text-gray-600">
+                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">ID</th>
+                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Loại Da</th>
+                <th className="px-6 py-3 text-center text-xs font-medium uppercase tracking-wider">Thứ tự bước trong mỗi loại da</th>
+                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Tên Bước</th>
+                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Mô Tả</th>
+                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Hành Động</th>
+              </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {sortedFilteredSteps.map((step, index) => (
+                <tr key={step.stepId} className="hover:bg-gray-50">
+                  <td className="px-6 py-4">{index + 1}</td>
+                  <td className="px-6 py-4">
+                    <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${getSkinTypeColor(step.carePlanId)}`}>
+                      {skinTypes[step.carePlanId] || `Loại ${step.carePlanId}`}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 text-center">{step.stepOrder}</td>
+                  <td className="px-6 py-4">{step.stepName}</td>
+                  <td className="px-6 py-4">{step.stepDescription}</td>
+                  <td className="px-6 py-4">
+                    <div className="flex items-center gap-3">
+                      <button
+                        onClick={() => {
+                          setFormData(step);
+                          setIsModalOpen(true);
+                        }}
+                        className="text-indigo-600 hover:text-indigo-800 transition-colors"
+                      >
+                        <FiEdit2 />
+                      </button>
+                      <button
+                        onClick={() => handleDelete(step.stepId)}
+                        className="text-red-600 hover:text-red-800 transition-colors"
+                      >
+                        <FiTrash2 />
+                      </button>
+                    </div>
+                  </td>
                 </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {sortedFilteredSteps.map((step, index) => (
-                  <tr key={step.stepId} className="hover:bg-gray-50">
-                    <td className="px-6 py-4">{index + 1}</td>
-                    <td className="px-6 py-4">
-                      <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${getSkinTypeColor(step.carePlanId)}`}>
-                        {skinTypes[step.carePlanId] || `Loại ${step.carePlanId}`}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-center">{step.stepOrder}</td>
-                    <td className="px-6 py-4">{step.stepName}</td>
-                    <td className="px-6 py-4">{step.stepDescription}</td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-3">
-                        <button
-                          onClick={() => {
-                            setFormData(step);
-                            setIsModalOpen(true);
-                          }}
-                          className="text-indigo-600 hover:text-indigo-800 transition-colors"
-                        >
-                          <FiEdit2 />
-                        </button>
-                        <button
-                          onClick={() => handleDelete(step.stepId)}
-                          className="text-red-600 hover:text-red-800 transition-colors"
-                        >
-                          <FiTrash2 />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
+              ))}
+            </tbody>
+          </table>
+        </div>
 
         {!isLoading && filteredSteps.length === 0 && (
           <div className="text-center py-10">
@@ -249,19 +300,19 @@ const RoutineController = () => {
       </div>
 
       {isModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-6">
-          <div className="bg-white rounded-2xl p-8 max-w-2xl w-full shadow-xl">
-            <h2 className="text-3xl font-semibold mb-6 text-gray-900">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 md:p-6 z-50">
+          <div className="bg-white rounded-2xl p-4 md:p-8 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <h2 className="text-2xl md:text-3xl font-semibold mb-4 md:mb-6 text-gray-900">
               {formData.stepId ? "Chỉnh Sửa" : "Thêm"} Bước
             </h2>
-            <form onSubmit={handleSubmit} className="space-y-6">
+            <form onSubmit={handleSubmit} className="space-y-4 md:space-y-6">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Loại Da</label>
                 <select
                   required
                   value={formData.carePlanId}
                   onChange={(e) => setFormData({ ...formData, carePlanId: parseInt(e.target.value) })}
-                  className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                  className="w-full p-2 md:p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none"
                 >
                   {Object.entries(skinTypes).map(([id, name]) => (
                     <option key={id} value={id}>
@@ -303,10 +354,10 @@ const RoutineController = () => {
                 />
               </div>
 
-              <div className="flex gap-4">
+              <div className="flex flex-col md:flex-row gap-4">
                 <button
                   type="submit"
-                  className="flex-1 bg-indigo-600 text-white py-3 px-6 rounded-xl hover:bg-indigo-700 transition-all"
+                  className="w-full md:flex-1 bg-indigo-600 text-white py-2 md:py-3 px-6 rounded-xl hover:bg-indigo-700 transition-all"
                   disabled={isLoading}
                 >
                   {isLoading ? "Đang xử lý..." : formData.stepId ? "Cập Nhật" : "Thêm Mới"}
@@ -314,7 +365,7 @@ const RoutineController = () => {
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="flex-1 bg-gray-200 text-gray-800 py-3 px-6 rounded-xl hover:bg-gray-300 transition-all"
+                  className="w-full md:flex-1 bg-gray-200 text-gray-800 py-2 md:py-3 px-6 rounded-xl hover:bg-gray-300 transition-all"
                   disabled={isLoading}
                 >
                   Hủy
