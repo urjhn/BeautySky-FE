@@ -11,23 +11,23 @@ const PaymentCallback = () => {
     const [error, setError] = useState(null);
 
     useEffect(() => {
-        // Lấy thông tin từ URL query parameters
         const queryParams = new URLSearchParams(location.search);
         const responseCode = queryParams.get('vnp_ResponseCode');
         const orderId = queryParams.get('orderId');
+        const status = queryParams.get('status');
 
-        // Nếu có responseCode, xử lý theo callback từ VNPay
         if (responseCode) {
             if (responseCode === '00') {
-                // Thanh toán thành công, chuyển hướng đến trang success
+                // Thanh toán thành công
                 navigate('/paymentsuccess', {
                     state: {
                         orderId: queryParams.get('vnp_TxnRef'),
-                        message: 'Thanh toán thành công!'
+                        message: 'Thanh toán thành công!',
+                        status: 'Completed' // Thêm status vào state
                     }
                 });
             } else {
-                // Thanh toán thất bại, chuyển hướng đến trang failed
+                // Thanh toán thất bại
                 navigate('/paymentfailed', {
                     state: {
                         error: 'Thanh toán thất bại: ' + (responseCode === '24' ? 'Giao dịch bị hủy' : 'Lỗi thanh toán'),
@@ -36,14 +36,14 @@ const PaymentCallback = () => {
                 });
             }
         } 
-        // Nếu không có responseCode nhưng có orderId (đã được redirect từ backend)
         else if (orderId) {
             const message = queryParams.get('message');
             if (location.pathname.includes('paymentsuccess')) {
                 navigate('/paymentsuccess', {
                     state: {
                         orderId: orderId,
-                        message: 'Thanh toán thành công!'
+                        message: 'Thanh toán thành công!',
+                        status: status || 'Completed' // Sử dụng status từ BE hoặc mặc định là Completed
                     }
                 });
             } else {

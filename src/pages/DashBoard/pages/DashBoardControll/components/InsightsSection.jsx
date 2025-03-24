@@ -10,7 +10,7 @@ const InsightsSection = ({
   onMonthChange 
 }) => {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
       <ConversionCard conversionRate={conversionRate} orders={orders} />
       <ProfitCard profitRate={profitRate} revenue={revenue} />
       <ProductAnalysisCard 
@@ -111,8 +111,8 @@ const ProductAnalysisCard = ({ orders, selectedMonth, onMonthChange }) => {
   const sortedProducts = productStats.sort((a, b) => b.revenue - a.revenue).slice(0, 5);
 
   return (
-    <div className="bg-white p-6 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300">
-      <div className="flex items-center justify-between mb-4">
+    <div className="bg-white p-4 md:p-6 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 gap-3">
         <div className="flex items-center gap-3">
           <div className="p-2 bg-orange-100 rounded-lg">
             <FaChartBar className="text-orange-500 text-xl" />
@@ -136,59 +136,58 @@ const ProductAnalysisCard = ({ orders, selectedMonth, onMonthChange }) => {
         </select>
       </div>
 
-      {/* Thêm phần thống kê cơ bản */}
-      <div className="grid grid-cols-3 gap-4 mb-6">
-  <div className="bg-blue-50 p-4 rounded-lg">
-    <div className="flex items-center gap-2 mb-1">
-      <FaShoppingBag className="text-blue-500" />
-      <p className="text-sm text-gray-600">Tổng đơn hàng</p>
-    </div>
-    <p className="text-xl font-semibold text-gray-800">
-      {monthlyStats.totalOrders} đơn
-    </p>
-    <div className="flex flex-col text-xs text-gray-500 mt-1">
-      <span className="text-green-600">
-        {monthlyStats.completedOrders} hoàn thành
-      </span>
-      <span className="text-yellow-600">
-        {monthlyStats.pendingOrders} đang xử lý
-      </span>
-    </div>
-  </div>
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6">
+        <div className="bg-blue-50 p-4 rounded-lg">
+          <div className="flex items-center gap-2 mb-1">
+            <FaShoppingBag className="text-blue-500" />
+            <p className="text-sm text-gray-600">Tổng đơn hàng</p>
+          </div>
+          <p className="text-xl font-semibold text-gray-800">
+            {monthlyStats.totalOrders} đơn
+          </p>
+          <div className="flex flex-col text-xs text-gray-500 mt-1">
+            <span className="text-green-600">
+              {monthlyStats.completedOrders} hoàn thành
+            </span>
+            <span className="text-yellow-600">
+              {monthlyStats.pendingOrders} đang xử lý
+            </span>
+          </div>
+        </div>
 
-  <div className="bg-purple-50 p-4 rounded-lg">
-    <div className="flex items-center gap-2 mb-1">
-      <FaMoneyBillWave className="text-purple-500" />
-      <p className="text-sm text-gray-600">Doanh thu</p>
-    </div>
-    <p className="text-xl font-semibold text-gray-800">
-      {formatCurrency(monthlyStats.totalRevenue)}
-    </p>
-    <div className="flex flex-col text-xs text-gray-500 mt-1">
-      <span>TB {formatCurrency(monthlyStats.averageOrderValue)}/đơn</span>
-    </div>
-  </div>
+        <div className="bg-purple-50 p-4 rounded-lg">
+          <div className="flex items-center gap-2 mb-1">
+            <FaMoneyBillWave className="text-purple-500" />
+            <p className="text-sm text-gray-600">Doanh thu</p>
+          </div>
+          <p className="text-xl font-semibold text-gray-800">
+            {formatCurrency(monthlyStats.totalRevenue)}
+          </p>
+          <div className="flex flex-col text-xs text-gray-500 mt-1">
+            <span>TB {formatCurrency(monthlyStats.averageOrderValue)}/đơn</span>
+          </div>
+        </div>
 
-  <div className="bg-yellow-50 p-4 rounded-lg">
-    <div className="flex items-center gap-2 mb-1">
-      <FaPercentage className="text-yellow-500" />
-      <p className="text-sm text-gray-600">Thanh toán</p>
-    </div>
-    <p className="text-xl font-semibold text-gray-800">
-      {monthlyStats.paidOrders} đơn
-      <span className="text-sm text-green-600 ml-2">
-        ({((monthlyStats.paidOrders / monthlyStats.totalOrders) * 100 || 0).toFixed(1)}%)
-      </span>
-    </p>
-    <div className="flex flex-col text-xs text-gray-500 mt-1">
-      <span className="text-red-600">
-        {monthlyStats.totalOrders - monthlyStats.paidOrders} chưa thanh toán
-      </span>
-    </div>
-  </div>
-</div>
+        <div className="bg-yellow-50 p-4 rounded-lg">
+          <div className="flex items-center gap-2 mb-1">
+            <FaPercentage className="text-yellow-500" />
+            <p className="text-sm text-gray-600">Thanh toán</p>
+          </div>
+          <p className="text-xl font-semibold text-gray-800">
+            {monthlyStats.paidOrders} đơn
+            <span className="text-sm text-green-600 ml-2">
+              ({((monthlyStats.paidOrders / monthlyStats.totalOrders) * 100 || 0).toFixed(1)}%)
+            </span>
+          </p>
+          <div className="flex flex-col text-xs text-gray-500 mt-1">
+            <span className="text-red-600">
+              {monthlyStats.totalOrders - monthlyStats.paidOrders} chưa thanh toán
+            </span>
+          </div>
+        </div>
+      </div>
 
-      <div className="space-y-4">
+      <div className="space-y-4 overflow-x-auto">
         {sortedProducts.map((product, index) => (
           <ProductItem 
             key={product.productId}

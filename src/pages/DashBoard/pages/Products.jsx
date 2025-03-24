@@ -44,7 +44,6 @@ const Products = () => {
    
        // Giả sử server trả về URL của ảnh đã tải lên
        const imageUrl = response.data.imageUrl; // Hoặc cấu trúc phù hợp với API của bạn
-       console.log("Ảnh đã được tải lên:", imageUrl);
    
        // Lưu URL này vào state hoặc xử lý theo nhu cầu của bạn
        setNewProduct(prev => [...prev, imageUrl]); // Cập nhật lại state để lưu URL ảnh
@@ -125,8 +124,6 @@ const Products = () => {
   );
 
   const handleDelete = async (productId) => {
-    console.log("Đang xóa với ID:", productId);
-
     if (!productId) {
       Swal.fire({
         title: "Lỗi!",
@@ -169,7 +166,6 @@ const Products = () => {
 const handleAddProduct = async (formData) => {
   try {
     setLoading(true);
-    console.log("Adding product with formData");
     
     const response = await productApi.createProduct(formData);
     

@@ -20,7 +20,6 @@ const authAPI = {
   register: async (user, navigate) => {
     try {
       const response = await axiosInstance.post(`${endPoint}/Register`, user);
-      console.log("Register response:", response.data);
       navigate("/login");
     } catch (err) {
       console.error("Register failed", err.response?.data || err.message);

@@ -109,31 +109,133 @@ const OrderHistory = () => {
   }
 
   const handleCancelOrder = async (orderId) => {
-    const confirmResult = await Swal.fire({
-      title: "Xác nhận hủy đơn?",
-      text: "Bạn có chắc muốn hủy đơn hàng này không?",
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonColor: "#d33",
-      cancelButtonColor: "#3085d6",
-      confirmButtonText: "Hủy đơn hàng",
-      cancelButtonText: "Giữ lại",
-    });
+    try {
+      // Danh sách các lý do hủy đơn phổ biến
+      const cancelReasons = [
+        'Muốn thay đổi sản phẩm',
+        'Muốn thay đổi địa chỉ giao hàng',
+        'Tìm thấy sản phẩm giá tốt hơn',
+        'Đặt nhầm sản phẩm',
+        'Thay đổi phương thức thanh toán',
+        'Không đủ kinh phí thanh toán',
+        'Lý do khác'
+      ];
 
-    if (confirmResult.isConfirmed) {
-      try {
-        await orderAPI.cancelOrder(orderId);
-        setOrders((prevOrders) =>
-          prevOrders.map((order) =>
+      // Tạo HTML cho radio buttons
+      const radioOptions = cancelReasons
+        .map((reason, index) => `
+          <div class="flex items-center mb-3">
+            <input type="radio" id="reason${index}" name="cancelReason" value="${reason}" 
+                   class="w-4 h-4 text-blue-600 cursor-pointer">
+            <label for="reason${index}" class="ml-2 text-gray-700 cursor-pointer">${reason}</label>
+          </div>
+        `)
+        .join('');
+
+      // Hiển thị modal với radio buttons và text area cho "Lý do khác"
+      const { value: cancelReason, isConfirmed } = await Swal.fire({
+        title: 'Xác nhận hủy đơn hàng',
+        html: `
+          <div class="text-left">
+            <p class="mb-4 text-gray-600 font-medium">Vui lòng chọn lý do hủy đơn hàng:</p>
+            <div class="max-h-48 overflow-y-auto mb-4 px-2">
+              ${radioOptions}
+            </div>
+            <div id="otherReasonContainer" class="hidden mt-4">
+              <p class="mb-2 text-gray-600">Vui lòng nêu rõ lý do:</p>
+              <textarea 
+                id="otherReason" 
+                class="w-full p-2 border rounded-lg focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                placeholder="Nhập lý do hủy đơn hàng..."
+                rows="3"
+              ></textarea>
+            </div>
+          </div>
+        `,
+        didOpen: () => {
+          // Xử lý hiển thị/ẩn textarea khi chọn "Lý do khác"
+          const radioButtons = document.getElementsByName('cancelReason');
+          const otherReasonContainer = document.getElementById('otherReasonContainer');
+          
+          radioButtons.forEach(radio => {
+            radio.addEventListener('change', (e) => {
+              if (e.target.value === 'Lý do khác') {
+                otherReasonContainer.classList.remove('hidden');
+              } else {
+                otherReasonContainer.classList.add('hidden');
+              }
+            });
+          });
+        },
+        showCancelButton: true,
+        confirmButtonText: 'Xác nhận hủy',
+        cancelButtonText: 'Đóng',
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        preConfirm: () => {
+          const selectedReason = document.querySelector('input[name="cancelReason"]:checked')?.value;
+          if (!selectedReason) {
+            Swal.showValidationMessage('Vui lòng chọn lý do hủy đơn hàng');
+            return false;
+          }
+          if (selectedReason === 'Lý do khác') {
+            const otherReason = document.getElementById('otherReason').value.trim();
+            if (!otherReason) {
+              Swal.showValidationMessage('Vui lòng nhập lý do hủy đơn hàng');
+              return false;
+            }
+            return otherReason;
+          }
+          return selectedReason;
+        },
+        allowOutsideClick: () => !Swal.isLoading()
+      });
+
+      // Nếu người dùng xác nhận và chọn lý do
+      if (isConfirmed && cancelReason) {
+        // Hiển thị loading
+        Swal.fire({
+          title: 'Đang xử lý...',
+          text: 'Vui lòng chờ trong giây lát',
+          allowOutsideClick: false,
+          didOpen: () => {
+            Swal.showLoading();
+          }
+        });
+
+        // Gọi API hủy đơn hàng với lý do
+        const response = await orderAPI.cancelOrder(orderId, cancelReason);
+
+        // Cập nhật state orders với thông tin mới
+        setOrders(prevOrders =>
+          prevOrders.map(order =>
             order.orderId === orderId
-              ? { ...order, status: "Cancelled" }
+              ? {
+                  ...order,
+                  status: 'Cancelled',
+                  cancelledDate: new Date().toISOString(),
+                  cancelledReason: cancelReason
+                }
               : order
           )
         );
-        Swal.fire("Đã hủy!", "Đơn hàng của bạn đã bị hủy.", "success");
-      } catch (error) {
-        Swal.fire("Lỗi!", error.message, "error");
+
+        // Thông báo thành công
+        await Swal.fire({
+          icon: 'success',
+          title: 'Đã hủy đơn hàng',
+          text: 'Đơn hàng của bạn đã được hủy thành công',
+          timer: 1500,
+          showConfirmButton: false
+        });
       }
+    } catch (error) {
+      console.error('Lỗi khi hủy đơn:', error);
+      Swal.fire({
+        icon: 'error',
+        title: 'Lỗi',
+        text: error.response?.data?.message || 'Không thể hủy đơn hàng. Vui lòng thử lại sau.'
+      });
     }
   };
 
@@ -229,27 +331,37 @@ const OrderHistory = () => {
                   </p>
                 </div>
 
-                {/* Nút Xem Chi Tiết */}
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  onClick={() => navigate(`/orderdetail/${order.orderId}`)}
-                  className="mt-4 w-full px-6 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg shadow-md hover:shadow-lg transition-all duration-300 flex items-center justify-center gap-2"
-                >
-                  <EyeIcon className="w-5 h-5" />
-                  Xem chi tiết
-                </motion.button>
-
-                {/* Nút Hủy Đơn Hàng */}
-                {order.status === "Pending" && (
+                <div className="mt-4 flex gap-3">
                   <motion.button
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    onClick={() => handleCancelOrder(order.orderId)}
-                    className="mt-4 w-full px-6 py-3 bg-red-500 text-white rounded-lg shadow-md hover:bg-red-600 transition-all duration-300"
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => navigate(`/orderdetail/${order.orderId}`)}
+                    className="flex-1 px-4 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg shadow-md hover:shadow-lg transition-all duration-300 flex items-center justify-center gap-2"
                   >
-                    Hủy đơn hàng
+                    <EyeIcon className="w-5 h-5" />
+                    Xem chi tiết
                   </motion.button>
+
+                  {order.status === "Pending" && (
+                    <motion.button
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      onClick={() => handleCancelOrder(order.orderId)}
+                      className="flex-1 px-4 py-3 bg-red-500 text-white rounded-lg shadow-md hover:bg-red-600 transition-all duration-300 flex items-center justify-center gap-2"
+                    >
+                      Hủy đơn hàng
+                    </motion.button>
+                  )}
+                </div>
+
+                {order.status === "Cancelled" && (
+                  <div className="mt-3 p-3 bg-red-50 rounded-lg">
+                    <p className="text-sm text-red-700 font-medium">Lý do hủy:</p>
+                    <p className="text-sm text-red-600">{order.cancelledReason || "Không có lý do"}</p>
+                    <p className="text-xs text-red-500 mt-1">
+                      Thời gian hủy: {dayjs(order.cancelledDate).format("DD/MM/YYYY HH:mm")}
+                    </p>
+                  </div>
                 )}
               </motion.div>
             ))}
@@ -308,36 +420,38 @@ const OrderHistory = () => {
                         >
                           {getStatusDisplay(order.status)}
                         </span>
+                        {order.status === "Cancelled" && (
+                          <div className="mt-2 text-xs text-red-600">
+                            <p className="font-medium">Lý do: {order.cancelledReason || "Không có lý do"}</p>
+                          </div>
+                        )}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap font-medium text-blue-600">
                         {formatCurrency(order.finalAmount)}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-center">
-                        <motion.button
-                          whileHover={{ scale: 1.05 }}
-                          whileTap={{ scale: 0.95 }}
-                          onClick={() =>
-                            navigate(
-                              `/profilelayout/orderdetail/${order.orderId}`
-                            )
-                          }
-                          className="inline-flex items-center px-6 py-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-full shadow-md hover:shadow-lg transition-all duration-300"
-                        >
-                          <EyeIcon className="w-5 h-5 mr-2" />
-                          Chi tiết
-                        </motion.button>
-
-                        {/* Nút Hủy đơn hàng */}
-                        {order.status === "Pending" && (
+                        <div className="flex items-center justify-center space-x-3">
                           <motion.button
                             whileHover={{ scale: 1.05 }}
                             whileTap={{ scale: 0.95 }}
-                            onClick={() => handleCancelOrder(order.orderId)}
-                            className="inline-flex items-center px-6 py-2 ml-3 bg-red-500 text-white rounded-full shadow-md hover:bg-red-600 transition-all duration-300"
+                            onClick={() => navigate(`/profilelayout/orderdetail/${order.orderId}`)}
+                            className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-full shadow-md hover:shadow-lg transition-all duration-300"
                           >
-                            Hủy đơn hàng
+                            <EyeIcon className="w-4 h-4 mr-2" />
+                            Chi tiết
                           </motion.button>
-                        )}
+
+                          {order.status === "Pending" && (
+                            <motion.button
+                              whileHover={{ scale: 1.05 }}
+                              whileTap={{ scale: 0.95 }}
+                              onClick={() => handleCancelOrder(order.orderId)}
+                              className="inline-flex items-center px-4 py-2 bg-red-500 text-white rounded-full shadow-md hover:bg-red-600 transition-all duration-300"
+                            >
+                              Hủy đơn
+                            </motion.button>
+                          )}
+                        </div>
                       </td>
                     </motion.tr>
                   ))}

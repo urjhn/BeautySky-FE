@@ -4,8 +4,8 @@ import RevenueChart from '../../../charts/RevenueChart';
 
 const RevenueSection = ({ revenueGrowth }) => {
   return (
-    <div className="bg-white p-6 rounded-xl shadow-lg hover:shadow-xl transition-shadow">
-      <div className="flex items-center justify-between mb-6">
+    <div className="bg-white p-4 md:p-6 rounded-xl shadow-lg hover:shadow-xl transition-shadow">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 md:mb-6 gap-3">
         <div className="flex items-center gap-3">
           <div className="p-2.5 bg-blue-500/10 rounded-lg">
             <FaChartLine className="text-blue-600 text-xl" />
@@ -33,7 +33,7 @@ const RevenueSection = ({ revenueGrowth }) => {
         </select>
       </div>
 
-      <div className="w-full h-[400px] relative">
+      <div className="w-full h-[300px] md:h-[400px] relative">
         {revenueGrowth.length > 0 ? (
           <RevenueChart 
             revenueGrowth={revenueGrowth}
@@ -76,7 +76,7 @@ const RevenueSection = ({ revenueGrowth }) => {
         )}
       </div>
 
-      <div className="grid grid-cols-3 gap-4 mt-6 pt-6 border-t border-gray-100">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-4 md:mt-6 pt-4 md:pt-6 border-t border-gray-100">
         <div className="text-center">
           <p className="text-sm text-gray-500">Tháng cao nhất</p>
           <p className="text-lg font-semibold text-blue-600">

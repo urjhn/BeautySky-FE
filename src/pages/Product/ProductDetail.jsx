@@ -60,7 +60,6 @@ const ProductDetail = () => {
         
         setRelatedProducts(related);
       } else {
-        console.log("Không tìm thấy sản phẩm với ID:", id);
       }
     } catch (error) {
       console.error("Lỗi khi tải chi tiết sản phẩm:", error);
@@ -194,11 +193,6 @@ const ProductDetail = () => {
     try {
       // Kiểm tra và đảm bảo userId là số
       const userId = user?.userId;
-      
-      // Debug để kiểm tra giá trị
-      console.log('User object:', user);
-      console.log('Raw userId:', userId);
-      console.log('Type of userId:', typeof userId);
 
       if (!userId || isNaN(userId)) {
         Swal.fire({
@@ -216,8 +210,6 @@ const ProductDetail = () => {
         productId: Number(id),
         reviewDate: new Date().toISOString()
       };
-
-      console.log('Review payload:', reviewPayload);
 
       const response = await reviewsAPI.createReviews(reviewPayload);
 

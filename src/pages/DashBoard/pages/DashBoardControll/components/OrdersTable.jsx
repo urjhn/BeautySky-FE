@@ -4,9 +4,9 @@ import dayjs from 'dayjs';
 
 const OrdersTable = ({ orders }) => {
   return (
-    <div className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow">
-      <div className="flex items-center justify-between mb-6">
-        <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
+    <div className="bg-white rounded-xl shadow-lg p-4 md:p-6 hover:shadow-xl transition-shadow">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 md:mb-6 gap-3">
+        <h2 className="text-lg md:text-xl font-bold text-gray-800 flex items-center gap-2">
           <FaShoppingBag className="text-blue-500" />
           Đơn hàng gần đây
         </h2>
@@ -14,14 +14,40 @@ const OrdersTable = ({ orders }) => {
           Xem tất cả →
         </button>
       </div>
-      
-      <div className="relative">
-        <div className="overflow-x-auto">
-          <div className="max-h-[300px] overflow-y-auto custom-scrollbar">
-            <table className="min-w-full divide-y divide-gray-200 sticky top-0 z-10">
-              <TableHeader />
-              <TableBody orders={orders} />
-            </table>
+
+      {/* Mobile View */}
+      <div className="block md:hidden">
+        {orders.map((order) => (
+          <div key={order.orderId} className="border-b border-gray-200 py-4">
+            <div className="flex justify-between items-start mb-2">
+              <span className="text-sm font-medium">#{order.orderId}</span>
+              <OrderStatus status={order.status} />
+            </div>
+            <div className="space-y-2">
+              <p className="text-sm"><span className="text-gray-500">Khách hàng:</span> {order.userFullName}</p>
+              <p className="text-sm"><span className="text-gray-500">SĐT:</span> {order.userPhone}</p>
+              <p className="text-sm"><span className="text-gray-500">Địa chỉ:</span> {order.userAddress}</p>
+              <p className="text-sm"><span className="text-gray-500">Tổng tiền:</span> {formatCurrency(order.finalAmount)}</p>
+              <p className="text-sm"><span className="text-gray-500">Ngày đặt:</span> {dayjs(order.orderDate).format("DD/MM/YYYY HH:mm")}</p>
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-gray-500">Thanh toán:</span>
+                <PaymentStatus status={order.paymentStatus} />
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Desktop View */}
+      <div className="hidden md:block">
+        <div className="relative">
+          <div className="overflow-x-auto">
+            <div className="max-h-[300px] overflow-y-auto custom-scrollbar">
+              <table className="min-w-full divide-y divide-gray-200 sticky top-0 z-10">
+                <TableHeader />
+                <TableBody orders={orders} />
+              </table>
+            </div>
           </div>
         </div>
       </div>
