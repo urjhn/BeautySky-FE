@@ -70,25 +70,18 @@ const orderAPI = {
       throw new Error(error.response?.data?.message || "Lỗi khi tạo đơn hàng");
     }
   },
-  cancelOrder: async (orderId) => {
+  cancelOrder: async (orderId, cancelReason) => {
     try {
-      const response = await axiosInstance.post(
-        `${endPoint}/cancel/${orderId}`
-      );
+      const response = await axiosInstance.post(`${endPoint}/cancel/${orderId}`, JSON.stringify(cancelReason), {
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
       return response.data;
     } catch (error) {
-      if (error.response) {
-        if (error.response.status === 401) {
-          throw new Error("Bạn không có quyền hủy đơn hàng này.");
-        } else if (error.response.status === 404) {
-          throw new Error("Không tìm thấy đơn hàng.");
-        } else if (error.response.status === 400) {
-          throw new Error("Chỉ có thể hủy đơn hàng ở trạng thái chờ xử lý.");
-        }
-      }
-      throw new Error("Có lỗi xảy ra khi hủy đơn hàng.");
+      throw error;
     }
-  },
+  }
 };
 
 export default orderAPI;

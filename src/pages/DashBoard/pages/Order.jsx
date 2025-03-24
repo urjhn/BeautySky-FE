@@ -45,28 +45,30 @@ const Order = () => {
     setIsLoading(true);
     try {
       const ordersData = await orderAPI.getAll();
-      console.log("Dữ liệu thô từ API Orders:", ordersData);
+      console.log("Raw orders data:", ordersData); // Để debug
 
       if (ordersData && ordersData.length > 0) {
         const processedOrders = ordersData.map((order) => {
           const userData = order.user || {};
+          console.log("Processing order:", order); // Để debug từng order
 
           return {
             ...order,
-            status: order.status || ORDER_STATUS.PENDING, // Lấy status trực tiếp từ API
+            status: order.status || ORDER_STATUS.PENDING,
             userFullName: userData.fullName || "Không xác định",
             userPhone: userData.phone || "Không có",
             userAddress: userData.address || "Không có",
             userId: userData.userId || null,
             finalAmount: order.finalAmount || 0,
-            paymentStatus: order.paymentId ? "Confirmed" : "Pending", // Xác định trạng thái thanh toán dựa vào paymentId
+            paymentStatus: order.paymentId ? "Confirmed" : "Pending",
+            // Đảm bảo các trường này được lấy đúng từ response
+            cancelledDate: order.cancelledDate || order.cancelDate,
+            cancelledReason: order.cancelledReason || order.cancelReason || "Không có lý do"
           };
         });
-
-        console.log("Dữ liệu đơn hàng sau khi xử lý:", processedOrders);
+        console.log("Processed orders:", processedOrders); // Để debug
         setOrders(processedOrders);
       } else {
-        console.log("Không có dữ liệu đơn hàng nào từ API");
         setOrders([]);
       }
     } catch (error) {
@@ -103,10 +105,10 @@ const Order = () => {
           didOpen: () => Swal.showLoading(),
         });
 
-        const response = await paymentsAPI.processAndConfirmPayment(orderId);
-
-        if (response && response.data) {
-          // Cập nhật state ngay lập tức
+        try {
+          // Gọi API để xử lý thanh toán và xác nhận đơn hàng
+          const response = await paymentsAPI.processAndConfirmPayment(orderId);
+          // Cập nhật state ngay lập tức - đã sửa cách truy cập dữ liệu
           setOrders((prevOrders) =>
             prevOrders.map((order) =>
               order.orderId === orderId
@@ -114,7 +116,8 @@ const Order = () => {
                     ...order,
                     status: ORDER_STATUS.COMPLETED,
                     paymentStatus: "Confirmed",
-                    paymentId: response.data.paymentId,
+                    // Kiểm tra nhiều cấu trúc phản hồi có thể có
+                    paymentId: response.paymentId || (response.data && response.data.paymentId) || 0,
                   }
                 : order
             )
@@ -129,6 +132,13 @@ const Order = () => {
             text: "Đã duyệt và thanh toán đơn hàng thành công",
             timer: 1500,
           });
+        } catch (apiError) {
+          console.error("Lỗi API khi duyệt đơn:", apiError);
+          Swal.fire({
+            icon: "error",
+            title: "Lỗi",
+            text: apiError.response?.data || apiError.message || "Có lỗi xảy ra khi duyệt đơn hàng",
+          });
         }
       }
     } catch (error) {
@@ -136,10 +146,7 @@ const Order = () => {
       Swal.fire({
         icon: "error",
         title: "Lỗi",
-        text:
-          error.response?.data ||
-          error.message ||
-          "Có lỗi xảy ra khi duyệt đơn hàng",
+        text: error.response?.data || error.message || "Có lỗi xảy ra khi duyệt đơn hàng",
       });
     }
   };
@@ -186,12 +193,15 @@ const Order = () => {
             const response = await paymentsAPI.processAndConfirmPayment(
               order.orderId
             );
+            
             return {
               orderId: order.orderId,
               success: true,
-              data: response.data,
+              // Kiểm tra nhiều cấu trúc dữ liệu có thể có
+              data: response.data || response
             };
           } catch (error) {
+            console.error(`Lỗi khi xử lý đơn hàng ${order.orderId}:`, error);
             return {
               orderId: order.orderId,
               success: false,
@@ -201,21 +211,24 @@ const Order = () => {
         })
       );
 
-      const successful = results.filter((r) => r.value?.success).length;
-      const failed = results.filter((r) => !r.value?.success).length;
+      const successful = results.filter((r) => r.status === "fulfilled" && r.value?.success).length;
+      const failed = pendingOrders.length - successful;
 
       setOrders((prevOrders) =>
         prevOrders.map((order) => {
-          const result = results.find(
-            (r) => r.value?.orderId === order.orderId && r.value?.success
+          const resultItem = results.find(
+            (r) => r.status === "fulfilled" && r.value?.orderId === order.orderId && r.value?.success
           );
-          if (result?.value?.success) {
+          
+          if (resultItem) {
+            const resultData = resultItem.value.data;
             return {
               ...order,
               status: ORDER_STATUS.COMPLETED,
               paymentStatus: "Confirmed",
-              paymentId: result.value.data.paymentId,
-              paymentDate: result.value.data.paymentDate,
+              // Xử lý nhiều cấu trúc dữ liệu có thể có
+              paymentId: resultData.paymentId || (resultData.data && resultData.data.paymentId) || 0,
+              paymentDate: resultData.paymentDate || (resultData.data && resultData.data.paymentDate) || new Date().toISOString(),
             };
           }
           return order;
@@ -429,6 +442,9 @@ const Order = () => {
                   Trạng thái
                 </th>
                 <th className="p-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Lý do hủy
+                </th>
+                <th className="p-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Thanh toán
                 </th>
                 <th className="p-4 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -457,6 +473,20 @@ const Order = () => {
                     >
                       {getStatusDisplay(order.status)}
                     </span>
+                  </td>
+                  <td className="p-4 text-sm">
+                    {order.status === "Cancelled" && (
+                      <div className="flex flex-col gap-1">
+                        <span className="text-red-600">
+                          {order.cancelledReason || order.cancelReason || "Không có lý do"}
+                        </span>
+                        {(order.cancelledDate || order.cancelDate) && (
+                          <span className="text-xs text-gray-500">
+                            Hủy lúc: {dayjs(order.cancelledDate || order.cancelDate).format("DD/MM/YYYY HH:mm")}
+                          </span>
+                        )}
+                      </div>
+                    )}
                   </td>
                   <td className="p-4">
                     <span

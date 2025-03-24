@@ -15,10 +15,8 @@ const questionsAPI = {
     return response;
   },
   editQuestions: async (id, payload) => {
-    console.log(`Editing question ${id} with payload:`, payload);
     try {
       const response = await axiosInstance.put(`${endPoint}/${id}`, payload);
-      console.log(`Edit response for question ${id}:`, response);
       return response;
     } catch (error) {
       console.error(`Error editing question ${id}:`, error);

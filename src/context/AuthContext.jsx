@@ -39,26 +39,43 @@ export const AuthProvider = ({ children }) => {
     try {
       if (userData.token) {
         const decoded = jwtDecode(userData.token);
+        
+        // Đảm bảo userId luôn là số
+        const userId = Number(decoded.userId || decoded.id || decoded.sub);
+        
+        // Xác định roleId một cách chính xác
+        const roleId = userData.user?.roleId || 
+                      (decoded.role === "Customer" ? 1 : 
+                       decoded.role === "Staff" ? 2 : 
+                       decoded.role === "Manager" ? 3 : 1);
+
         const userInfo = {
-          userId: decoded.id,
+          userId: userId,
           name: decoded.name,
           email: decoded.email,
-          role: decoded.role,
+          role: decoded.role || "Customer",
           token: userData.token,
-          roleId: userData.user.roleId,
+          roleId: roleId,
           phone: decoded.phone || "",
           address: decoded.address || "",
         };
 
         setUser(userInfo);
         localStorage.setItem("token", userData.token);
-        localStorage.setItem("roleId", userData.user.roleId);
+        localStorage.setItem("roleId", roleId.toString());
+
+        // Chuyển hướng dựa vào roleId
+        if (roleId === 2 || roleId === 3) {
+          navigate("/dashboardlayout");
+        } else {
+          navigate("/");
+        }
       } else {
         const data = await authAPI.login(userData, navigate);
         const roleId = parseInt(data.roleId, 10);
         const decoded = jwtDecode(data.token);
-        setUser({
-          userId: decoded.userId,
+        const userInfo = {
+          userId: decoded.userId || decoded.id,
           name: decoded.name,
           email: decoded.email,
           role: decoded.role,
@@ -66,9 +83,18 @@ export const AuthProvider = ({ children }) => {
           roleId: roleId,
           phone: decoded.phone,
           address: decoded.address,
-        });
+        };
+        
+        setUser(userInfo);
         localStorage.setItem("token", data.token);
-        localStorage.setItem("roleId", roleId);
+        localStorage.setItem("roleId", roleId.toString());
+
+        // Chuyển hướng dựa vào roleId
+        if (roleId === 2 || roleId === 3) {
+          navigate("/dashboardlayout");
+        } else {
+          navigate("/");
+        }
       }
     } catch (err) {
       console.error("Login failed", err);

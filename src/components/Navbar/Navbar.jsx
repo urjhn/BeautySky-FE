@@ -37,13 +37,10 @@ const Navbar = () => {
   }, []);
 
   useEffect(() => {
-    console.log("searchQuery changed:", searchQuery); // Kiểm tra searchQuery thay đổi
     const delayDebounce = setTimeout(() => {
       if (searchQuery.trim()) {
-        console.log("Calling handleSearch with query:", searchQuery.trim());
         handleSearch();
       } else {
-        console.log("Empty search query - clearing results");
         setSearchResults([]);
         setShowProductDropdown(false);
       }

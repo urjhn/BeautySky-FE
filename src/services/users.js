@@ -16,7 +16,6 @@ const usersAPI = {
     return response;
   },
   editUser: async (id, userData) => {
-    console.log(`Making PUT request to ${endPoint}/${id} with:`, userData);
     return await axiosInstance.put(`${endPoint}/${id}`, userData);
   },
   deleteUser: async (id) => {

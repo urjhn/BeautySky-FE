@@ -3,13 +3,12 @@ import axiosInstance from "../config/axios/axiosInstance";
 const endPoint = "/Accounts";
 
 const authAPI = {
-  login: async (user, navigate) => {
+  login: async (user) => {
     try {
       const response = await axiosInstance.post(`${endPoint}/Login`, user);
       if (response.data) {
         localStorage.setItem("token", response.data.token);
         localStorage.setItem("roleId", response.data.roleId);
-        navigate("/");
       }
       return response.data;
     } catch (err) {
@@ -21,7 +20,6 @@ const authAPI = {
   register: async (user, navigate) => {
     try {
       const response = await axiosInstance.post(`${endPoint}/Register`, user);
-      console.log("Register response:", response.data);
       navigate("/login");
     } catch (err) {
       console.error("Register failed", err.response?.data || err.message);
