@@ -163,7 +163,6 @@ const OrderHistory = () => {
                   ...order,
                   status: 'Cancelled',
                   cancelledDate: new Date().toISOString(),
-                  cancelledReason: cancelReason,
                   cancelledReason: response.cancelledReason// Thêm cancelDate để hiển thị
                 }
               : order
