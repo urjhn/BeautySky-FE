@@ -36,18 +36,21 @@ const Sidebar = () => {
   // Xử lý di chuyển chuột trong vùng menu
   const handleMouseMove = (e) => {
     if (!isHovering || !navRef.current) return;
-    
+
     const { height } = navRef.current.getBoundingClientRect();
     const navHeight = navRef.current.scrollHeight;
     const mouseY = e.clientY;
     const containerTop = navRef.current.getBoundingClientRect().top;
     const relativeY = mouseY - containerTop;
-    
+
     // Tính toán vị trí cuộn dựa trên vị trí chuột
     const scrollRatio = relativeY / height;
     const maxScroll = navHeight - height;
-    const newScrollPosition = Math.max(0, Math.min(maxScroll, scrollRatio * maxScroll));
-    
+    const newScrollPosition = Math.max(
+      0,
+      Math.min(maxScroll, scrollRatio * maxScroll)
+    );
+
     // Áp dụng hiệu ứng mượt mà cho việc cuộn
     navRef.current.scrollTop = newScrollPosition;
     setScrollPosition(newScrollPosition);
@@ -65,26 +68,32 @@ const Sidebar = () => {
         <FaBars size={24} />
       </button>
 
-      <aside 
+      <aside
         className={`fixed lg:relative w-72 bg-gradient-to-b from-gray-900 to-gray-800 
         flex flex-col h-screen shadow-2xl transition-all duration-500 ease-in-out
         border-r border-gray-700/50 backdrop-blur-lg
-        ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'} z-10`}
+        ${
+          isOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
+        } z-10`}
       >
         <div className="p-6 border-b border-gray-700/50">
           <div className="text-center space-y-3">
-            <h2 className="text-3xl font-bold bg-gradient-to-r from-blue-400 to-purple-500 
-              text-transparent bg-clip-text tracking-wider">
+            <h2
+              className="text-3xl font-bold bg-gradient-to-r from-blue-400 to-purple-500 
+              text-transparent bg-clip-text tracking-wider"
+            >
               Admin Panel
             </h2>
-            <div className="h-1 bg-gradient-to-r from-blue-400 to-purple-500 rounded-full 
-              w-3/4 mx-auto transform transition-all duration-300 hover:scale-x-100"></div>
+            <div
+              className="h-1 bg-gradient-to-r from-blue-400 to-purple-500 rounded-full 
+              w-3/4 mx-auto transform transition-all duration-300 hover:scale-x-100"
+            ></div>
           </div>
         </div>
 
-        <nav 
+        <nav
           ref={navRef}
-          className="flex-1 overflow-hidden" 
+          className="flex-1 overflow-hidden"
           onMouseEnter={handleMouseEnter}
           onMouseLeave={handleMouseLeave}
           onMouseMove={handleMouseMove}
@@ -101,11 +110,7 @@ const Sidebar = () => {
                 title="Doanh thu"
                 to="/dashboardlayout/dashboard"
               />
-              <NavItem 
-                icon={<FaHome />} 
-                title="Cửa hàng" 
-                to="/" 
-              />
+
               <NavItem
                 icon={<FaShoppingCart />}
                 title="Orders"
@@ -146,6 +151,7 @@ const Sidebar = () => {
                 title="Q & A"
                 to="/dashboardlayout/quizzes"
               />
+              <NavItem icon={<FaHome />} title="Cửa hàng" to="/" />
               <NavItem
                 icon={<FaCog />}
                 title="Cài đặt"
@@ -167,7 +173,7 @@ const Sidebar = () => {
         nav::-webkit-scrollbar {
           display: none;
         }
-        
+
         nav {
           -ms-overflow-style: none;
           scrollbar-width: none;
@@ -191,17 +197,19 @@ const NavItem = ({ icon, title, to }) => (
         }`
       }
     >
-      <div className="text-2xl transition-transform duration-300 group-hover:scale-110 
-        group-hover:rotate-3">
+      <div
+        className="text-2xl transition-transform duration-300 group-hover:scale-110 
+        group-hover:rotate-3"
+      >
         {icon}
       </div>
 
-      <span className="text-base font-medium tracking-wide">
-        {title}
-      </span>
+      <span className="text-base font-medium tracking-wide">{title}</span>
 
-      <div className="absolute inset-0 bg-gradient-to-r from-blue-400/10 to-purple-500/10 
-        opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+      <div
+        className="absolute inset-0 bg-gradient-to-r from-blue-400/10 to-purple-500/10 
+        opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+      ></div>
     </NavLink>
   </li>
 );
