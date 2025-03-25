@@ -26,6 +26,8 @@ const Navbar = () => {
   const dropdownRef = useRef(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const menuRef = useRef(null);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -63,6 +65,17 @@ const Navbar = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (menuRef.current && !menuRef.current.contains(event.target)) {
+        setIsMenuOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
   const handleSearch = async () => {
     try {
       if (!searchQuery.trim()) {
@@ -93,7 +106,7 @@ const Navbar = () => {
         id: item.blogId,
         title: item.title,
         description: item.content?.substring(0, 100) || "",
-        image: item.imgURL,
+        image: item.imgUrl,
         categoryName: item.category,
         skinTypeName: item.skinType,
         type: "blog", // Đánh dấu là blog
@@ -136,62 +149,53 @@ const Navbar = () => {
 
   return (
     <>
-      {/* Spacer div để giữ khoảng trống cho navbar fixed */}
-      <div className="h-[72px] sm:h-[80px] w-full"></div>
+      <div className="h-[60px] sm:h-[72px] lg:h-[80px] w-full"></div>
       
       <nav className={`
         fixed top-0 left-0 right-0 
-        h-[72px] sm:h-[80px]
+        h-[60px] sm:h-[72px] lg:h-[80px]
         bg-white
         z-[1000]
         transition-all duration-300
-        ${isScrolled 
-          ? 'bg-white/95 backdrop-blur-sm shadow-md' 
-          : 'bg-white shadow-md'}
+        ${isScrolled ? 'bg-white/95 backdrop-blur-sm shadow-md' : 'bg-white shadow-md'}
       `}>
         <div className="h-full container mx-auto flex justify-between items-center px-4">
-          {/* Logo */}
+          {/* Logo Section */}
           <div className="flex items-center">
             <Link to="/" className="flex items-center">
-              <img src={Logo} alt="Logo" className="w-12 md:w-16" />
-              <img
-                src={Namebrand}
-                alt="Tên thương hiệu"
-                className="w-24 md:w-32"
-              />
+              <img src={Logo} alt="Logo" className="w-10 sm:w-12 lg:w-16" />
+              <img src={Namebrand} alt="Tên thương hiệu" className="w-20 sm:w-24 lg:w-32" />
             </Link>
           </div>
 
-          {/* Desktop & Tablet Menu */}
-          <ul className="hidden sm:flex items-center space-x-6 lg:space-x-8">
-            {NavbarMenu.map((item) => (
-              <li key={item.id}>
-                {item.submenu ? (
-                  <button
-                    onMouseEnter={() => setShowProductDropdown(true)}
-                    onClick={() => setShowProductDropdown((prev) => !prev)}
-                    className="text-sm lg:text-base text-gray-700 font-medium 
-                               hover:text-[#6BBCFE] active:scale-95 
-                               transition-all duration-200"
-                  >
-                    {item.title}
-                  </button>
-                ) : (
-                  <Link
-                    to={item.link}
-                    className="text-sm lg:text-base text-gray-700 font-medium 
-                               hover:text-[#6BBCFE] active:scale-95 
-                               transition-all duration-200"
-                  >
-                    {item.title}
-                  </Link>
-                )}
-              </li>
-            ))}
-          </ul>
+          {/* Mobile Menu Button */}
+          <button
+            className="lg:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors"
+            onClick={() => setIsMenuOpen(!isMenuOpen)}
+          >
+            {isMenuOpen ? (
+              <HiX className="h-6 w-6 text-gray-600" />
+            ) : (
+              <HiMenu className="h-6 w-6 text-gray-600" />
+            )}
+          </button>
 
-          {/* Search, Cart, User */}
-          <div className="flex items-center gap-2 lg:gap-3">
+          {/* Desktop Menu */}
+          <div className="hidden lg:flex items-center space-x-8">
+            {NavbarMenu.map((item) => (
+              <Link
+                key={item.id}
+                to={item.link}
+                className="text-gray-700 font-medium hover:text-[#6BBCFE] 
+                           transition-colors duration-200"
+              >
+                {item.title}
+              </Link>
+            ))}
+          </div>
+
+          {/* Search, Cart, User for Desktop */}
+          <div className="hidden lg:flex items-center gap-4">
             {/* Search Bar */}
             <div className="relative hidden sm:block">
               <div className="relative">
@@ -410,30 +414,99 @@ const Navbar = () => {
               </div>
             )}
           </div>
-        </div>
 
-        {/* Mobile Menu */}
-        <div
-          className={`
-            ${isMobileMenuOpen ? "block" : "hidden"}
-            sm:hidden absolute top-full left-0 right-0 
-            bg-white shadow-md border-t border-gray-100
-            z-[998]
-          `}
-        >
-          {NavbarMenu.map((item) => (
-            <Link
-              key={item.id}
-              to={item.link}
-              className="block px-4 py-3 hover:bg-gray-50 border-b border-gray-100 
-                         text-gray-700 text-sm font-medium
-                         transition-colors duration-200"
-              onClick={() => setIsMobileMenuOpen(false)}
-            >
-              {item.icon && <span className="mr-2">{item.icon}</span>}
-              {item.title}
-            </Link>
-          ))}
+          {/* Mobile/Tablet Menu Dropdown */}
+          <div
+            ref={menuRef}
+            className={`
+              absolute top-full left-0 right-0 
+              bg-white shadow-lg border-t border-gray-100
+              transition-all duration-300 transform
+              lg:hidden
+              ${isMenuOpen ? 'translate-y-0 opacity-100' : '-translate-y-2 opacity-0 pointer-events-none'}
+            `}
+          >
+            <div className="container mx-auto px-4 py-2">
+              {/* Mobile Search */}
+              <div className="py-4 border-b border-gray-100">
+                <div className="relative">
+                  <input
+                    type="text"
+                    placeholder="Tìm kiếm..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="w-full h-10 px-4 pr-10 rounded-lg border-2 border-gray-200 
+                             focus:outline-none focus:border-[#6BBCFE]"
+                  />
+                  <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                    <IoMdSearch className="w-5 h-5 text-gray-400" />
+                  </div>
+                </div>
+              </div>
+
+              {/* Mobile Menu Items */}
+              <div className="py-2 space-y-1">
+                {NavbarMenu.map((item) => (
+                  <Link
+                    key={item.id}
+                    to={item.link}
+                    className="flex items-center px-4 py-3 text-gray-700 hover:bg-gray-50 
+                             rounded-lg transition-colors duration-200"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    {item.icon && (
+                      <span className="mr-3 text-gray-500">{item.icon}</span>
+                    )}
+                    <span className="font-medium">{item.title}</span>
+                  </Link>
+                ))}
+              </div>
+
+              {/* Mobile User Section */}
+              <div className="py-4 border-t border-gray-100">
+                {user ? (
+                  <div className="flex items-center justify-between px-4">
+                    <div className="flex items-center">
+                      <img
+                        src={user.avatar || `https://api.dicebear.com/9.x/adventurer/svg?seed=${user.userId || 'default'}`}
+                        alt={user.fullName}
+                        className="w-10 h-10 rounded-full"
+                      />
+                      <span className="ml-3 font-medium text-gray-900">
+                        {user.fullName}
+                      </span>
+                    </div>
+                    <button
+                      onClick={handleLogout}
+                      className="text-red-600 hover:text-red-700 font-medium"
+                    >
+                      Đăng xuất
+                    </button>
+                  </div>
+                ) : (
+                  <div className="flex flex-col gap-2 px-4">
+                    <Link
+                      to="/login"
+                      className="w-full py-2 text-center bg-[#6BBCFE] text-white rounded-lg 
+                               hover:bg-[#5AA8EA] transition-colors duration-200"
+                      onClick={() => setIsMenuOpen(false)}
+                    >
+                      Đăng nhập
+                    </Link>
+                    <Link
+                      to="/register"
+                      className="w-full py-2 text-center border-2 border-[#6BBCFE] text-[#6BBCFE] 
+                               rounded-lg hover:bg-[#6BBCFE] hover:text-white 
+                               transition-colors duration-200"
+                      onClick={() => setIsMenuOpen(false)}
+                    >
+                      Đăng ký
+                    </Link>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
         </div>
       </nav>
     </>
