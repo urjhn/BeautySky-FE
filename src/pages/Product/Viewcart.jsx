@@ -57,29 +57,30 @@ const Viewcart = () => {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
   };
 
   const selectedTotalPrice = useMemo(() => {
     return cartItems.reduce((total, item) => {
       if (selectedItems[item.productId]) {
-        return total + (item.price * item.quantity);
+        return total + item.price * item.quantity;
       }
       return total;
     }, 0);
   }, [cartItems, selectedItems]);
 
   const discountedPrice = selectedVoucher
-    ? selectedTotalPrice - (selectedTotalPrice * selectedVoucher.discountPercentage) / 100
+    ? selectedTotalPrice -
+      (selectedTotalPrice * selectedVoucher.discountPercentage) / 100
     : selectedTotalPrice;
 
   const handleSelectAll = (checked) => {
     const newSelectedItems = {};
     if (checked) {
-      cartItems.forEach(item => {
+      cartItems.forEach((item) => {
         newSelectedItems[item.productId] = true;
       });
     }
@@ -87,18 +88,20 @@ const Viewcart = () => {
   };
 
   const handleSelectItem = (productId) => {
-    setSelectedItems(prev => ({
+    setSelectedItems((prev) => ({
       ...prev,
-      [productId]: !prev[productId]
+      [productId]: !prev[productId],
     }));
   };
 
-  const hasSelectedItems = Object.values(selectedItems).some(value => value);
+  const hasSelectedItems = Object.values(selectedItems).some((value) => value);
 
   const handleProceedToPayment = async () => {
     try {
-      const selectedProducts = cartItems.filter(item => selectedItems[item.productId]);
-      
+      const selectedProducts = cartItems.filter(
+        (item) => selectedItems[item.productId]
+      );
+
       if (selectedProducts.length === 0) {
         Swal.fire({
           icon: "error",
@@ -109,20 +112,25 @@ const Viewcart = () => {
       }
 
       Swal.fire({
-        title: 'Đang xử lý...',
+        title: "Đang xử lý...",
         allowOutsideClick: false,
         didOpen: () => {
           Swal.showLoading();
-        }
+        },
       });
 
-      const orderProducts = selectedProducts.map(item => ({
+      const orderProducts = selectedProducts.map((item) => ({
         productID: Number(item.productId),
-        quantity: Number(item.quantity)
+        quantity: Number(item.quantity),
       }));
 
-      const promotionId = selectedVoucher ? Number(selectedVoucher.promotionId) : null;
-      const orderResponse = await orderAPI.createOrder(promotionId, orderProducts);
+      const promotionId = selectedVoucher
+        ? Number(selectedVoucher.promotionId)
+        : null;
+      const orderResponse = await orderAPI.createOrder(
+        promotionId,
+        orderProducts
+      );
 
       if (orderResponse.orderId) {
         if (paymentMethod === "VNPay") {
@@ -133,26 +141,31 @@ const Viewcart = () => {
             orderType: "other",
             language: "vn",
             name: formData.name,
-            orderDescription: `Don hang ${orderResponse.orderId}`
+            orderDescription: `Don hang ${orderResponse.orderId}`,
           };
 
-          const vnpayResponse = await paymentAPI.createVNPayPayment(paymentRequest);
-          
+          const vnpayResponse = await paymentAPI.createVNPayPayment(
+            paymentRequest
+          );
+
           if (vnpayResponse.paymentUrl) {
-            localStorage.setItem('pendingOrder', JSON.stringify({
-              orderId: orderResponse.orderId,
-              amount: discountedPrice,
-              products: selectedProducts
-            }));
-            
+            localStorage.setItem(
+              "pendingOrder",
+              JSON.stringify({
+                orderId: orderResponse.orderId,
+                amount: discountedPrice,
+                products: selectedProducts,
+              })
+            );
+
             window.location.href = vnpayResponse.paymentUrl;
           } else {
             throw new Error("Không thể tạo URL thanh toán");
           }
         } else {
-          await Promise.all(selectedProducts.map(item => 
-            removeFromCart(item.productId)
-          ));
+          await Promise.all(
+            selectedProducts.map((item) => removeFromCart(item.productId))
+          );
 
           const orderInfo = {
             orderId: orderResponse.orderId,
@@ -160,13 +173,13 @@ const Viewcart = () => {
             discountAmount: orderResponse.discountAmount,
             finalAmount: orderResponse.finalAmount,
             products: selectedProducts,
-            paymentMethod: "Cash"
+            paymentMethod: "Cash",
           };
 
           navigate("/ordersuccess", {
             state: {
-              orderDetails: orderInfo
-            }
+              orderDetails: orderInfo,
+            },
           });
         }
       }
@@ -201,11 +214,54 @@ const Viewcart = () => {
       confirmButtonColor: "#d33",
       cancelButtonColor: "#3085d6",
       confirmButtonText: "Xóa",
-      cancelButtonText: "Hủy"
+      cancelButtonText: "Hủy",
     });
 
     if (result.isConfirmed) {
       await removeFromCart(productId);
+    }
+  };
+
+  const handleClearCart = async () => {
+    const result = await Swal.fire({
+      title: "Xóa tất cả?",
+      text: "Bạn có chắc chắn muốn xóa tất cả sản phẩm khỏi giỏ hàng?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "Xóa tất cả",
+      cancelButtonText: "Hủy",
+    });
+
+    if (result.isConfirmed) {
+      try {
+        Swal.fire({
+          title: "Đang xử lý...",
+          allowOutsideClick: false,
+          didOpen: () => {
+            Swal.showLoading();
+          },
+        });
+
+        const promises = cartItems.map(item => removeFromCart(item.productId));
+        await Promise.all(promises);
+
+        Swal.fire({
+          icon: "success",
+          title: "Đã xóa!",
+          text: "Giỏ hàng của bạn đã được xóa.",
+          timer: 1500,
+          showConfirmButton: false,
+        });
+      } catch (error) {
+        console.error("Lỗi khi xóa giỏ hàng:", error);
+        Swal.fire({
+          icon: "error",
+          title: "Lỗi!",
+          text: "Có lỗi xảy ra khi xóa giỏ hàng.",
+        });
+      }
     }
   };
 
@@ -221,9 +277,11 @@ const Viewcart = () => {
         {cartItems.length === 0 ? (
           <div className="text-center py-12">
             <FaShoppingCart className="mx-auto text-gray-300 text-6xl mb-4" />
-            <p className="text-center text-gray-500 text-lg mb-4">Giỏ hàng của bạn đang trống.</p>
-            <button 
-              onClick={() => navigate('/product')}
+            <p className="text-center text-gray-500 text-lg mb-4">
+              Giỏ hàng của bạn đang trống.
+            </p>
+            <button
+              onClick={() => navigate("/product")}
               className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-lg transition duration-300"
             >
               Tiếp tục mua sắm
@@ -234,18 +292,36 @@ const Viewcart = () => {
             {/* Danh sách sản phẩm */}
             <div className="lg:col-span-2 bg-white p-4 sm:p-6 shadow-lg rounded-lg border border-gray-100">
               <div className="flex justify-between items-center mb-4 pb-2 border-b">
-                <h2 className="text-xl font-bold">Sản phẩm ({cartItems.length})</h2>
-                <div className="flex items-center">
-                  <input
-                    type="checkbox"
-                    className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
-                    checked={cartItems.length > 0 && cartItems.every(item => selectedItems[item.productId])}
-                    onChange={(e) => handleSelectAll(e.target.checked)}
-                  />
-                  <span className="ml-2 text-sm text-gray-600">Chọn tất cả</span>
+                <h2 className="text-xl font-bold">
+                  Sản phẩm ({cartItems.length})
+                </h2>
+                <div className="flex items-center gap-4">
+                  <div className="flex items-center">
+                    <input
+                      type="checkbox"
+                      className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
+                      checked={
+                        cartItems.length > 0 &&
+                        cartItems.every((item) => selectedItems[item.productId])
+                      }
+                      onChange={(e) => handleSelectAll(e.target.checked)}
+                    />
+                    <span className="ml-2 text-sm text-gray-600">
+                      Chọn tất cả
+                    </span>
+                  </div>
+                  {cartItems.length > 0 && (
+                    <button
+                      onClick={handleClearCart}
+                      className="flex items-center gap-1 text-red-500 hover:text-red-700 text-sm font-medium bg-red-50 hover:bg-red-100 px-3 py-1.5 rounded-lg transition-colors"
+                    >
+                      <FaTrash size={14} />
+                      <span>Xóa tất cả</span>
+                    </button>
+                  )}
                 </div>
               </div>
-              
+
               <div className="space-y-4">
                 {cartItems.map((item, index) => (
                   <div
@@ -282,17 +358,25 @@ const Viewcart = () => {
                               className="px-3 py-1 bg-gray-200 hover:bg-gray-300 rounded-lg text-lg transition-colors"
                               onClick={(e) => {
                                 e.stopPropagation();
-                                handleQuantityChange(item.productId, item.quantity - 1);
+                                handleQuantityChange(
+                                  item.productId,
+                                  item.quantity - 1
+                                );
                               }}
                             >
                               −
                             </button>
-                            <span className="text-lg w-8 text-center font-medium">{item.quantity}</span>
+                            <span className="text-lg w-8 text-center font-medium">
+                              {item.quantity}
+                            </span>
                             <button
                               className="px-3 py-1 bg-gray-200 hover:bg-gray-300 rounded-lg text-lg transition-colors"
                               onClick={(e) => {
                                 e.stopPropagation();
-                                handleQuantityChange(item.productId, item.quantity + 1);
+                                handleQuantityChange(
+                                  item.productId,
+                                  item.quantity + 1
+                                );
                               }}
                             >
                               +
@@ -318,41 +402,63 @@ const Viewcart = () => {
                   </div>
                 ))}
               </div>
-              
+
               <div className="mt-6 flex justify-between items-center">
-                <button 
-                  onClick={() => navigate('/product')}
+                <button
+                  onClick={() => navigate("/product")}
                   className="flex items-center text-blue-600 hover:text-blue-800 font-medium"
                 >
                   <span className="mr-2">←</span> Tiếp tục mua sắm
                 </button>
                 <p className="text-lg font-medium">
-                  Đã chọn: {Object.values(selectedItems).filter(Boolean).length} sản phẩm
-                  <span className="font-bold text-blue-600 ml-2">{formatCurrency(selectedTotalPrice)}</span>
+                  Đã chọn: {Object.values(selectedItems).filter(Boolean).length}{" "}
+                  sản phẩm
+                  <span className="font-bold text-blue-600 ml-2">
+                    {formatCurrency(selectedTotalPrice)}
+                  </span>
                 </p>
               </div>
             </div>
 
             {/* Thanh toán */}
             <div className="bg-white p-4 sm:p-6 shadow-lg rounded-lg border border-gray-100 lg:sticky lg:top-4 self-start">
-              <h2 className="text-xl font-bold mb-4 pb-2 border-b">Tóm tắt đơn hàng</h2>
-              
+              <h2 className="text-xl font-bold mb-4 pb-2 border-b">
+                Tóm tắt đơn hàng
+              </h2>
+
               <div className="space-y-3">
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Tạm tính ({Object.values(selectedItems).filter(Boolean).length} sản phẩm):</span>
-                  <span className="font-medium">{formatCurrency(selectedTotalPrice)}</span>
+                  <span className="text-gray-600">
+                    Tạm tính (
+                    {Object.values(selectedItems).filter(Boolean).length} sản
+                    phẩm):
+                  </span>
+                  <span className="font-medium">
+                    {formatCurrency(selectedTotalPrice)}
+                  </span>
                 </div>
-                
+
                 {selectedVoucher && (
                   <div className="flex justify-between text-green-600">
-                    <span>Giảm giá ({selectedVoucher.discountPercentage}%):</span>
-                    <span>-{formatCurrency((selectedTotalPrice * selectedVoucher.discountPercentage) / 100)}</span>
+                    <span>
+                      Giảm giá ({selectedVoucher.discountPercentage}%):
+                    </span>
+                    <span>
+                      -
+                      {formatCurrency(
+                        (selectedTotalPrice *
+                          selectedVoucher.discountPercentage) /
+                          100
+                      )}
+                    </span>
                   </div>
                 )}
-                
+
                 <div className="flex justify-between text-lg font-bold pt-2 border-t">
                   <span>Tổng thanh toán:</span>
-                  <span className="text-blue-600">{formatCurrency(discountedPrice)}</span>
+                  <span className="text-blue-600">
+                    {formatCurrency(discountedPrice)}
+                  </span>
                 </div>
               </div>
 
@@ -389,13 +495,16 @@ const Viewcart = () => {
 
               {/* Phương thức thanh toán */}
               <div className="mt-6">
-                <h2 className="text-lg font-medium mb-3">Phương thức thanh toán</h2>
+                <h2 className="text-lg font-medium mb-3">
+                  Phương thức thanh toán
+                </h2>
                 <div className="grid grid-cols-2 gap-3">
                   <button
                     className={`flex items-center justify-center space-x-2 px-4 py-3 border rounded-lg transition-all duration-300
-                      ${paymentMethod === "VNPay"
-                        ? "bg-blue-500 text-white shadow-md border-blue-500"
-                        : "bg-white text-gray-700 border-gray-300 hover:bg-blue-50"
+                      ${
+                        paymentMethod === "VNPay"
+                          ? "bg-blue-500 text-white shadow-md border-blue-500"
+                          : "bg-white text-gray-700 border-gray-300 hover:bg-blue-50"
                       }`}
                     onClick={() => setPaymentMethod("VNPay")}
                   >
@@ -404,9 +513,10 @@ const Viewcart = () => {
                   </button>
                   <button
                     className={`flex items-center justify-center space-x-2 px-4 py-3 border rounded-lg transition-all duration-300
-                      ${paymentMethod === "Cash"
-                        ? "bg-green-500 text-white shadow-md border-green-500"
-                        : "bg-white text-gray-700 border-gray-300 hover:bg-green-50"
+                      ${
+                        paymentMethod === "Cash"
+                          ? "bg-green-500 text-white shadow-md border-green-500"
+                          : "bg-white text-gray-700 border-gray-300 hover:bg-green-50"
                       }`}
                     onClick={() => setPaymentMethod("Cash")}
                   >
@@ -418,16 +528,20 @@ const Viewcart = () => {
 
               {/* Form thông tin người nhận */}
               <div className="mt-6">
-                <h2 className="text-lg font-medium mb-3">Thông tin người nhận</h2>
+                <h2 className="text-lg font-medium mb-3">
+                  Thông tin người nhận
+                </h2>
                 <div className="space-y-3">
                   {[
                     { name: "name", label: "Họ và tên", type: "text" },
                     { name: "email", label: "Email", type: "email" },
                     { name: "phone", label: "Số điện thoại", type: "tel" },
-                    { name: "address", label: "Địa chỉ", type: "text" }
+                    { name: "address", label: "Địa chỉ", type: "text" },
                   ].map((field) => (
                     <div key={field.name}>
-                      <label className="block text-sm text-gray-600 mb-1">{field.label}</label>
+                      <label className="block text-sm text-gray-600 mb-1">
+                        {field.label}
+                      </label>
                       <input
                         className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-300 focus:border-blue-500 transition-all bg-gray-50 disabled:opacity-80"
                         type={field.type}
@@ -445,9 +559,11 @@ const Viewcart = () => {
               <button
                 onClick={handleProceedToPayment}
                 disabled={!hasSelectedItems}
-                className={`mt-6 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-6 py-3 rounded-lg w-full flex items-center justify-center text-lg font-medium transition duration-300 shadow-md hover:shadow-lg ${!hasSelectedItems ? 'opacity-50 cursor-not-allowed' : ''}`}
+                className={`mt-6 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-6 py-3 rounded-lg w-full flex items-center justify-center text-lg font-medium transition duration-300 shadow-md hover:shadow-lg ${
+                  !hasSelectedItems ? "opacity-50 cursor-not-allowed" : ""
+                }`}
               >
-                Thanh toán <FaArrowRight className="ml-2" />
+                Hoàn tất đơn hàng <FaArrowRight className="ml-2" />
               </button>
             </div>
           </div>

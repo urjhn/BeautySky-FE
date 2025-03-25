@@ -1,8 +1,8 @@
 import React from "react";
-import { FaEdit, FaTrash, FaPlus } from "react-icons/fa";
+import { FaEdit, FaTrash, FaPlus, FaSearch } from "react-icons/fa";
 import { formatCurrency } from "../../../utils/formatCurrency";
 import { useDataContext } from "../../../context/DataContext";
-import { Button, Table, Space, Modal, Select } from "antd";
+import { Button, Table, Space, Modal, Select, Input } from "antd";
 import productApi from "../../../services/product";
 import Swal from "sweetalert2";
 import ProductForm from "./ProductForm";
@@ -19,6 +19,7 @@ const Products = () => {
   const [showAddModal, setShowAddModal] = React.useState(false);
   const [sortOrder, setSortOrder] = React.useState(null);
   const [loading, setLoading] = React.useState(false);
+  const [searchTerm, setSearchTerm] = React.useState("");
   const productsPerPage = 10;
   const [newProduct, setNewProduct] = React.useState({
     productId: 0,
@@ -30,6 +31,7 @@ const Products = () => {
     categoryId: 0,
     skinTypeId: 0,
     productsImages: [],
+    isActive: true,
   });
 
   const handleImageUpload = async ({ File}) => {
@@ -43,7 +45,6 @@ const Products = () => {
    
        // Giả sử server trả về URL của ảnh đã tải lên
        const imageUrl = response.data.imageUrl; // Hoặc cấu trúc phù hợp với API của bạn
-       console.log("Ảnh đã được tải lên:", imageUrl);
    
        // Lưu URL này vào state hoặc xử lý theo nhu cầu của bạn
        setNewProduct(prev => [...prev, imageUrl]); // Cập nhật lại state để lưu URL ảnh
@@ -52,18 +53,59 @@ const Products = () => {
      }
    };
 
-
-
-
   const filteredProducts = React.useMemo(() => {
     let updatedProducts = [...products];
 
+    // Tìm kiếm sản phẩm
+    if (searchTerm.trim() !== "") {
+      const searchLower = searchTerm.toLowerCase().trim();
+      updatedProducts = updatedProducts.filter((product) => {
+        // Tìm theo tên sản phẩm
+        if (product.productName && product.productName.toLowerCase().includes(searchLower)) 
+          return true;
+        
+        // Tìm theo giá
+        if (product.price && product.price.toString().includes(searchLower)) 
+          return true;
+        
+        // Tìm theo số lượng
+        if (product.quantity && product.quantity.toString().includes(searchLower)) 
+          return true;
+        
+        // Tìm theo ID sản phẩm
+        if (product.productId && product.productId.toString().includes(searchLower)) 
+          return true;
+        
+        // Tìm theo mô tả
+        if (product.description && product.description.toLowerCase().includes(searchLower)) 
+          return true;
+        
+        // Tìm theo thành phần
+        if (product.ingredient && product.ingredient.toLowerCase().includes(searchLower)) 
+          return true;
+        
+        // Tìm theo loại da
+        const skinType = skinTypes.find(s => s.skinTypeId === product.skinTypeId);
+        if (skinType && skinType.skinTypeName && skinType.skinTypeName.toLowerCase().includes(searchLower)) 
+          return true;
+        
+        // Tìm theo danh mục
+        const category = categories.find(c => c.categoryId === product.categoryId);
+        if (category && category.categoryName && category.categoryName.toLowerCase().includes(searchLower)) 
+          return true;
+        
+        return false;
+      });
+    }
+
+    // Lọc theo trạng thái
     if (filter !== "All") {
       updatedProducts = updatedProducts.filter((p) =>
         filter === "Còn hàng" ? p.quantity > 0 : p.quantity === 0
       );
     }
 
+    // Sắp xếp theo giá
     if (sortOrder) {
       updatedProducts.sort((a, b) =>
         sortOrder === "asc" ? a.price - b.price : b.price - a.price
@@ -71,10 +113,7 @@ const Products = () => {
     }
 
     return updatedProducts;
-  }, [products, filter, sortOrder]);
-
-
-
+  }, [products, filter, sortOrder, searchTerm, skinTypes, categories]);
 
   const displayedProducts = React.useMemo(
     () =>
@@ -86,8 +125,6 @@ const Products = () => {
   );
 
   const handleDelete = async (productId) => {
-    console.log("Đang xóa với ID:", productId);
-
     if (!productId) {
       Swal.fire({
         title: "Lỗi!",
@@ -98,13 +135,13 @@ const Products = () => {
     }
 
     const result = await Swal.fire({
-      title: "Bạn có chắc chắn muốn xóa?",
-      text: "Hành động này không thể hoàn tác!",
+      title: "Bạn có chắc chắn muốn vô hiệu hóa sản phẩm này?",
+      text: "Sản phẩm sẽ chuyển sang trạng thái không hoạt động!",
       icon: "warning",
       showCancelButton: true,
       confirmButtonColor: "#d33",
       cancelButtonColor: "#3085d6",
-      confirmButtonText: "Xóa",
+      confirmButtonText: "Vô hiệu hóa",
       cancelButtonText: "Hủy",
     });
 
@@ -112,25 +149,66 @@ const Products = () => {
       try {
         setLoading(true);
         const response = await productApi.deleteProduct(productId);
+        
         if (response.status >= 200 && response.status < 300) {
-          setProducts((prev) => prev.filter((p) => p.productId !== productId));
-          Swal.fire("Xóa thành công!", "Sản phẩm đã được xóa.", "success");
-        } else {
-          Swal.fire("Lỗi!", "Không thể xóa sản phẩm.", "error");
+          setProducts(prevProducts => 
+            prevProducts.map(product => 
+              product.productId === productId 
+                ? { ...product, isActive: false }
+                : product
+            )
+          );
+          
+          Swal.fire({
+            title: "Thành công!",
+            text: "Sản phẩm đã được vô hiệu hóa.",
+            icon: "success",
+          });
+          
+          fetchProduct();
         }
       } catch (error) {
-        console.error("Lỗi xóa sản phẩm:", error);
-        Swal.fire("Lỗi!", "Đã xảy ra lỗi khi xóa sản phẩm.", "error");
+        console.error("Lỗi vô hiệu hóa sản phẩm:", error);
+        Swal.fire("Lỗi!", "Đã xảy ra lỗi khi vô hiệu hóa sản phẩm.", "error");
       } finally {
         setLoading(false);
       }
     }
   };
 
+  const handleReactivate = async (productId) => {
+    try {
+      setLoading(true);
+      const response = await productApi.editProduct(productId, { isActive: true });
+      
+      if (response.status >= 200 && response.status < 300) {
+        setProducts(prevProducts => 
+          prevProducts.map(product => 
+            product.productId === productId 
+              ? { ...product, isActive: true }
+              : product
+          )
+        );
+        
+        Swal.fire({
+          title: "Thành công!",
+          text: "Sản phẩm đã được kích hoạt lại.",
+          icon: "success",
+        });
+        
+        fetchProduct();
+      }
+    } catch (error) {
+      console.error("Lỗi kích hoạt sản phẩm:", error);
+      Swal.fire("Lỗi!", "Đã xảy ra lỗi khi kích hoạt sản phẩm.", "error");
+    } finally {
+      setLoading(false);
+    }
+  };
+
 const handleAddProduct = async (formData) => {
   try {
     setLoading(true);
-    console.log("Adding product with formData");
     
     const response = await productApi.createProduct(formData);
     
@@ -232,7 +310,9 @@ const handleSaveEdit = async (formData) => {
         dataIndex: "productName",
         key: "productName",
         render: (text) => (
-          <span className="font-medium text-gray-800 break-words">{text}</span>
+          <span className="font-medium text-gray-800 break-words whitespace-normal">
+            {text}
+          </span>
         ),
       },
       {
@@ -241,7 +321,7 @@ const handleSaveEdit = async (formData) => {
         key: "price",
         responsive: ['sm'],
         render: (price) => (
-          <span className="font-medium text-indigo-600">
+          <span className="font-medium text-indigo-600 whitespace-nowrap">
             {formatCurrency(price)}
           </span>
         ),
@@ -254,7 +334,9 @@ const handleSaveEdit = async (formData) => {
         key: "quantity",
         responsive: ['lg'],
         render: (quantity) => (
-          <span className="font-semibold text-gray-700">{quantity}</span>
+          <span className="font-semibold text-gray-700 whitespace-nowrap">
+            {quantity}
+          </span>
         ),
       },
       {
@@ -264,12 +346,27 @@ const handleSaveEdit = async (formData) => {
         responsive: ['sm'],
         render: (quantity) =>
           quantity > 0 ? (
-            <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-semibold">
+            <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-semibold whitespace-nowrap">
               Còn hàng
             </span>
           ) : (
-            <span className="px-3 py-1 bg-red-100 text-red-700 rounded-full text-xs font-semibold">
+            <span className="px-3 py-1 bg-red-100 text-red-700 rounded-full text-xs font-semibold whitespace-nowrap">
               Hết hàng
+            </span>
+          ),
+      },
+      {
+        title: "Trạng thái hoạt động",
+        dataIndex: "isActive",
+        key: "isActive",
+        render: (isActive) =>
+          isActive ? (
+            <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-semibold whitespace-nowrap">
+              Hoạt động
+            </span>
+          ) : (
+            <span className="px-3 py-1 bg-red-100 text-red-700 rounded-full text-xs font-semibold whitespace-nowrap">
+              Không hoạt động
             </span>
           ),
       },
@@ -289,14 +386,25 @@ const handleSaveEdit = async (formData) => {
             >
               <FaEdit />
             </Button>
-            <Button
-              type="danger"
-              onClick={() => handleDelete(record.productId)}
-              disabled={loading}
-              className="flex items-center justify-center bg-red-500 hover:bg-red-600 border-red-500 text-white"
-            >
-              <FaTrash />
-            </Button>
+            {record.isActive ? (
+              <Button
+                type="danger"
+                onClick={() => handleDelete(record.productId)}
+                disabled={loading}
+                className="flex items-center justify-center bg-red-500 hover:bg-red-600 border-red-500 text-white"
+              >
+                <FaTrash />
+              </Button>
+            ) : (
+              <Button
+                type="primary"
+                onClick={() => handleReactivate(record.productId)}
+                disabled={loading}
+                className="flex items-center justify-center bg-green-500 hover:bg-green-600 border-green-500 text-white"
+              >
+                Kích hoạt
+              </Button>
+            )}
           </Space>
         ),
       },
@@ -344,6 +452,19 @@ const handleSaveEdit = async (formData) => {
           </span>{" "}
           sản phẩm
         </div>
+
+        {/* Thêm ô tìm kiếm */}
+        <div className="relative w-full md:w-64 mb-4 md:mb-0">
+          <Input
+            placeholder="Tìm kiếm sản phẩm..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            prefix={<FaSearch className="text-gray-400" />}
+            className="w-full rounded-lg"
+            allowClear
+          />
+        </div>
+
         <Space className="w-full md:w-auto flex flex-col sm:flex-row gap-2">
           <Select
             className="w-full sm:w-40"

@@ -20,12 +20,12 @@ const orderAPI = {
     } catch (error) {
       if (error.response) {
         if (error.response.status === 401) {
-          throw new Error('Bạn không có quyền xem đơn hàng này');
+          throw new Error("Bạn không có quyền xem đơn hàng này");
         } else if (error.response.status === 404) {
-          throw new Error('Không tìm thấy đơn hàng');
+          throw new Error("Không tìm thấy đơn hàng");
         }
       }
-      throw new Error('Có lỗi xảy ra khi lấy thông tin đơn hàng');
+      throw new Error("Có lỗi xảy ra khi lấy thông tin đơn hàng");
     }
   },
 
@@ -38,7 +38,7 @@ const orderAPI = {
       throw error;
     }
   },
-  
+
   createOrder: async (promotionID, products) => {
     try {
       // Kiểm tra dữ liệu đầu vào
@@ -47,45 +47,41 @@ const orderAPI = {
       }
 
       // Format lại products theo đúng model
-      const formattedProducts = products.map(item => ({
+      const formattedProducts = products.map((item) => ({
         productID: Number(item.productID),
-        quantity: Number(item.quantity)
+        quantity: Number(item.quantity),
       }));
 
       // Gửi request với body đúng format
       const response = await axiosInstance.post(
-        `${endPoint}/order-products?promotionID=${promotionID || ''}`, 
-        formattedProducts  // Gửi trực tiếp mảng products
+        `${endPoint}/order-products?promotionID=${promotionID || ""}`,
+        formattedProducts // Gửi trực tiếp mảng products
       );
       return response.data;
     } catch (error) {
-      console.error('Order creation error:', error.response?.data || error);
+      console.error("Order creation error:", error.response?.data || error);
       if (error.response?.data) {
         // Log chi tiết lỗi từ server
-        console.log('Detailed error:', JSON.stringify(error.response.data, null, 2));
+        console.log(
+          "Detailed error:",
+          JSON.stringify(error.response.data, null, 2)
+        );
       }
       throw new Error(error.response?.data?.message || "Lỗi khi tạo đơn hàng");
     }
   },
-  cancelOrder: async (orderId) => {
+  cancelOrder: async (orderId, cancelReason) => {
     try {
-      const response = await axiosInstance.post(`${endPoint}/cancel/${orderId}`);
+      const response = await axiosInstance.post(`${endPoint}/cancel/${orderId}`, JSON.stringify(cancelReason), {
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
       return response.data;
     } catch (error) {
-      if (error.response) {
-        if (error.response.status === 401) {
-          throw new Error("Bạn không có quyền hủy đơn hàng này.");
-        } else if (error.response.status === 404) {
-          throw new Error("Không tìm thấy đơn hàng.");
-        } else if (error.response.status === 400) {
-          throw new Error("Chỉ có thể hủy đơn hàng ở trạng thái chờ xử lý.");
-        }
-      }
-      throw new Error("Có lỗi xảy ra khi hủy đơn hàng.");
+      throw error;
     }
-  },
+  }
 };
-
-
 
 export default orderAPI;

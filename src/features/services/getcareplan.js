@@ -6,7 +6,7 @@ const GetCarePlanAPI = {
   getUserCarePlan: async (userId) => {
     try {
       const response = await axiosInstance.get(
-        `${endPoint}/GetUserCarePlan/${userId}`
+        `${endPoint}/GetUserCarePlans/${userId}`
       );
       return response;
     } catch (error) {

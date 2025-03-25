@@ -21,7 +21,7 @@ import { useNavigate } from "react-router-dom";
 const ORDER_STATUS = {
   PENDING: "Pending",
   COMPLETED: "Completed",
-  CANCELLED: "Cancelled"
+  CANCELLED: "Cancelled",
 };
 
 const STATUS_MAP = {
@@ -45,28 +45,27 @@ const Order = () => {
     setIsLoading(true);
     try {
       const ordersData = await orderAPI.getAll();
-      console.log("Dữ liệu thô từ API Orders:", ordersData);
 
       if (ordersData && ordersData.length > 0) {
         const processedOrders = ordersData.map((order) => {
           const userData = order.user || {};
-          
+
           return {
             ...order,
-            status: order.status || ORDER_STATUS.PENDING, // Lấy status trực tiếp từ API
+            status: order.status || ORDER_STATUS.PENDING,
             userFullName: userData.fullName || "Không xác định",
             userPhone: userData.phone || "Không có",
             userAddress: userData.address || "Không có",
             userId: userData.userId || null,
             finalAmount: order.finalAmount || 0,
-            paymentStatus: order.paymentId ? "Confirmed" : "Pending" // Xác định trạng thái thanh toán dựa vào paymentId
+            paymentStatus: order.paymentId ? "Confirmed" : "Pending",
+            // Đảm bảo các trường này được lấy đúng từ response
+            cancelledDate: order.cancelledDate || order.cancelDate,
+            cancelledReason: order.cancelledReason || order.cancelReason || "Không có lý do"
           };
         });
-
-        console.log("Dữ liệu đơn hàng sau khi xử lý:", processedOrders);
         setOrders(processedOrders);
       } else {
-        console.log("Không có dữ liệu đơn hàng nào từ API");
         setOrders([]);
       }
     } catch (error) {
@@ -103,10 +102,10 @@ const Order = () => {
           didOpen: () => Swal.showLoading(),
         });
 
-        const response = await paymentsAPI.processAndConfirmPayment(orderId);
-
-        if (response && response.data) {
-          // Cập nhật state ngay lập tức
+        try {
+          // Gọi API để xử lý thanh toán và xác nhận đơn hàng
+          const response = await paymentsAPI.processAndConfirmPayment(orderId);
+          // Cập nhật state ngay lập tức - đã sửa cách truy cập dữ liệu
           setOrders((prevOrders) =>
             prevOrders.map((order) =>
               order.orderId === orderId
@@ -114,7 +113,8 @@ const Order = () => {
                     ...order,
                     status: ORDER_STATUS.COMPLETED,
                     paymentStatus: "Confirmed",
-                    paymentId: response.data.paymentId
+                    // Kiểm tra nhiều cấu trúc phản hồi có thể có
+                    paymentId: response.paymentId || (response.data && response.data.paymentId) || 0,
                   }
                 : order
             )
@@ -128,6 +128,13 @@ const Order = () => {
             title: "Thành công",
             text: "Đã duyệt và thanh toán đơn hàng thành công",
             timer: 1500,
+          });
+        } catch (apiError) {
+          console.error("Lỗi API khi duyệt đơn:", apiError);
+          Swal.fire({
+            icon: "error",
+            title: "Lỗi",
+            text: apiError.response?.data || apiError.message || "Có lỗi xảy ra khi duyệt đơn hàng",
           });
         }
       }
@@ -183,12 +190,15 @@ const Order = () => {
             const response = await paymentsAPI.processAndConfirmPayment(
               order.orderId
             );
+            
             return {
               orderId: order.orderId,
               success: true,
-              data: response.data,
+              // Kiểm tra nhiều cấu trúc dữ liệu có thể có
+              data: response.data || response
             };
           } catch (error) {
+            console.error(`Lỗi khi xử lý đơn hàng ${order.orderId}:`, error);
             return {
               orderId: order.orderId,
               success: false,
@@ -198,21 +208,24 @@ const Order = () => {
         })
       );
 
-      const successful = results.filter((r) => r.value?.success).length;
-      const failed = results.filter((r) => !r.value?.success).length;
+      const successful = results.filter((r) => r.status === "fulfilled" && r.value?.success).length;
+      const failed = pendingOrders.length - successful;
 
       setOrders((prevOrders) =>
         prevOrders.map((order) => {
-          const result = results.find(
-            (r) => r.value?.orderId === order.orderId && r.value?.success
+          const resultItem = results.find(
+            (r) => r.status === "fulfilled" && r.value?.orderId === order.orderId && r.value?.success
           );
-          if (result?.value?.success) {
+          
+          if (resultItem) {
+            const resultData = resultItem.value.data;
             return {
               ...order,
               status: ORDER_STATUS.COMPLETED,
               paymentStatus: "Confirmed",
-              paymentId: result.value.data.paymentId,
-              paymentDate: result.value.data.paymentDate,
+              // Xử lý nhiều cấu trúc dữ liệu có thể có
+              paymentId: resultData.paymentId || (resultData.data && resultData.data.paymentId) || 0,
+              paymentDate: resultData.paymentDate || (resultData.data && resultData.data.paymentDate) || new Date().toISOString(),
             };
           }
           return order;
@@ -242,22 +255,29 @@ const Order = () => {
   };
 
   // Lọc và phân trang đơn hàng
-  const filteredOrders = orders.filter((order) => {
-    const searchLower = searchTerm.toLowerCase();
-    const matchesSearch = [
-      order.orderId,
-      order.userFullName,
-      order.userPhone,
-      order.userAddress,
-      order.finalAmount,
-      order.status,
-    ].some((field) => String(field).toLowerCase().includes(searchLower));
+  const filteredOrders = orders
+    .sort((a, b) => {
+      const dateA = a.orderDate ? dayjs(a.orderDate).valueOf() : 0;
+      const dateB = b.orderDate ? dayjs(b.orderDate).valueOf() : 0;
+      return dateB - dateA; // Sắp xếp từ mới nhất đến cũ nhất
+    })
+    .filter((order) => {
+      const searchLower = searchTerm.toLowerCase();
+      const matchesSearch = [
+        order.orderId,
+        order.userFullName,
+        order.userPhone,
+        order.userAddress,
+        order.finalAmount,
+        order.status,
+      ].some((field) => String(field).toLowerCase().includes(searchLower));
 
-    // Sửa lại logic lọc theo status
-    const matchesStatus = filterStatus === "All" || order.status === filterStatus;
+      // Sửa lại logic lọc theo status
+      const matchesStatus =
+        filterStatus === "All" || order.status === filterStatus;
 
-    return matchesSearch && matchesStatus;
-  });
+      return matchesSearch && matchesStatus;
+    });
 
   const totalPages = Math.ceil(filteredOrders.length / ordersPerPage);
   const currentOrders = filteredOrders.slice(
@@ -336,10 +356,10 @@ const Order = () => {
   return (
     <div className="p-4 md:p-6 bg-gradient-to-br from-gray-50 to-gray-100 min-h-screen">
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
         <div className="flex items-center space-x-3">
-          <FaShoppingBag className="text-3xl text-blue-600" />
-          <h1 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+          <FaShoppingBag className="text-2xl md:text-3xl text-blue-600" />
+          <h1 className="text-xl md:text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
             Quản lý đơn hàng
           </h1>
         </div>
@@ -365,8 +385,8 @@ const Order = () => {
             />
           </div>
 
-          <div className="flex gap-3">
-            <div className="relative min-w-[200px]">
+          <div className="flex flex-col sm:flex-row gap-3">
+            <div className="relative w-full sm:w-[200px]">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                 <FaFilter className="text-gray-400" />
               </div>
@@ -384,7 +404,7 @@ const Order = () => {
 
             <button
               onClick={handleApproveAllOrders}
-              className="px-6 py-2.5 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors flex items-center gap-2"
+              className="w-full sm:w-auto px-6 py-2.5 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors flex items-center justify-center gap-2"
             >
               <FaCheckCircle />
               Duyệt tất cả
@@ -392,8 +412,79 @@ const Order = () => {
           </div>
         </div>
 
-        {/* Table */}
-        <div className="overflow-x-auto">
+        {/* Mobile View */}
+        <div className="md:hidden">
+          {currentOrders.map((order) => (
+            <div key={order.orderId} className="bg-white rounded-lg shadow border border-gray-200 p-4 mb-4">
+              <div className="flex justify-between items-start mb-3">
+                <div className="flex flex-col">
+                  <span className="text-sm font-medium text-gray-600">Mã đơn: #{order.orderId}</span>
+                  <span className="text-xs text-gray-500">
+                    {dayjs(order.orderDate).format("DD/MM/YYYY HH:mm")}
+                  </span>
+                </div>
+                <div className="flex flex-col items-end gap-2">
+                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(order.status)}`}>
+                    {getStatusDisplay(order.status)}
+                  </span>
+                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                    order.paymentStatus === "Confirmed"
+                      ? "bg-green-100 text-green-800"
+                      : "bg-yellow-100 text-yellow-800"
+                  }`}>
+                    {order.paymentStatus === "Confirmed" ? "Đã thanh toán" : "Chưa thanh toán"}
+                  </span>
+                </div>
+              </div>
+
+              <div className="space-y-2 mb-3">
+                <div>
+                  <span className="text-xs text-gray-500">Khách hàng:</span>
+                  <p className="font-medium">{order.userFullName}</p>
+                </div>
+                <div>
+                  <span className="text-xs text-gray-500">Số điện thoại:</span>
+                  <p>{order.userPhone}</p>
+                </div>
+                <div>
+                  <span className="text-xs text-gray-500">Địa chỉ:</span>
+                  <p className="text-sm">{order.userAddress}</p>
+                </div>
+                <div>
+                  <span className="text-xs text-gray-500">Tổng tiền:</span>
+                  <p className="font-medium text-blue-600">{formatCurrency(order.finalAmount)}</p>
+                </div>
+              </div>
+
+              {order.status === "Cancelled" && (
+                <div className="mb-3 p-2 bg-red-50 rounded-lg">
+                  <span className="text-xs text-gray-500">Lý do hủy:</span>
+                  <p className="text-sm text-red-600">
+                    {order.cancelledReason || order.cancelReason || "Không có lý do"}
+                  </p>
+                  {(order.cancelledDate || order.cancelDate) && (
+                    <p className="text-xs text-gray-500 mt-1">
+                      Hủy lúc: {dayjs(order.cancelledDate || order.cancelDate).format("DD/MM/YYYY HH:mm")}
+                    </p>
+                  )}
+                </div>
+              )}
+
+              {order.status === ORDER_STATUS.PENDING && !order.paymentId && (
+                <button
+                  onClick={() => handleApproveOrder(order.orderId)}
+                  className="w-full mt-3 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors flex items-center justify-center gap-2"
+                >
+                  <FaCheckCircle className="w-4 h-4" />
+                  <span>Duyệt đơn</span>
+                </button>
+              )}
+            </div>
+          ))}
+        </div>
+
+        {/* Desktop/Tablet View */}
+        <div className="hidden md:block overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
@@ -417,6 +508,9 @@ const Order = () => {
                 </th>
                 <th className="p-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Trạng thái
+                </th>
+                <th className="p-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Lý do hủy
                 </th>
                 <th className="p-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Thanh toán
@@ -448,6 +542,20 @@ const Order = () => {
                       {getStatusDisplay(order.status)}
                     </span>
                   </td>
+                  <td className="p-4 text-sm">
+                    {order.status === "Cancelled" && (
+                      <div className="flex flex-col gap-1">
+                        <span className="text-red-600">
+                          {order.cancelledReason || order.cancelReason || "Không có lý do"}
+                        </span>
+                        {(order.cancelledDate || order.cancelDate) && (
+                          <span className="text-xs text-gray-500">
+                            Hủy lúc: {dayjs(order.cancelledDate || order.cancelDate).format("DD/MM/YYYY HH:mm")}
+                          </span>
+                        )}
+                      </div>
+                    )}
+                  </td>
                   <td className="p-4">
                     <span
                       className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
@@ -463,16 +571,20 @@ const Order = () => {
                   </td>
                   <td className="p-4 text-center">
                     <div className="flex items-center justify-center space-x-2">
-                      {order.status === ORDER_STATUS.PENDING && !order.paymentId && (
-                        <button
-                          onClick={() => handleApproveOrder(order.orderId)}
-                          className="px-3 py-1.5 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors flex items-center gap-1"
-                          title="Duyệt đơn"
-                        >
-                          <FaCheckCircle className="w-4 h-4" />
-                          <span className="text-sm">Duyệt</span>
-                        </button>
-                      )}
+                      {order.status === ORDER_STATUS.PENDING &&
+                        !order.paymentId && (
+                          <button
+                            onClick={() => handleApproveOrder(order.orderId)}
+                            className="px-3 py-1.5 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-transform transform hover:-translate-y-1 hover:shadow-lg flex items-center gap-1"
+                            title="Duyệt đơn"
+                            style={{
+                              boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08)",
+                            }}
+                          >
+                            <FaCheckCircle className="w-4 h-4" />
+                            <span className="text-sm">Duyệt</span>
+                          </button>
+                        )}
                     </div>
                   </td>
                 </tr>
@@ -481,15 +593,14 @@ const Order = () => {
           </table>
         </div>
 
-        {/* Pagination */}
+        {/* Responsive Pagination */}
         {totalPages > 1 && (
-          <div className="flex justify-center mt-6">
-            <nav className="flex items-center space-x-2">
-              {/* Nút Previous */}
+          <div className="flex justify-center mt-6 px-2">
+            <nav className="flex flex-wrap items-center justify-center gap-2">
               <button
-                onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
                 disabled={currentPage === 1}
-                className={`px-3 py-2 rounded-lg ${
+                className={`w-8 h-8 flex items-center justify-center rounded-lg ${
                   currentPage === 1
                     ? "bg-gray-100 text-gray-400 cursor-not-allowed"
                     : "bg-gray-100 text-gray-700 hover:bg-gray-200"
@@ -498,9 +609,7 @@ const Order = () => {
                 &lt;
               </button>
 
-              {/* Các nút số trang */}
               {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => {
-                // Hiển thị trang đầu, trang cuối, trang hiện tại và các trang xung quanh
                 if (
                   pageNum === 1 ||
                   pageNum === totalPages ||
@@ -510,7 +619,7 @@ const Order = () => {
                     <button
                       key={pageNum}
                       onClick={() => setCurrentPage(pageNum)}
-                      className={`px-3 py-2 rounded-lg ${
+                      className={`w-8 h-8 flex items-center justify-center rounded-lg ${
                         currentPage === pageNum
                           ? "bg-blue-500 text-white"
                           : "bg-gray-100 text-gray-700 hover:bg-gray-200"
@@ -520,13 +629,9 @@ const Order = () => {
                     </button>
                   );
                 }
-                // Hiển thị dấu ... nếu có khoảng cách
-                if (
-                  pageNum === currentPage - 2 ||
-                  pageNum === currentPage + 2
-                ) {
+                if (pageNum === currentPage - 2 || pageNum === currentPage + 2) {
                   return (
-                    <span key={pageNum} className="px-3 py-2">
+                    <span key={pageNum} className="px-2">
                       ...
                     </span>
                   );
@@ -534,11 +639,10 @@ const Order = () => {
                 return null;
               })}
 
-              {/* Nút Next */}
               <button
-                onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
                 disabled={currentPage === totalPages}
-                className={`px-3 py-2 rounded-lg ${
+                className={`w-8 h-8 flex items-center justify-center rounded-lg ${
                   currentPage === totalPages
                     ? "bg-gray-100 text-gray-400 cursor-not-allowed"
                     : "bg-gray-100 text-gray-700 hover:bg-gray-200"

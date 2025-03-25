@@ -107,16 +107,6 @@ const Sidebar = () => {
                   title="Lộ trình của bạn"
                   to="/profilelayout/my-routines"
                 />
-                <NavItem
-                  icon={<FaShieldAlt />}
-                  title="Bảo mật 2 lớp (2FA)"
-                  to="/profilelayout/security"
-                />
-                <NavItem
-                  icon={<FaBell />}
-                  title="Thông báo"
-                  to="/profilelayout/notifications"
-                />
               </ul>
             </nav>
           </div>

@@ -160,9 +160,24 @@ const BlogManagement = () => {
     }
   };
 
-  const filteredBlogs = blogs.filter((blog) =>
-    blog.title.toLowerCase().includes(search.toLowerCase())
-  );
+  // Sửa lại hàm lọc dữ liệu với nhiều tiêu chí hơn
+  const filteredBlogs = blogs.filter((blog) => {
+    const searchLower = search.toLowerCase().trim();
+    
+    // Nếu không có từ khóa tìm kiếm, hiển thị tất cả blog
+    if (!searchLower) return true;
+    
+    // Tìm kiếm theo nhiều trường thông tin
+    return (
+      (blog.title && blog.title.toLowerCase().includes(searchLower)) ||
+      (blog.content && blog.content.toLowerCase().includes(searchLower)) ||
+      (blog.skinType && blog.skinType.toLowerCase().includes(searchLower)) ||
+      (blog.category && blog.category.toLowerCase().includes(searchLower)) ||
+      (blog.status && blog.status.toLowerCase().includes(searchLower)) ||
+      (blog.blogId && blog.blogId.toString().includes(searchLower)) ||
+      (blog.authorId && blog.authorId.toString().includes(searchLower))
+    );
+  });
 
   const indexOfLastBlog = currentPage * blogsPerPage;
   const indexOfFirstBlog = indexOfLastBlog - blogsPerPage;

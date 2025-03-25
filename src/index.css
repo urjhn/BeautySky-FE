@@ -9,3 +9,29 @@
 body {
   font-family: "Quicksand", sans-serif;
 }
+
+
+
+.relative {
+  position: relative;
+}
+
+.w-0.5 {
+  width: 2px; /* Adjust width as needed */
+}
+
+.h-16 {
+  height: 4rem; /* Height for the connecting line */
+}
+
+.bg-gray-300 {
+  background-color: #d1d5db; /* Light gray color for the line */
+}
+
+.transform {
+  transform: translateX(-50%);
+}
+
+.mb-6 {
+  margin-bottom: 1.5rem; /* Adjust margin between steps */
+}

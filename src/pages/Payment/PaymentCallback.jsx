@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import paymentsAPI from '../../services/payment';
 import { FaSpinner, FaExclamationTriangle, FaShoppingCart } from 'react-icons/fa';
 import Navbar from '../../components/Navbar/Navbar';
 import Footer from '../../components/Footer/Footer';
@@ -11,41 +10,55 @@ const PaymentCallback = () => {
     const [isProcessing, setIsProcessing] = useState(true);
     const [error, setError] = useState(null);
 
-    // Trong PaymentCallback.jsx
-useEffect(() => {
-    const handleCallback = async () => {
-        try {
-            const queryParams = new URLSearchParams(location.search);
-            const responseCode = queryParams.get('vnp_ResponseCode');
-            const transactionRef = queryParams.get('vnp_TxnRef');
+    useEffect(() => {
+        const queryParams = new URLSearchParams(location.search);
+        const responseCode = queryParams.get('vnp_ResponseCode');
+        const orderId = queryParams.get('orderId');
+        const status = queryParams.get('status');
 
-            // Gọi API xử lý callback
-            const response = await paymentsAPI.handlePaymentCallback(queryParams.toString());
-
+        if (responseCode) {
             if (responseCode === '00') {
+                // Thanh toán thành công
                 navigate('/paymentsuccess', {
                     state: {
-                        orderId: transactionRef,
-                        message: 'Thanh toán thành công!'
+                        orderId: queryParams.get('vnp_TxnRef'),
+                        message: 'Thanh toán thành công!',
+                        status: 'Completed' // Thêm status vào state
                     }
                 });
             } else {
-                const errorMessage = response.message || 'Thanh toán thất bại';
+                // Thanh toán thất bại
                 navigate('/paymentfailed', {
                     state: {
-                        error: errorMessage,
-                        orderId: transactionRef
+                        error: 'Thanh toán thất bại: ' + (responseCode === '24' ? 'Giao dịch bị hủy' : 'Lỗi thanh toán'),
+                        orderId: queryParams.get('vnp_TxnRef')
                     }
                 });
             }
-        } catch (error) {
-            console.error('Lỗi xử lý callback:', error);
-            setError('Có lỗi xảy ra khi xử lý thanh toán');
+        } 
+        else if (orderId) {
+            const message = queryParams.get('message');
+            if (location.pathname.includes('paymentsuccess')) {
+                navigate('/paymentsuccess', {
+                    state: {
+                        orderId: orderId,
+                        message: 'Thanh toán thành công!',
+                        status: status || 'Completed' // Sử dụng status từ BE hoặc mặc định là Completed
+                    }
+                });
+            } else {
+                navigate('/paymentfailed', {
+                    state: {
+                        error: message || 'Thanh toán thất bại',
+                        orderId: orderId
+                    }
+                });
+            }
+        } else {
+            setError('Không tìm thấy thông tin thanh toán');
+            setIsProcessing(false);
         }
-    };
-
-    handleCallback();
-}, [location, navigate]);
+    }, [location, navigate]);
 
     if (isProcessing) {
         return (

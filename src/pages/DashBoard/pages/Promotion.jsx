@@ -59,9 +59,27 @@ const PromotionManagement = () => {
     setShowModal(true);
   };
 
-  const filteredPromotions = promotions.filter((promo) =>
-    promo.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  // Sửa lại hàm lọc để tìm kiếm trên tất cả các trường thông tin
+  const filteredPromotions = promotions.filter((promo) => {
+    const searchLower = searchTerm.toLowerCase().trim();
+    
+    // Nếu không có từ khóa tìm kiếm, hiển thị tất cả khuyến mãi
+    if (!searchLower) return true;
+    
+    // Tìm kiếm trên tất cả các trường thông tin
+    return (
+      // Tìm theo tên
+      (promo.name && promo.name.toLowerCase().includes(searchLower)) ||
+      // Tìm theo phần trăm giảm giá (bỏ dấu % để so sánh)
+      (promo.discount && promo.discount.replace('%', '').includes(searchLower)) ||
+      // Tìm theo ngày bắt đầu
+      (promo.startDate && promo.startDate.includes(searchLower)) ||
+      // Tìm theo ngày kết thúc
+      (promo.endDate && promo.endDate.includes(searchLower)) ||
+      // Tìm theo ID
+      (promo.id && promo.id.toString().includes(searchLower))
+    );
+  });
 
   const totalPages = Math.ceil(filteredPromotions.length / PAGE_SIZE);
   const paginatedPromotions = filteredPromotions.slice(
@@ -225,7 +243,7 @@ const PromotionManagement = () => {
         <div className="relative w-full sm:w-64">
           <input
             type="text"
-            placeholder="Tìm kiếm khuyến mãi..."
+            placeholder="Tìm kiếm..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full p-2 pl-10 border border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all"

@@ -29,9 +29,12 @@ const Products = () => {
   // Lấy ngẫu nhiên 10 sản phẩm từ danh sách
   const getRandomProducts = () => {
     if (!products || products.length === 0) return [];
-    
+
+    // Lọc sản phẩm chỉ hiển thị những sản phẩm có isActive là true
+    const activeProducts = products.filter(product => product.isActive);
+
     // Tạo bản sao của mảng sản phẩm để không ảnh hưởng đến dữ liệu gốc
-    const shuffled = [...products];
+    const shuffled = [...activeProducts];
     
     // Thuật toán Fisher-Yates để xáo trộn mảng
     for (let i = shuffled.length - 1; i > 0; i--) {
