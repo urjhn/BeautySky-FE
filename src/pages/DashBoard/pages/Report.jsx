@@ -27,30 +27,36 @@ const ProductReviews = () => {
   const handleDeleteReview = async (review) => {
     Swal.fire({
       title: "Bạn có chắc chắn?",
-      text: `Bạn sắp xóa đánh giá cho sản phẩm ${review.productName}`,
+      text: `Bạn sắp ẩn đánh giá cho sản phẩm ${review.productName}`,
       icon: "warning",
       showCancelButton: true,
       confirmButtonColor: "#d33",
       cancelButtonColor: "#3085d6",
-      confirmButtonText: "Vâng, xóa ngay!",
+      confirmButtonText: "Vâng, ẩn ngay!",
       cancelButtonText: "Hủy",
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {
-          const response = await reviewsAPI.deleteReviews(review.reviewId);
-
-          if (response.status === 200) {
-            setReviews(reviews.filter((r) => r.reviewId !== review.reviewId));
-            Swal.fire("Deleted!", "Bài đánh giá đã được xóa", "success");
-          } else {
-            throw new Error("Lỗi không xác định khi xóa");
-          }
+          await reviewsAPI.deleteReviews(review.reviewId);
+          
+          setReviews(prevReviews => 
+            prevReviews.filter(r => r.reviewId !== review.reviewId)
+          );
+          
+          Swal.fire({
+            icon: "success",
+            title: "Thành công!",
+            text: "Đánh giá đã được ẩn",
+            showConfirmButton: false,
+            timer: 1500
+          });
         } catch (error) {
-          if (error.response?.status === 404) {
-            Swal.fire("Lỗi", "Không tìm thấy bài đánh giá", "error");
-          } else {
-            Swal.fire("Lỗi", "Lỗi xóa đánh giá", "error");
-          }
+          console.error("Error deleting review:", error);
+          Swal.fire({
+            icon: "error",
+            title: "Lỗi",
+            text: typeof error === 'string' ? error : "Có lỗi xảy ra khi ẩn đánh giá",
+          });
         }
       }
     });
@@ -58,7 +64,7 @@ const ProductReviews = () => {
 
   const filteredReviews = reviews.filter((review) =>
     Object.values(review).some((value) =>
-      value.toString().toLowerCase().includes(searchTerm.toLowerCase())
+      value?.toString().toLowerCase().includes(searchTerm.toLowerCase())
     )
   );
 
@@ -157,10 +163,21 @@ const ProductReviews = () => {
                       className="bg-gradient-to-r from-red-500 to-pink-500 text-white px-4 py-2 rounded-lg shadow hover:from-red-600 hover:to-pink-600 transition-all duration-300 transform hover:scale-105 w-full md:w-auto flex items-center justify-center"
                       onClick={() => handleDeleteReview(review)}
                     >
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      <svg 
+                        xmlns="http://www.w3.org/2000/svg" 
+                        className="h-5 w-5 mr-2" 
+                        fill="none" 
+                        viewBox="0 0 24 24" 
+                        stroke="currentColor"
+                      >
+                        <path 
+                          strokeLinecap="round" 
+                          strokeLinejoin="round" 
+                          strokeWidth={2} 
+                          d="M13.875 18.825A10 10 0 1 0 12 20v-1.5m0 0l3-3m-3 3l-3-3" 
+                        />
                       </svg>
-                      Xóa
+                      Ẩn
                     </button>
                   </td>
                 </tr>
