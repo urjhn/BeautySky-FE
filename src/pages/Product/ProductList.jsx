@@ -298,20 +298,33 @@ const ProductList = ({ selectedSkinType, selectedCategory, sortOrder }) => {
                     <p className="text-lg sm:text-xl font-bold text-blue-600 mt-1 sm:mt-2">
                       {formatCurrency(product.price)}
                     </p>
-                    <div className="flex items-center space-x-1">
+                    <div className="flex items-center">
                       {product.rating ? (
                         <>
-                          {Array.from({ length: 5 }).map((_, index) => (
-                            <i
-                              key={index}
-                              className={`fas fa-star ${
-                                index < Math.floor(product.rating)
-                                  ? "text-yellow-400"
-                                  : "text-gray-300"
-                              }`}
-                            ></i>
-                          ))}
-                          <span className="ml-2 text-sm text-gray-600">
+                          <div className="flex items-center">
+                            {Array.from({ length: 5 }).map((_, index) => {
+                              const ratingDiff = product.rating - index;
+                              
+                              return (
+                                <div 
+                                  key={index} 
+                                  className="w-4 mr-0.5 flex items-center justify-center"
+                                >
+                                  {ratingDiff >= 1 ? (
+                                    <i className="fas fa-star text-yellow-400"></i>
+                                  ) : ratingDiff > 0 ? (
+                                    <div className="relative w-full flex items-center justify-center">
+                                      <i className="fas fa-star text-gray-300 absolute"></i>
+                                      <i className="fas fa-star-half text-yellow-400 absolute"></i>
+                                    </div>
+                                  ) : (
+                                    <i className="fas fa-star text-gray-300"></i>
+                                  )}
+                                </div>
+                              );
+                            })}
+                          </div>
+                          <span className="ml-1.5 text-sm text-gray-600">
                             ({product.rating.toFixed(1)})
                           </span>
                         </>

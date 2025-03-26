@@ -32,7 +32,6 @@ const reviewsAPI = {
         userId: payload.userId,
         rating: payload.rating,
         comment: payload.comment,
-        reviewDate: payload.reviewDate || new Date().toISOString()
       };
 
       const response = await axiosInstance.post(endPoint, reviewData);
@@ -40,36 +39,23 @@ const reviewsAPI = {
       if (response.status === 200) {
         return {
           status: 200,
-          message: "Review success",
-          data: reviewData
+          message: response.data.message,
+          data: response.data.data
         };
       }
       
       throw new Error("Failed to create review");
     } catch (error) {
       console.error("Error creating review:", error);
-      throw error;
+      throw error.response?.data?.message || "Failed to create review";
     }
   },
   deleteReviews: async (id) => {
     try {
       const response = await axiosInstance.delete(`${endPoint}/${id}`);
-      
-      if (response.status === 200) {
-        return {
-          status: 200,
-          message: "Delete success"
-        };
-      }
-
-      if (response.status === 404) {
-        throw new Error("Review not found");
-      }
-
-      throw new Error("Failed to delete review");
+      return response;
     } catch (error) {
-      console.error(`Error deleting review ${id}:`, error);
-      throw error;
+      throw error.response?.data || "Failed to delete review";
     }
   },
   checkReviewExists: async (id) => {
