@@ -18,7 +18,10 @@ const ProductReviews = () => {
   const fetchReviews = async () => {
     try {
       const response = await reviewsAPI.getAll();
-      setReviews(response.data);
+      const sortedReviews = response.data.sort((a, b) => 
+        new Date(b.reviewDate) - new Date(a.reviewDate)
+      );
+      setReviews(sortedReviews);
     } catch (error) {
       Swal.fire("Error", "Failed to fetch reviews", "error");
     }
@@ -62,11 +65,12 @@ const ProductReviews = () => {
     });
   };
 
-  const filteredReviews = reviews.filter((review) =>
-    Object.values(review).some((value) =>
-      value?.toString().toLowerCase().includes(searchTerm.toLowerCase())
-    )
-  );
+  const filteredReviews = reviews
+    .filter((review) =>
+      Object.values(review).some((value) =>
+        value?.toString().toLowerCase().includes(searchTerm.toLowerCase())
+      )
+    );
 
   const pageCount = Math.ceil(filteredReviews.length / reviewsPerPage);
   const offset = currentPage * reviewsPerPage;

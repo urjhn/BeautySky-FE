@@ -145,7 +145,7 @@ const UserRoutinePage = () => {
   }
 
   return (
-    <div className="bg-gradient-to-b from-gray-50 to-white min-h-screen py-8 px-4">
+    <div className="bg-gradient-to-b from-gray-50 to-white min-h-screen py-8 px-4 mt-[72px]">
       <div className="max-w-5xl mx-auto">
         <motion.div
           initial={{ opacity: 0, y: -20 }}
