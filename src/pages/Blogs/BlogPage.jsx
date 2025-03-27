@@ -13,10 +13,10 @@ const Blogs = () => {
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
-  
+
   const location = useLocation();
   const queryParams = new URLSearchParams(location.search);
-  const blogIdFromUrl = queryParams.get('blogId');
+  const blogIdFromUrl = queryParams.get("blogId");
 
   // Fetch blogs với filter
   useEffect(() => {
@@ -32,9 +32,11 @@ const Blogs = () => {
           response = await blogsAPI.getAll();
         }
         setBlogs(response.data);
-        
+
         if (blogIdFromUrl) {
-          const blogToShow = response.data.find(blog => blog.blogId.toString() === blogIdFromUrl);
+          const blogToShow = response.data.find(
+            (blog) => blog.blogId.toString() === blogIdFromUrl
+          );
           if (blogToShow) {
             setSelectedBlog(blogToShow);
           }
@@ -74,17 +76,17 @@ const Blogs = () => {
   // Thêm useEffect để lắng nghe sự kiện nhấn phím Esc
   useEffect(() => {
     const handleEscapeKey = (event) => {
-      if (event.key === 'Escape' && selectedBlog) {
+      if (event.key === "Escape" && selectedBlog) {
         setSelectedBlog(null);
       }
     };
 
     // Thêm event listener khi component được mount
-    document.addEventListener('keydown', handleEscapeKey);
+    document.addEventListener("keydown", handleEscapeKey);
 
     // Cleanup event listener khi component unmount
     return () => {
-      document.removeEventListener('keydown', handleEscapeKey);
+      document.removeEventListener("keydown", handleEscapeKey);
     };
   }, [selectedBlog]);
 
@@ -296,13 +298,14 @@ const Blogs = () => {
 
         {/* Modal được cải thiện */}
         {selectedBlog && (
-          <>
-            {/* Overlay để làm mờ nền */}
-            <div 
-              className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40"
-              onClick={() => setSelectedBlog(null)}
-            ></div>
-            
+            <div
+              className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[1001]"
+              onClick={(e) => {
+                e.preventDefault();
+                setSelectedBlog(null);
+              }}
+            >
+
             <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4">
               <div
                 className="bg-white rounded-2xl shadow-2xl w-full max-w-5xl relative
@@ -381,21 +384,21 @@ const Blogs = () => {
                       </span>
                     </div>
                   </div>
-                  <div 
-                    className="prose prose-blue prose-lg max-w-none text-gray-700 leading-relaxed"
-                  >
-                    {selectedBlog.content.split('\n').map((paragraph, index) => (
+                  <div className="prose prose-blue prose-lg max-w-none text-gray-700 leading-relaxed">
+                    {selectedBlog.content.split("\n").map((paragraph, index) =>
                       paragraph.trim() ? (
-                        <p key={index} className="mb-4">{paragraph}</p>
+                        <p key={index} className="mb-4">
+                          {paragraph}
+                        </p>
                       ) : (
                         <br key={index} />
                       )
-                    ))}
+                    )}
                   </div>
                 </div>
               </div>
             </div>
-          </>
+          </div>
         )}
       </div>
       <Footer />
