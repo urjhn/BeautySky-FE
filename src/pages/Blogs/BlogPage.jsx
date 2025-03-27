@@ -12,11 +12,11 @@ const Blogs = () => {
   const [selectedSkinType, setSelectedSkinType] = useState("All");
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 10;
-
+  const itemsPerPage = 9;
+  
   const location = useLocation();
   const queryParams = new URLSearchParams(location.search);
-  const blogIdFromUrl = queryParams.get("blogId");
+  const blogIdFromUrl = queryParams.get('blogId');
 
   // Fetch blogs với filter
   useEffect(() => {
@@ -32,11 +32,9 @@ const Blogs = () => {
           response = await blogsAPI.getAll();
         }
         setBlogs(response.data);
-
+        
         if (blogIdFromUrl) {
-          const blogToShow = response.data.find(
-            (blog) => blog.blogId.toString() === blogIdFromUrl
-          );
+          const blogToShow = response.data.find(blog => blog.blogId.toString() === blogIdFromUrl);
           if (blogToShow) {
             setSelectedBlog(blogToShow);
           }
@@ -76,143 +74,150 @@ const Blogs = () => {
   // Thêm useEffect để lắng nghe sự kiện nhấn phím Esc
   useEffect(() => {
     const handleEscapeKey = (event) => {
-      if (event.key === "Escape" && selectedBlog) {
+      if (event.key === 'Escape' && selectedBlog) {
         setSelectedBlog(null);
       }
     };
 
     // Thêm event listener khi component được mount
-    document.addEventListener("keydown", handleEscapeKey);
+    document.addEventListener('keydown', handleEscapeKey);
 
     // Cleanup event listener khi component unmount
     return () => {
-      document.removeEventListener("keydown", handleEscapeKey);
+      document.removeEventListener('keydown', handleEscapeKey);
     };
   }, [selectedBlog]);
 
   return (
     <>
       <Navbar />
-      <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100">
-        <div className="container mx-auto px-4 py-12">
-          <h2 className="text-5xl font-bold mb-12 text-center bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-600">
-            Bài Viết Mới Nhất
-          </h2>
-
-          {/* Bộ lọc được cải thiện */}
-          <div className="flex flex-col sm:flex-row justify-center gap-4 mb-8 px-4 sm:px-0">
-            <div className="relative w-full sm:w-auto">
-              <select
-                value={selectedSkinType}
-                onChange={(e) => {
-                  setSelectedSkinType(e.target.value);
-                  setSelectedCategory("All");
-                  setCurrentPage(1);
-                }}
-                className="w-full sm:w-48 px-4 py-3 rounded-full border-2 border-blue-200 
-                          focus:border-blue-500 focus:ring-2 focus:ring-blue-200 
-                          appearance-none cursor-pointer transition-all"
-              >
-                <option value="All">Tất cả loại da</option>
-                <option value="Da Dầu">Da Dầu</option>
-                <option value="Da Khô">Da Khô</option>
-                <option value="Da Thường">Da Thường</option>
-                <option value="Da Nhạy Cảm">Da Nhạy Cảm</option>
-                <option value="Da Hỗn Hợp">Da Hỗn Hợp</option>
-              </select>
-              <div className="absolute right-4 top-1/2 transform -translate-y-1/2 pointer-events-none">
-                <svg
-                  className="w-5 h-5 text-gray-400"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M19 9l-7 7-7-7"
-                  />
-                </svg>
-              </div>
+      <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
+        {/* Hero Section - Chỉnh nhỏ lại */}
+        <div className="relative bg-gradient-to-r from-blue-600 to-indigo-700 py-10 sm:py-12">
+          <div className="absolute inset-0 bg-grid-pattern opacity-10"></div>
+          <div className="container mx-auto px-4">
+            <div className="max-w-3xl mx-auto text-center">
+              <h1 className="text-3xl md:text-4xl font-bold text-white mb-3">
+                Khám Phá Bí Quyết Chăm Sóc Da
+              </h1>
+              <p className="text-blue-100 text-base md:text-lg mb-4">
+                Cập nhật những kiến thức và xu hướng mới nhất về skincare
+              </p>
             </div>
+          </div>
+        </div>
 
-            {/* Tương tự cho category select ... */}
-            <div className="relative w-full sm:w-auto">
-              <select
-                value={selectedCategory}
-                onChange={(e) => {
-                  setSelectedCategory(e.target.value);
-                  setSelectedSkinType("All");
-                  setCurrentPage(1);
-                }}
-                className="w-full sm:w-48 px-4 py-3 rounded-full border-2 border-blue-200 
-                          focus:border-blue-500 focus:ring-2 focus:ring-blue-200 
-                          appearance-none cursor-pointer transition-all"
-              >
-                <option value="All">Tất cả danh mục</option>
-                <option value="Tẩy Trang">Tẩy Trang</option>
-                <option value="Sửa Rửa Mặt">Sửa Rửa Mặt</option>
-                <option value="Serum">Serum</option>
-                <option value="Toner">Toner</option>
-                <option value="Kem Dưỡng">Kem Dưỡng</option>
-                <option value="Kem Chống Nắng">Kem Chống Nắng</option>
-              </select>
-              <div className="absolute right-4 top-1/2 transform -translate-y-1/2 pointer-events-none">
-                <svg
-                  className="w-5 h-5 text-gray-400"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M19 9l-7 7-7-7"
-                  />
-                </svg>
+        <div className="container mx-auto px-4 py-12 -mt-8">
+          {/* Filters Section */}
+          <div className="bg-white rounded-xl shadow-lg p-6 mb-12 max-w-4xl mx-auto">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-gray-700">Loại da</label>
+                <div className="relative">
+                  <select
+                    value={selectedSkinType}
+                    onChange={(e) => {
+                      setSelectedSkinType(e.target.value);
+                      setSelectedCategory("All");
+                      setCurrentPage(1);
+                    }}
+                    className="w-full px-4 py-3 rounded-lg border-2 border-gray-200 
+                             focus:border-blue-500 focus:ring-2 focus:ring-blue-200 
+                             appearance-none cursor-pointer transition-all"
+                  >
+                    <option value="All">Tất cả loại da</option>
+                    <option value="Da Dầu">Da Dầu</option>
+                    <option value="Da Khô">Da Khô</option>
+                    <option value="Da Thường">Da Thường</option>
+                    <option value="Da Nhạy Cảm">Da Nhạy Cảm</option>
+                    <option value="Da Hỗn Hợp">Da Hỗn Hợp</option>
+                  </select>
+                  <div className="absolute right-4 top-1/2 transform -translate-y-1/2 pointer-events-none">
+                    <svg className="w-5 h-5 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
+                    </svg>
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-gray-700">Danh mục</label>
+                <div className="relative">
+                  <select
+                    value={selectedCategory}
+                    onChange={(e) => {
+                      setSelectedCategory(e.target.value);
+                      setSelectedSkinType("All");
+                      setCurrentPage(1);
+                    }}
+                    className="w-full px-4 py-3 rounded-lg border-2 border-gray-200 
+                             focus:border-blue-500 focus:ring-2 focus:ring-blue-200 
+                             appearance-none cursor-pointer transition-all"
+                  >
+                    <option value="All">Tất cả danh mục</option>
+                    <option value="Tẩy Trang">Tẩy Trang</option>
+                    <option value="Sửa Rửa Mặt">Sửa Rửa Mặt</option>
+                    <option value="Serum">Serum</option>
+                    <option value="Toner">Toner</option>
+                    <option value="Kem Dưỡng">Kem Dưỡng</option>
+                    <option value="Kem Chống Nắng">Kem Chống Nắng</option>
+                  </select>
+                  <div className="absolute right-4 top-1/2 transform -translate-y-1/2 pointer-events-none">
+                    <svg className="w-5 h-5 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
+                    </svg>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
 
-          {/* Loading state */}
+          {/* Loading State */}
           {loading ? (
-            <div className="flex justify-center items-center min-h-[400px]">
-              <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+            <div className="flex flex-col items-center justify-center min-h-[400px]">
+              <div className="w-16 h-16 border-4 border-blue-200 border-t-blue-500 rounded-full animate-spin"></div>
+              <p className="mt-4 text-gray-600">Đang tải bài viết...</p>
             </div>
           ) : (
             <>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8 max-w-7xl mx-auto px-4 sm:px-6">
+              {/* Blog Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                 {paginatedBlogs.map((post) => (
                   <div
                     key={post.blogId}
-                    className="group bg-white rounded-xl shadow-md overflow-hidden 
-                              hover:shadow-xl transform hover:-translate-y-1
-                              transition-all duration-300 ease-in-out"
                     onClick={() => setSelectedBlog(post)}
+                    className="group bg-white rounded-2xl shadow-md overflow-hidden hover:shadow-xl 
+                             transform hover:-translate-y-1 transition-all duration-300 cursor-pointer
+                             flex flex-col h-[500px]"
                   >
-                    <div className="relative overflow-hidden">
+                    <div className="relative w-full h-[250px] overflow-hidden">
                       <img
                         src={post.imgUrl}
                         alt={post.title}
-                        className="w-full h-48 sm:h-56 lg:h-64 object-cover transform group-hover:scale-110 transition-transform duration-300"
+                        className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-500"
                       />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                     </div>
 
-                    <div className="p-6">
-                      <h3 className="text-xl font-bold mb-3 text-gray-800 group-hover:text-blue-500 transition-colors">
+                    <div className="p-6 flex flex-col flex-grow">
+                      <div className="flex gap-2 mb-3">
+                        <span className="px-3 py-1 text-xs font-medium bg-blue-100 text-blue-600 rounded-full">
+                          {post.skinType}
+                        </span>
+                        <span className="px-3 py-1 text-xs font-medium bg-indigo-100 text-indigo-600 rounded-full">
+                          {post.category}
+                        </span>
+                      </div>
+                      
+                      <h3 className="text-xl font-bold mb-3 text-gray-800 group-hover:text-blue-600 transition-colors line-clamp-2 min-h-[56px]">
                         {post.title}
                       </h3>
-                      <p className="text-gray-600 mb-4 line-clamp-3 text-sm">
-                        {post.content.substring(0, 150)}...
+                      
+                      <p className="text-gray-600 mb-4 line-clamp-3 flex-grow">
+                        {post.content}
                       </p>
-                      <button
-                        className="w-full bg-white text-blue-500 border-2 border-blue-500
-                                  px-6 py-2.5 rounded-lg font-medium
-                                  hover:bg-blue-50 transition-all duration-300"
-                      >
+
+                      <button className="w-full bg-gradient-to-r from-blue-500 to-indigo-600 text-white px-6 py-3 rounded-lg font-medium transform hover:translate-y-[-2px] transition-all duration-300 hover:shadow-lg mt-auto">
                         Đọc Thêm
                       </button>
                     </div>
@@ -220,188 +225,143 @@ const Blogs = () => {
                 ))}
               </div>
 
-              {/* Phân trang */}
+              {/* Pagination */}
               {filteredBlogs.length > 0 && (
-                <div className="mt-12 flex justify-center">
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={() => setCurrentPage(1)}
-                      disabled={currentPage === 1}
-                      className="px-3 py-1 rounded-md border border-gray-300 
-                               hover:bg-blue-50 disabled:opacity-50 
-                               disabled:cursor-not-allowed transition-colors"
-                    >
-                      <span className="sr-only">Trang đầu</span>
-                      ««
-                    </button>
-
-                    <button
-                      onClick={() => setCurrentPage(currentPage - 1)}
-                      disabled={currentPage === 1}
-                      className="px-3 py-1 rounded-md border border-gray-300 
-                               hover:bg-blue-50 disabled:opacity-50 
-                               disabled:cursor-not-allowed transition-colors"
-                    >
-                      <span className="sr-only">Trang trước</span>«
-                    </button>
-
-                    {[...Array(totalPages)].map((_, index) => (
+                <div className="mt-16">
+                  <div className="flex flex-col items-center space-y-5">
+                    <div className="flex items-center space-x-2">
                       <button
-                        key={index + 1}
-                        onClick={() => setCurrentPage(index + 1)}
-                        className={`px-4 py-2 rounded-md transition-colors
-                                  ${
-                                    currentPage === index + 1
-                                      ? "bg-blue-500 text-white"
-                                      : "border border-gray-300 hover:bg-blue-50"
-                                  }`}
+                        onClick={() => setCurrentPage(1)}
+                        disabled={currentPage === 1}
+                        className="px-4 py-2 rounded-lg bg-white border-2 border-gray-200 
+                                 text-gray-600 hover:border-blue-500 hover:text-blue-500 
+                                 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
                       >
-                        {index + 1}
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />
+                        </svg>
                       </button>
-                    ))}
 
-                    <button
-                      onClick={() => setCurrentPage(currentPage + 1)}
-                      disabled={currentPage === totalPages}
-                      className="px-3 py-1 rounded-md border border-gray-300 
-                               hover:bg-blue-50 disabled:opacity-50 
-                               disabled:cursor-not-allowed transition-colors"
-                    >
-                      <span className="sr-only">Trang sau</span>»
-                    </button>
+                      {[...Array(totalPages)].map((_, index) => (
+                        <button
+                          key={index + 1}
+                          onClick={() => setCurrentPage(index + 1)}
+                          className={`w-10 h-10 rounded-lg font-medium transition-all flex items-center justify-center
+                            ${currentPage === index + 1
+                              ? "bg-blue-500 text-white shadow-md"
+                              : "bg-white border-2 border-gray-200 text-gray-600 hover:border-blue-500 hover:text-blue-500"
+                            }`}
+                        >
+                          {index + 1}
+                        </button>
+                      ))}
 
-                    <button
-                      onClick={() => setCurrentPage(totalPages)}
-                      disabled={currentPage === totalPages}
-                      className="px-3 py-1 rounded-md border border-gray-300 
-                               hover:bg-blue-50 disabled:opacity-50 
-                               disabled:cursor-not-allowed transition-colors"
-                    >
-                      <span className="sr-only">Trang cuối</span>
-                      »»
-                    </button>
+                      <button
+                        onClick={() => setCurrentPage(totalPages)}
+                        disabled={currentPage === totalPages}
+                        className="px-4 py-2 rounded-lg bg-white border-2 border-gray-200 
+                                 text-gray-600 hover:border-blue-500 hover:text-blue-500 
+                                 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                      >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 5l7 7-7 7M5 5l7 7-7 7" />
+                        </svg>
+                      </button>
+                    </div>
+                    
+                    <p className="text-gray-600">
+                      Trang {currentPage} / {totalPages} • Hiển thị {paginatedBlogs.length} trong tổng số {filteredBlogs.length} bài viết
+                    </p>
                   </div>
                 </div>
               )}
 
-              {/* Hiển thị thông báo khi không có bài viết */}
+              {/* Empty State */}
               {filteredBlogs.length === 0 && (
-                <div className="text-center py-12">
-                  <p className="text-gray-500 text-lg">
-                    Không tìm thấy bài viết nào phù hợp với bộ lọc.
+                <div className="text-center py-16">
+                  <div className="w-24 h-24 mx-auto mb-6">
+                    <svg className="w-full h-full text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </div>
+                  <h3 className="text-xl font-medium text-gray-900 mb-2">
+                    Không tìm thấy bài viết
+                  </h3>
+                  <p className="text-gray-500">
+                    Không có bài viết nào phù hợp với bộ lọc của bạn.
                   </p>
                 </div>
               )}
             </>
           )}
         </div>
+      </div>
+      <Footer />
 
-        {/* Modal được cải thiện */}
-        {selectedBlog && (
-            <div
-              className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[1001]"
-              onClick={(e) => {
-                e.preventDefault();
-                setSelectedBlog(null);
-              }}
-            >
-
-            <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4">
-              <div
-                className="bg-white rounded-2xl shadow-2xl w-full max-w-5xl relative
-                          transform transition-all duration-300 scale-100
-                          max-h-[98vh] sm:max-h-[95vh] overflow-hidden flex flex-col"
-              >
-                {/* Header */}
-                <div className="p-4 sm:p-6 border-b border-gray-100 flex justify-between items-center sticky top-0 bg-white z-10">
-                  <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-800 line-clamp-1">
+      {/* Modal */}
+      {selectedBlog && (
+        <>
+          <div 
+            className="fixed inset-0 bg-black/70 backdrop-blur-sm z-[1000]"
+            onClick={() => setSelectedBlog(null)}
+          />
+          
+          <div className="fixed inset-0 z-[1001] flex items-center justify-center p-4 mt-[72px]">
+            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-5xl max-h-[calc(100vh-100px)] overflow-hidden flex flex-col">
+              {/* Modal Header */}
+              <div className="p-6 border-b border-gray-100 bg-gradient-to-r from-blue-500 to-indigo-600 flex-shrink-0">
+                <div className="flex justify-between items-center">
+                  <h2 className="text-2xl font-bold text-white line-clamp-1">
                     {selectedBlog.title}
                   </h2>
                   <button
-                    className="w-8 h-8 flex items-center justify-center rounded-full
-                              text-gray-500 hover:bg-gray-100 transition-colors"
                     onClick={(e) => {
                       e.stopPropagation();
                       setSelectedBlog(null);
                     }}
+                    className="p-2 hover:bg-white/20 rounded-full transition-colors"
+                    aria-label="Close modal"
                   >
-                    <svg
-                      className="w-5 h-5"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M6 18L18 6M6 6l12 12"
-                      />
+                    <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                     </svg>
                   </button>
                 </div>
+              </div>
 
-                {/* Content */}
-                <div className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
+              {/* Modal Content */}
+              <div className="flex-1 overflow-y-auto">
+                <div className="p-6">
                   <img
                     src={selectedBlog.imgUrl}
                     alt={selectedBlog.title}
-                    className="w-full h-[200px] sm:h-[300px] lg:h-[500px] object-cover rounded-xl mb-4 sm:mb-6 lg:mb-8 shadow-md"
+                    className="w-full h-[400px] object-cover rounded-xl shadow-lg mb-8"
                   />
-                  <div className="space-y-4 mb-8">
-                    <div className="flex space-x-4 text-sm text-gray-600">
-                      <span className="flex items-center">
-                        <svg
-                          className="w-4 h-4 mr-1"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"
-                          />
-                        </svg>
-                        {selectedBlog.skinType}
-                      </span>
-                      <span className="flex items-center">
-                        <svg
-                          className="w-4 h-4 mr-1"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"
-                          />
-                        </svg>
-                        {selectedBlog.category}
-                      </span>
-                    </div>
+                  
+                  <div className="flex gap-3 mb-6">
+                    <span className="px-4 py-1.5 bg-blue-100 text-blue-700 rounded-full text-sm font-medium">
+                      {selectedBlog.skinType}
+                    </span>
+                    <span className="px-4 py-1.5 bg-indigo-100 text-indigo-700 rounded-full text-sm font-medium">
+                      {selectedBlog.category}
+                    </span>
                   </div>
-                  <div className="prose prose-blue prose-lg max-w-none text-gray-700 leading-relaxed">
-                    {selectedBlog.content.split("\n").map((paragraph, index) =>
+
+                  <div className="prose prose-lg max-w-none">
+                    {selectedBlog.content.split('\n').map((paragraph, index) => (
                       paragraph.trim() ? (
-                        <p key={index} className="mb-4">
+                        <p key={index} className="mb-4 text-gray-700 leading-relaxed">
                           {paragraph}
                         </p>
-                      ) : (
-                        <br key={index} />
-                      )
-                    )}
+                      ) : <br key={index} />
+                    ))}
                   </div>
                 </div>
               </div>
             </div>
           </div>
-        )}
-      </div>
-      <Footer />
+        </>
+      )}
     </>
   );
 };
