@@ -54,7 +54,7 @@ const ProductDetail = () => {
         // Tìm các sản phẩm liên quan (cùng danh mục hoặc loại da)
         const related = products.filter(p => 
           p.productId !== foundProduct.productId && 
-          (p.categoryName === foundProduct.categoryName || 
+          (p.categoryName === foundProduct.categoryName && 
            p.skinTypeName === foundProduct.skinTypeName)
         ).slice(0, 4); // Giới hạn 4 sản phẩm
         
