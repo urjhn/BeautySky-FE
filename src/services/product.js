@@ -48,6 +48,15 @@ const productAPI = {
       throw error;
     }
   },
+
+  reactivateProduct: async (productId) => {
+    try {
+      const response = await axiosInstance.put(`${endPoint}/reactivate/${productId}`);
+      return response;
+    } catch (error) {
+      throw error;
+    }
+  },
   
   deleteProduct: async (id) => {
     try {
