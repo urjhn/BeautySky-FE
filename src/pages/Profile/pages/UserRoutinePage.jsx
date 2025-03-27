@@ -44,7 +44,7 @@ const UserRoutinePage = () => {
     navigate(`/product/${productId}`);
   };
 
-  const handleDeleteRoutine = async () => {
+  const handleDeleteRoutine = async (carePlanId) => {
     try {
       // Hiển thị confirm trước khi xóa
       const result = await Swal.fire({
@@ -64,12 +64,14 @@ const UserRoutinePage = () => {
 
       setLoading(true);
 
-      // Gọi API xóa lộ trình với userId
-      const response = await GetCarePlanAPI.deleteUserCarePlan(user.userId);
+      // Gọi API xóa lộ trình với userId và carePlanId
+      const response = await GetCarePlanAPI.deleteUserCarePlan(user.userId, carePlanId);
 
       if (response.status === 200) {
-        // Xóa dữ liệu local
-        setUserRoutines([]);
+        // Xóa lộ trình khỏi state
+        setUserRoutines(prevRoutines => 
+          prevRoutines.filter(routine => routine.carePlanId !== carePlanId)
+        );
 
         // Hiển thị thông báo thành công
         await Swal.fire({
@@ -191,7 +193,7 @@ const UserRoutinePage = () => {
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
-                        handleDeleteRoutine();
+                        handleDeleteRoutine(routine.carePlanId);
                       }}
                       disabled={loading}
                       className="bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded-lg 
