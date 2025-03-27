@@ -327,8 +327,8 @@ const BlogManagement = () => {
       </div>
 
       {isEditing && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 p-4 z-50">
-          <div className="bg-white p-6 rounded-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto shadow-2xl transform transition-all duration-300">
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 p-4 z-[1000] mt-[72px]">
+          <div className="bg-white p-6 rounded-xl w-full max-w-4xl max-h-[calc(100vh-100px)] overflow-y-auto shadow-2xl transform transition-all duration-300">
             <div className="flex justify-between items-center border-b pb-4 mb-6">
               <h2 className="text-2xl font-bold text-blue-800">
                 <i className="fas fa-edit mr-2"></i> Chỉnh sửa Blog
@@ -502,8 +502,8 @@ const BlogManagement = () => {
       )}
 
       {isAdding && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 p-4 z-50">
-          <div className="bg-white p-6 rounded-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto shadow-2xl transform transition-all duration-300">
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 p-4 z-[1000] mt-[72px]">
+          <div className="bg-white p-6 rounded-xl w-full max-w-4xl max-h-[calc(100vh-100px)] overflow-y-auto shadow-2xl transform transition-all duration-300">
             <div className="flex justify-between items-center border-b pb-4 mb-6">
               <h2 className="text-2xl font-bold text-blue-800">
                 <i className="fas fa-plus-circle mr-2"></i> Thêm Blog Mới

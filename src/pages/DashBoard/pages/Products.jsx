@@ -177,30 +177,57 @@ const Products = () => {
   };
 
   const handleReactivate = async (productId) => {
+    const confirmResult = await Swal.fire({
+      title: "Xác nhận kích hoạt",
+      text: "Bạn có chắc chắn muốn kích hoạt lại sản phẩm này?",
+      icon: "question",
+      showCancelButton: true,
+      confirmButtonText: "Kích hoạt",
+      cancelButtonText: "Hủy",
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+    });
+
+    if (!confirmResult.isConfirmed) {
+      return;
+    }
+
     try {
       setLoading(true);
-      const response = await productApi.editProduct(productId, { isActive: true });
-      
-      if (response.status >= 200 && response.status < 300) {
-        setProducts(prevProducts => 
-          prevProducts.map(product => 
-            product.productId === productId 
+
+      if (!productId) {
+        throw new Error("Missing product ID");
+      }
+
+      const response = await productApi.reactivateProduct(productId);
+
+      if (response && response.status === 200) {
+        // Cập nhật state local
+        setProducts(prevProducts =>
+          prevProducts.map(product =>
+            product.productId === productId
               ? { ...product, isActive: true }
               : product
           )
         );
-        
-        Swal.fire({
-          title: "Thành công!",
-          text: "Sản phẩm đã được kích hoạt lại.",
+
+        await Swal.fire({
           icon: "success",
+          title: "Thành công!",
+          text: "Sản phẩm đã được kích hoạt lại thành công!",
         });
-        
-        fetchProduct();
+
+        // Refresh danh sách sản phẩm
+        await fetchProduct();
       }
     } catch (error) {
-      console.error("Lỗi kích hoạt sản phẩm:", error);
-      Swal.fire("Lỗi!", "Đã xảy ra lỗi khi kích hoạt sản phẩm.", "error");
+      console.error("Error activating product:", error);
+
+      await Swal.fire({
+        icon: "error",
+        title: "Lỗi!",
+        text: "Kích hoạt sản phẩm thất bại, vui lòng thử lại",
+      });
     } finally {
       setLoading(false);
     }

@@ -71,6 +71,23 @@ const Blogs = () => {
     }
   }, [selectedBlog]);
 
+  // Thêm useEffect để lắng nghe sự kiện nhấn phím Esc
+  useEffect(() => {
+    const handleEscapeKey = (event) => {
+      if (event.key === 'Escape' && selectedBlog) {
+        setSelectedBlog(null);
+      }
+    };
+
+    // Thêm event listener khi component được mount
+    document.addEventListener('keydown', handleEscapeKey);
+
+    // Cleanup event listener khi component unmount
+    return () => {
+      document.removeEventListener('keydown', handleEscapeKey);
+    };
+  }, [selectedBlog]);
+
   return (
     <>
       <Navbar />
