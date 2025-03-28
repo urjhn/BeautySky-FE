@@ -43,10 +43,11 @@ const GetCarePlanAPI = {
     }
   },
 
-  deleteUserCarePlan: async (userId) => {
+  deleteUserCarePlan: async (userId, carePlanId) => {
     try {
       const response = await axiosInstance.delete(
-        `${endPoint}/DeleteUserCarePlan/${userId}`
+        `${endPoint}/DeleteUserCarePlan/${userId}`, 
+        { params: { carePlanId: carePlanId } }
       );
       return response;
     } catch (error) {
