@@ -64,24 +64,21 @@ const Footer = () => {
             {/* Thông tin công ty */}
             <div className="text-center sm:text-left">
               <h1 className="text-lg sm:text-xl font-semibold mb-3">
-                <FaBuilding className="inline-block mr-2" /> Công ty TNHH Thương mại FPT
+                <FaBuilding className="inline-block mr-2" /> Công ty TNHH Thương
+                mại FPT
               </h1>
               <ul className="space-y-2 text-sm sm:text-base">
                 <li className="flex gap-1">
-                  <FaMapMarkerAlt className="mt-1 flex-shrink-0" /> Địa chỉ: Lô E2a-7, Đường D1, Khu Công Nghệ Cao, Thủ Đức,
-                  TP.HCM
+                  <FaMapMarkerAlt className="mt-1 flex-shrink-0" /> Địa chỉ: Lô
+                  E2a-7, Đường D1, Khu Công Nghệ Cao, Thủ Đức, TP.HCM
                 </li>
                 <li className="flex gap-1">
-                  <FaPhone className="mt-1 flex-shrink-0" /> Số điện thoại: 0937748231
+                  <FaPhone className="mt-1 flex-shrink-0" /> Số điện thoại:
+                  0937748231
                 </li>
                 <li className="flex gap-1">
                   <FaEnvelope className="mt-1 flex-shrink-0" /> Email:{" "}
-                  <a
-                    href="huynhhuutoanwork@gmail.com"
-                    className="text-blue-500 hover:underline"
-                  >
-                    company.fbeauty@fpt.net.vn
-                  </a>
+                  huynhhuutoanwork@gmail.com
                 </li>
               </ul>
             </div>
