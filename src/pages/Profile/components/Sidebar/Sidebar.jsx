@@ -11,6 +11,7 @@ import { NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "../../../../context/AuthContext";
 import { useUsersContext } from "../../../../context/UserContext";
 import { useState, useEffect } from "react";
+import Swal from 'sweetalert2';
 
 const Sidebar = () => {
   const { user: authUser, logout } = useAuth();
@@ -41,8 +42,37 @@ const Sidebar = () => {
   }, [authUser, users]);
 
   const handleLogout = () => {
-    logout();
-    navigate("/login");
+    Swal.fire({
+      title: 'Đăng xuất',
+      text: 'Bạn có chắc chắn muốn đăng xuất?',
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonColor: '#3B82F6',
+      cancelButtonColor: '#EF4444',
+      confirmButtonText: 'Đăng xuất',
+      cancelButtonText: 'Hủy',
+      background: '#fff',
+      customClass: {
+        container: 'font-sans'
+      }
+    }).then((result) => {
+      if (result.isConfirmed) {
+        logout();
+        Swal.fire({
+          title: 'Đã đăng xuất',
+          text: 'Đăng xuất thành công!',
+          icon: 'success',
+          showConfirmButton: false,
+          timer: 1500,
+          background: '#fff',
+          customClass: {
+            container: 'font-sans'
+          }
+        }).then(() => {
+          navigate("/login");
+        });
+      }
+    });
   };
 
   return (
@@ -115,10 +145,13 @@ const Sidebar = () => {
           <div className="sticky bottom-0 bg-gradient-to-b from-blue-50 to-blue-100 p-6">
             <button
               onClick={handleLogout}
-              className="w-full flex items-center justify-center space-x-3 px-4 py-3 rounded-lg cursor-pointer transition-all duration-300 text-red-600 hover:bg-red-50 hover:shadow-md"
+              className="w-full flex items-center justify-center space-x-3 px-4 py-3 
+                         rounded-lg cursor-pointer transition-all duration-300 
+                         text-red-600 hover:bg-red-50 hover:shadow-md
+                         active:transform active:scale-95"
             >
               <FaSignOutAlt className="text-xl" />
-              <span className="font-medium">Logout</span>
+              <span className="font-medium">Đăng xuất</span>
             </button>
           </div>
         </div>
