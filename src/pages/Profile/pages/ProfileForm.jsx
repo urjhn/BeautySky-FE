@@ -272,7 +272,7 @@ const ProfileForm = () => {
 
   if (isLoading) {
     return (
-      <div className="flex justify-center items-center h-[50vh]">
+      <div className="flex justify-center items-center min-h-screen pt-[80px] sm:pt-[92px] lg:pt-[100px] px-4">
         <Spin size="large" tip="Đang tải thông tin..." />
       </div>
     );
@@ -280,8 +280,8 @@ const ProfileForm = () => {
 
   if (!currentUser) {
     return (
-      <div className="text-center text-gray-500">
-        <p>Không thể tải thông tin người dùng. Vui lòng thử lại sau.</p>
+      <div className="min-h-screen pt-[80px] sm:pt-[92px] lg:pt-[100px] px-4 text-center">
+        <p className="text-gray-500">Không thể tải thông tin người dùng. Vui lòng thử lại sau.</p>
         <Button type="primary" onClick={fetchUsers} className="mt-4">
           Tải lại
         </Button>
@@ -290,265 +290,269 @@ const ProfileForm = () => {
   }
 
   return (
-    <div className="max-w-4xl mx-auto mt-10 px-4 sm:px-6 lg:px-8">
-      <Title
-        level={3}
-        className="text-center text-[#0272cd] font-bold mb-8 relative text-xl sm:text-2xl lg:text-3xl"
-      >
-        <span className="relative inline-block after:content-[''] after:absolute after:-bottom-2 after:left-0 after:w-full after:h-1 after:bg-[#6BBCFE] after:rounded-full">
-          Thông Tin Cá Nhân
-        </span>
-      </Title>
-
-      <Card
-        className="shadow-lg hover:shadow-xl transition-shadow duration-300 rounded-3xl sm:p-6 lg:p-8 p-4 border border-gray-200 bg-white overflow-hidden relative"
-        style={{
-          background: "linear-gradient(145deg, #ffffff 0%, #f8faff 100%)",
-        }}
-      >
-        <div className="absolute top-0 right-0 w-32 h-32 bg-[#6BBCFE] opacity-10 rounded-full transform translate-x-16 -translate-y-16"></div>
-        <div className="absolute bottom-0 left-0 w-24 h-24 bg-[#0272cd] opacity-10 rounded-full transform -translate-x-12 translate-y-12"></div>
-
-        <Form
-          form={form}
-          layout="vertical"
-          onFinish={handleFormSubmit}
-          className="bg-white/80 backdrop-blur-sm p-4 sm:p-6 lg:p-8 rounded-xl space-y-4 sm:space-y-6 relative z-10"
+    <div className="min-h-screen bg-gray-50 pt-[80px] sm:pt-[92px] lg:pt-[100px] pb-8 px-4">
+      <div className="max-w-4xl mx-auto">
+        <Title
+          level={3}
+          className="text-center text-[#0272cd] font-bold mb-6 sm:mb-8 relative text-xl sm:text-2xl lg:text-3xl"
         >
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 lg:gap-8">
-            {/* Form Items với styling mới */}
-            <Form.Item
-              label={
-                <span className="text-gray-700 font-medium">Tên tài khoản</span>
-              }
-              name="userName"
-              rules={[
-                { required: true, message: "Vui lòng nhập tên tài khoản!" },
-              ]}
-            >
-              <Input
-                disabled={!isEditing}
-                className={`rounded-lg ${
-                  !isEditing
-                    ? "bg-gray-50"
-                    : "hover:border-[#6BBCFE] focus:border-[#0272cd]"
-                }`}
-              />
-            </Form.Item>
+          <span className="relative inline-block after:content-[''] after:absolute after:-bottom-2 after:left-0 after:w-full after:h-1 after:bg-[#6BBCFE] after:rounded-full">
+            Thông Tin Cá Nhân
+          </span>
+        </Title>
 
-            {/* Tên người dùng */}
-            <Form.Item
-              label={
-                <span className="text-gray-700 font-medium">
-                  Tên người dùng
-                </span>
-              }
-              name="fullName"
-              rules={[
-                { required: true, message: "Vui lòng nhập tên người dùng!" },
-              ]}
-            >
-              <Input
-                disabled={!isEditing}
-                className={`rounded-lg ${
-                  !isEditing
-                    ? "bg-gray-50"
-                    : "hover:border-[#6BBCFE] focus:border-[#0272cd]"
-                }`}
-              />
-            </Form.Item>
+        <Card
+          className="shadow-lg hover:shadow-xl transition-shadow duration-300 
+                     rounded-3xl p-4 sm:p-6 lg:p-8 border border-gray-200 
+                     bg-white overflow-hidden relative"
+          style={{
+            background: "linear-gradient(145deg, #ffffff 0%, #f8faff 100%)",
+          }}
+        >
+          <div className="absolute top-0 right-0 w-32 h-32 bg-[#6BBCFE] opacity-10 rounded-full transform translate-x-16 -translate-y-16"></div>
+          <div className="absolute bottom-0 left-0 w-24 h-24 bg-[#0272cd] opacity-10 rounded-full transform -translate-x-12 translate-y-12"></div>
 
-            {/* Email */}
-            <Form.Item
-              label={<span className="text-gray-700 font-medium">Email</span>}
-              name="email"
-              rules={[
-                {
-                  required: true,
-                  type: "email",
-                  message: "Email không hợp lệ!",
-                },
-              ]}
-            >
-              <Input
-                disabled={!isEditing}
-                className={`rounded-lg ${
-                  !isEditing
-                    ? "bg-gray-50"
-                    : "hover:border-[#6BBCFE] focus:border-[#0272cd]"
-                }`}
-              />
-            </Form.Item>
-
-            {/* Số điện thoại */}
-            <Form.Item
-              label={
-                <span className="text-gray-700 font-medium">Số điện thoại</span>
-              }
-              name="phone"
-              rules={[
-                { required: true, message: "Vui lòng nhập số điện thoại!" },
-              ]}
-            >
-              <Input
-                disabled={!isEditing}
-                className={`rounded-lg ${
-                  !isEditing
-                    ? "bg-gray-50"
-                    : "hover:border-[#6BBCFE] focus:border-[#0272cd]"
-                }`}
-              />
-            </Form.Item>
-
-            {/* Địa chỉ hiện tại - Luôn hiển thị */}
-            <Form.Item
-              label={<span className="text-gray-700 font-medium">Địa chỉ hiện tại</span>}
-              name="address"
-            >
-              <Input
-                disabled={true}
-                className="rounded-lg bg-gray-50"
-              />
-            </Form.Item>
-
-            {/* Chỉ hiển thị các trường địa chỉ và địa chỉ đầy đủ khi đang chỉnh sửa */}
-            {isEditing && (
-              <>
-                {/* Tỉnh/Thành phố */}
-                <Form.Item
-                  label={<span className="text-gray-700 font-medium">Tỉnh/Thành phố</span>}
-                  name="province"
-                  rules={[{ required: true, message: "Vui lòng chọn tỉnh/thành phố!" }]}
-                >
-                  <Select
-                    placeholder="Chọn tỉnh/thành phố"
-                    onChange={handleProvinceChange}
-                    className="rounded-lg hover:border-[#6BBCFE] focus:border-[#0272cd]"
-                    loading={loadingProvinces}
-                    showSearch
-                    optionFilterProp="children"
-                  >
-                    {provinces.map((province) => (
-                      <Select.Option key={province.code} value={province.name}>
-                        {province.name}
-                      </Select.Option>
-                    ))}
-                  </Select>
-                </Form.Item>
-
-                {/* Quận/Huyện */}
-                <Form.Item
-                  label={<span className="text-gray-700 font-medium">Quận/Huyện</span>}
-                  name="district"
-                  rules={[{ required: true, message: "Vui lòng chọn quận/huyện!" }]}
-                >
-                  <Select
-                    disabled={!selectedProvince}
-                    loading={loadingDistricts}
-                    placeholder={selectedProvince ? "Chọn quận/huyện" : "Vui lòng chọn tỉnh/thành phố trước"}
-                    onChange={handleDistrictChange}
-                    className="rounded-lg hover:border-[#6BBCFE] focus:border-[#0272cd]"
-                    showSearch
-                    optionFilterProp="children"
-                  >
-                    {districts.map((district) => (
-                      <Select.Option key={district.code} value={district.name}>
-                        {district.name}
-                      </Select.Option>
-                    ))}
-                  </Select>
-                </Form.Item>
-
-                {/* Xã/Phường */}
-                <Form.Item
-                  label={<span className="text-gray-700 font-medium">Xã/Phường</span>}
-                  name="ward"
-                  rules={[{ required: true, message: "Vui lòng chọn xã/phường!" }]}
-                >
-                  <Select
-                    disabled={!selectedDistrict}
-                    loading={loadingWards}
-                    placeholder={selectedDistrict ? "Chọn xã/phường" : "Vui lòng chọn quận/huyện trước"}
-                    onChange={handleWardChange}
-                    className="rounded-lg hover:border-[#6BBCFE] focus:border-[#0272cd]"
-                    showSearch
-                    optionFilterProp="children"
-                  >
-                    {wards.map((ward) => (
-                      <Select.Option key={ward.code} value={ward.name}>
-                        {ward.name}
-                      </Select.Option>
-                    ))}
-                  </Select>
-                </Form.Item>
-
-                {/* Địa chỉ đầy đủ - Chỉ hiển thị khi đang chỉnh sửa và đã chọn đủ thông tin */}
-                {fullAddress && (
-                  <Form.Item
-                    label={<span className="text-gray-700 font-medium">Địa chỉ mới</span>}
-                    className="col-span-2"
-                  >
-                    <Input
-                      disabled
-                      value={fullAddress}
-                      className="rounded-lg bg-gray-50 text-blue-600 font-medium"
-                    />
-                  </Form.Item>
-                )}
-              </>
-            )}
-
-            {/* Trạng thái */}
-            <Form.Item
-              label={
-                <span className="text-gray-700 font-medium">Trạng thái</span>
-              }
-            >
-              <Input
-                disabled
-                value={currentUser.isActive ? "Hoạt động" : "Không hoạt động"}
-                className={`rounded-lg ${
-                  currentUser.isActive
-                    ? "text-green-600 bg-green-50 border-green-200"
-                    : "text-red-600 bg-red-50 border-red-200"
-                }`}
-              />
-            </Form.Item>
-          </div>
-
-          {/* Buttons với responsive padding và margin */}
-          <div className="flex flex-col sm:flex-row justify-end gap-3 sm:gap-4 mt-6 sm:mt-8">
-            {!isEditing ? (
-              <Button
-                type="primary"
-                onClick={handleEditClick}
-                icon={<EditOutlined />}
-                className="bg-gradient-to-r from-[#6BBCFE] to-[#0272cd] hover:from-[#0272cd] hover:to-[#025aa3] transition-all duration-300 text-base sm:text-lg font-semibold px-4 sm:px-8 py-3 sm:py-5 rounded-lg shadow-md hover:shadow-lg transform hover:-translate-y-0.5 w-full sm:w-auto"
+          <Form
+            form={form}
+            layout="vertical"
+            onFinish={handleFormSubmit}
+            className="bg-white/80 backdrop-blur-sm p-4 sm:p-6 lg:p-8 rounded-xl space-y-4 sm:space-y-6 relative z-10"
+          >
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 lg:gap-8">
+              {/* Form Items với styling mới */}
+              <Form.Item
+                label={
+                  <span className="text-gray-700 font-medium">Tên tài khoản</span>
+                }
+                name="userName"
+                rules={[
+                  { required: true, message: "Vui lòng nhập tên tài khoản!" },
+                ]}
               >
-                Chỉnh sửa
-              </Button>
-            ) : (
-              <>
-                <Button
-                  onClick={handleCancelClick}
-                  icon={<CloseOutlined />}
-                  className="border-gray-400 px-4 sm:px-8 py-3 text-gray-600 hover:bg-gray-100 transition-all duration-300 rounded-lg transform hover:-translate-y-0.5 w-full sm:w-auto order-2 sm:order-1"
-                >
-                  Hủy
-                </Button>
+                <Input
+                  disabled={!isEditing}
+                  className={`rounded-lg ${
+                    !isEditing
+                      ? "bg-gray-50"
+                      : "hover:border-[#6BBCFE] focus:border-[#0272cd]"
+                  }`}
+                />
+              </Form.Item>
+
+              {/* Tên người dùng */}
+              <Form.Item
+                label={
+                  <span className="text-gray-700 font-medium">
+                    Tên người dùng
+                  </span>
+                }
+                name="fullName"
+                rules={[
+                  { required: true, message: "Vui lòng nhập tên người dùng!" },
+                ]}
+              >
+                <Input
+                  disabled={!isEditing}
+                  className={`rounded-lg ${
+                    !isEditing
+                      ? "bg-gray-50"
+                      : "hover:border-[#6BBCFE] focus:border-[#0272cd]"
+                  }`}
+                />
+              </Form.Item>
+
+              {/* Email */}
+              <Form.Item
+                label={<span className="text-gray-700 font-medium">Email</span>}
+                name="email"
+                rules={[
+                  {
+                    required: true,
+                    type: "email",
+                    message: "Email không hợp lệ!",
+                  },
+                ]}
+              >
+                <Input
+                  disabled={!isEditing}
+                  className={`rounded-lg ${
+                    !isEditing
+                      ? "bg-gray-50"
+                      : "hover:border-[#6BBCFE] focus:border-[#0272cd]"
+                  }`}
+                />
+              </Form.Item>
+
+              {/* Số điện thoại */}
+              <Form.Item
+                label={
+                  <span className="text-gray-700 font-medium">Số điện thoại</span>
+                }
+                name="phone"
+                rules={[
+                  { required: true, message: "Vui lòng nhập số điện thoại!" },
+                ]}
+              >
+                <Input
+                  disabled={!isEditing}
+                  className={`rounded-lg ${
+                    !isEditing
+                      ? "bg-gray-50"
+                      : "hover:border-[#6BBCFE] focus:border-[#0272cd]"
+                  }`}
+                />
+              </Form.Item>
+
+              {/* Địa chỉ hiện tại - Luôn hiển thị */}
+              <Form.Item
+                label={<span className="text-gray-700 font-medium">Địa chỉ hiện tại</span>}
+                name="address"
+              >
+                <Input
+                  disabled={true}
+                  className="rounded-lg bg-gray-50"
+                />
+              </Form.Item>
+
+              {/* Chỉ hiển thị các trường địa chỉ và địa chỉ đầy đủ khi đang chỉnh sửa */}
+              {isEditing && (
+                <>
+                  {/* Tỉnh/Thành phố */}
+                  <Form.Item
+                    label={<span className="text-gray-700 font-medium">Tỉnh/Thành phố</span>}
+                    name="province"
+                    rules={[{ required: true, message: "Vui lòng chọn tỉnh/thành phố!" }]}
+                  >
+                    <Select
+                      placeholder="Chọn tỉnh/thành phố"
+                      onChange={handleProvinceChange}
+                      className="rounded-lg hover:border-[#6BBCFE] focus:border-[#0272cd]"
+                      loading={loadingProvinces}
+                      showSearch
+                      optionFilterProp="children"
+                    >
+                      {provinces.map((province) => (
+                        <Select.Option key={province.code} value={province.name}>
+                          {province.name}
+                        </Select.Option>
+                      ))}
+                    </Select>
+                  </Form.Item>
+
+                  {/* Quận/Huyện */}
+                  <Form.Item
+                    label={<span className="text-gray-700 font-medium">Quận/Huyện</span>}
+                    name="district"
+                    rules={[{ required: true, message: "Vui lòng chọn quận/huyện!" }]}
+                  >
+                    <Select
+                      disabled={!selectedProvince}
+                      loading={loadingDistricts}
+                      placeholder={selectedProvince ? "Chọn quận/huyện" : "Vui lòng chọn tỉnh/thành phố trước"}
+                      onChange={handleDistrictChange}
+                      className="rounded-lg hover:border-[#6BBCFE] focus:border-[#0272cd]"
+                      showSearch
+                      optionFilterProp="children"
+                    >
+                      {districts.map((district) => (
+                        <Select.Option key={district.code} value={district.name}>
+                          {district.name}
+                        </Select.Option>
+                      ))}
+                    </Select>
+                  </Form.Item>
+
+                  {/* Xã/Phường */}
+                  <Form.Item
+                    label={<span className="text-gray-700 font-medium">Xã/Phường</span>}
+                    name="ward"
+                    rules={[{ required: true, message: "Vui lòng chọn xã/phường!" }]}
+                  >
+                    <Select
+                      disabled={!selectedDistrict}
+                      loading={loadingWards}
+                      placeholder={selectedDistrict ? "Chọn xã/phường" : "Vui lòng chọn quận/huyện trước"}
+                      onChange={handleWardChange}
+                      className="rounded-lg hover:border-[#6BBCFE] focus:border-[#0272cd]"
+                      showSearch
+                      optionFilterProp="children"
+                    >
+                      {wards.map((ward) => (
+                        <Select.Option key={ward.code} value={ward.name}>
+                          {ward.name}
+                        </Select.Option>
+                      ))}
+                    </Select>
+                  </Form.Item>
+
+                  {/* Địa chỉ đầy đủ - Chỉ hiển thị khi đang chỉnh sửa và đã chọn đủ thông tin */}
+                  {fullAddress && (
+                    <Form.Item
+                      label={<span className="text-gray-700 font-medium">Địa chỉ mới</span>}
+                      className="col-span-2"
+                    >
+                      <Input
+                        disabled
+                        value={fullAddress}
+                        className="rounded-lg bg-gray-50 text-blue-600 font-medium"
+                      />
+                    </Form.Item>
+                  )}
+                </>
+              )}
+
+              {/* Trạng thái */}
+              <Form.Item
+                label={
+                  <span className="text-gray-700 font-medium">Trạng thái</span>
+                }
+              >
+                <Input
+                  disabled
+                  value={currentUser.isActive ? "Hoạt động" : "Không hoạt động"}
+                  className={`rounded-lg ${
+                    currentUser.isActive
+                      ? "text-green-600 bg-green-50 border-green-200"
+                      : "text-red-600 bg-red-50 border-red-200"
+                  }`}
+                />
+              </Form.Item>
+            </div>
+
+            {/* Buttons với responsive padding và margin */}
+            <div className="flex flex-col sm:flex-row justify-end gap-3 sm:gap-4 mt-6 sm:mt-8">
+              {!isEditing ? (
                 <Button
                   type="primary"
-                  htmlType="submit"
-                  icon={<SaveOutlined />}
-                  className="bg-gradient-to-r from-[#6BBCFE] to-[#0272cd] hover:from-[#0272cd] hover:to-[#025aa3] text-white px-4 sm:px-8 py-3 font-semibold rounded-lg transition-all duration-300 shadow-md hover:shadow-lg transform hover:-translate-y-0.5 w-full sm:w-auto order-1 sm:order-2"
+                  onClick={handleEditClick}
+                  icon={<EditOutlined />}
+                  className="bg-gradient-to-r from-[#6BBCFE] to-[#0272cd] hover:from-[#0272cd] hover:to-[#025aa3] transition-all duration-300 text-base sm:text-lg font-semibold px-4 sm:px-8 py-3 sm:py-5 rounded-lg shadow-md hover:shadow-lg transform hover:-translate-y-0.5 w-full sm:w-auto"
                 >
-                  Lưu thay đổi
+                  Chỉnh sửa
                 </Button>
-              </>
-            )}
-          </div>
-        </Form>
-      </Card>
+              ) : (
+                <>
+                  <Button
+                    onClick={handleCancelClick}
+                    icon={<CloseOutlined />}
+                    className="border-gray-400 px-4 sm:px-8 py-3 text-gray-600 hover:bg-gray-100 transition-all duration-300 rounded-lg transform hover:-translate-y-0.5 w-full sm:w-auto order-2 sm:order-1"
+                  >
+                    Hủy
+                  </Button>
+                  <Button
+                    type="primary"
+                    htmlType="submit"
+                    icon={<SaveOutlined />}
+                    className="bg-gradient-to-r from-[#6BBCFE] to-[#0272cd] hover:from-[#0272cd] hover:to-[#025aa3] text-white px-4 sm:px-8 py-3 font-semibold rounded-lg transition-all duration-300 shadow-md hover:shadow-lg transform hover:-translate-y-0.5 w-full sm:w-auto order-1 sm:order-2"
+                  >
+                    Lưu thay đổi
+                  </Button>
+                </>
+              )}
+            </div>
+          </Form>
+        </Card>
+      </div>
     </div>
   );
 };
