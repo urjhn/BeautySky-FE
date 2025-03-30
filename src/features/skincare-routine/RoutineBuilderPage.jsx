@@ -206,20 +206,29 @@ const RoutineBuilderPage = () => {
               <div className="space-y-6 relative">
                 {/* Đường kết nối dọc giữa các bước */}
                 {carePlan.steps.length > 1 && (
-                  <div className="absolute left-4 top-8 bottom-8 w-0.5 bg-blue-400 z-0"></div>
+                  <div 
+                    className="absolute left-4 w-0.5 bg-blue-400 z-0"
+                    style={{
+                      top: "8px",
+                      // Tính toán chiều cao để dừng trước bước cuối cùng
+                      bottom: `${carePlan.steps.length > 0 ? 120 : 0}px` // Điều chỉnh giá trị 120px tùy theo layout thực tế
+                    }}
+                  ></div>
                 )}
-                
+
+
                 {carePlan.steps.map((step, index) => (
                   <div key={step.stepOrder} className="relative z-10">
                     <div className="flex items-start mb-4">
-                      {/* Thay đổi hình tròn số */}
+                      {/* Sử dụng index + 1 thay vì step.stepOrder để đảm bảo đánh số liên tục */}
                       <div className="w-10 h-10 flex items-center justify-center bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-full mr-4 shadow-lg font-bold border-2 border-white">
-                        {step.stepOrder}
+                        {index + 1}
                       </div>
                       <div className="flex-1">
                         <h3 className="text-2xl sm:text-xl font-semibold text-blue-800 mb-2">
                           {step.stepName}
                         </h3>
+                        {/* Phần nội dung còn lại của bước vẫn giữ nguyên */}
                         <ul className="space-y-3">
                           {step.products.map((product) => (
                             <li

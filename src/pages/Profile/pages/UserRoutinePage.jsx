@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import { useAuth } from "../../../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import GetCarePlanAPI from "../../../features/services/getcareplan";
-import CarePlansAPI from "../../../services/careplan";
 import { formatCurrency } from "../../../utils/formatCurrency";
 import Swal from "sweetalert2";
 import { motion, AnimatePresence } from 'framer-motion';
@@ -45,8 +44,9 @@ const UserRoutinePage = () => {
     navigate(`/product/${productId}`);
   };
 
-  const handleDeleteRoutine = async (routineId) => {
+  const handleDeleteRoutine = async (carePlanId) => {
     try {
+      // Hiển thị confirm trước khi xóa
       const result = await Swal.fire({
         title: "Bạn có chắc chắn?",
         text: "Bạn sẽ không thể khôi phục lại lộ trình này!",
@@ -58,13 +58,19 @@ const UserRoutinePage = () => {
         cancelButtonText: "Hủy",
       });
 
-      if (result.isConfirmed) {
-        // Gọi API xóa lộ trình
-        await CarePlansAPI.deleteCarePlans(routineId);
-        
-        // Cập nhật state để xóa lộ trình khỏi UI
+      if (!result.isConfirmed) {
+        return;
+      }
+
+      setLoading(true);
+
+      // Gọi API xóa lộ trình với userId và carePlanId
+      const response = await GetCarePlanAPI.deleteUserCarePlan(user.userId, carePlanId);
+
+      if (response.status === 200) {
+        // Xóa lộ trình khỏi state
         setUserRoutines(prevRoutines => 
-          prevRoutines.filter(routine => routine.carePlanId !== routineId)
+          prevRoutines.filter(routine => routine.carePlanId !== carePlanId)
         );
 
         // Hiển thị thông báo thành công
@@ -81,10 +87,12 @@ const UserRoutinePage = () => {
       
       // Hiển thị thông báo lỗi
       await Swal.fire({
+        icon: "error",
         title: "Lỗi!",
-        text: "Không thể xóa lộ trình. Vui lòng thử lại sau.",
-        icon: "error"
+        text: error.response?.data || "Không thể xóa lộ trình. Vui lòng thử lại sau.",
       });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -139,7 +147,7 @@ const UserRoutinePage = () => {
   }
 
   return (
-    <div className="bg-gradient-to-b from-gray-50 to-white min-h-screen py-8 px-4">
+    <div className="bg-gradient-to-b from-gray-50 to-white min-h-screen py-8 px-4 mt-[72px]">
       <div className="max-w-5xl mx-auto">
         <motion.div
           initial={{ opacity: 0, y: -20 }}
@@ -173,8 +181,8 @@ const UserRoutinePage = () => {
                     </h2>
                     <p className="text-sm text-gray-500 mt-1">
                       Cập nhật: {new Date(routine.dateModified || routine.dateCreate).toLocaleDateString('vi-VN', {
-                        hour: '2-digit',
-                        minute: '2-digit',
+                        // hour: '2-digit',
+                        // minute: '2-digit',
                         day: '2-digit',
                         month: '2-digit',
                         year: 'numeric'
@@ -187,9 +195,12 @@ const UserRoutinePage = () => {
                         e.stopPropagation();
                         handleDeleteRoutine(routine.carePlanId);
                       }}
-                      className="bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded-lg transition-all duration-200 transform hover:scale-105"
+                      disabled={loading}
+                      className="bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded-lg 
+                                 transition-all duration-200 transform hover:scale-105
+                                 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      Xóa
+                      {loading ? "Đang xóa..." : "Xóa"}
                     </button>
                     <motion.span
                       animate={{ rotate: expandedRoutineId === routine.carePlanId ? 180 : 0 }}

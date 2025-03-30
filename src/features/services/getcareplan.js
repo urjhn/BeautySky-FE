@@ -42,6 +42,19 @@ const GetCarePlanAPI = {
       throw error;
     }
   },
+
+  deleteUserCarePlan: async (userId, carePlanId) => {
+    try {
+      const response = await axiosInstance.delete(
+        `${endPoint}/DeleteUserCarePlan/${userId}`, 
+        { params: { carePlanId: carePlanId } }
+      );
+      return response;
+    } catch (error) {
+      console.error("Error deleting user care plan:", error);
+      throw error;
+    }
+  },
 };
 
 export default GetCarePlanAPI;
