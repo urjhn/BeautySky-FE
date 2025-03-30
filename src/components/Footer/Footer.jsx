@@ -1,8 +1,21 @@
 import React from "react";
 import footerLogo from "../../assets/footer/logo.png";
 import footerNamebrand from "../../assets/footer/namebrand.png";
-import { FaFacebook, FaInstagram, FaLinkedin } from "react-icons/fa";
-
+import {
+  FaFacebook,
+  FaInstagram,
+  FaLinkedin,
+  FaExchangeAlt,
+  FaShoppingCart,
+  FaCreditCard,
+  FaBuilding,
+  FaScroll,
+  FaMapMarkerAlt,
+  FaPhone,
+  FaPhoneAlt,
+  FaEnvelope,
+} from "react-icons/fa";
+import { Link } from "react-router-dom";
 const Footer = () => {
   return (
     <div className="bg-white text-gray-700">
@@ -51,23 +64,21 @@ const Footer = () => {
             {/* Thông tin công ty */}
             <div className="text-center sm:text-left">
               <h1 className="text-lg sm:text-xl font-semibold mb-3">
-                🏢 Công ty TNHH Thương mại FPT
+                <FaBuilding className="inline-block mr-2" /> Công ty TNHH Thương
+                mại FPT
               </h1>
               <ul className="space-y-2 text-sm sm:text-base">
-                <li>
-                  📍 Địa chỉ: Lô E2a-7, Đường D1, Khu Công Nghệ Cao, Thủ Đức,
-                  TP.HCM
+                <li className="flex gap-1">
+                  <FaMapMarkerAlt className="mt-1 flex-shrink-0" /> Địa chỉ: Lô
+                  E2a-7, Đường D1, Khu Công Nghệ Cao, Thủ Đức, TP.HCM
                 </li>
-                <li>📞 Số điện thoại: 0937748123</li>
-                <li>☎️ Hotline: (028) 7300 5588</li>
-                <li>
-                  ✉️ Email:{" "}
-                  <a
-                    href="mailto:company.skybeauty@fpt.net.vn"
-                    className="text-blue-500 hover:underline"
-                  >
-                    company.fbeauty@fpt.net.vn
-                  </a>
+                <li className="flex gap-1">
+                  <FaPhone className="mt-1 flex-shrink-0" /> Số điện thoại:
+                  0937748231
+                </li>
+                <li className="flex gap-1">
+                  <FaEnvelope className="mt-1 flex-shrink-0" /> Email:{" "}
+                  huynhhuutoanwork@gmail.com
                 </li>
               </ul>
             </div>
@@ -75,20 +86,24 @@ const Footer = () => {
             {/* Điều khoản dịch vụ */}
             <div className="text-center sm:text-left">
               <h1 className="text-lg sm:text-xl font-semibold mb-3">
-                📜 Điều khoản dịch vụ
+                <FaScroll className="inline-block mr-2" /> Điều khoản dịch vụ
               </h1>
               <ul className="space-y-2 text-sm sm:text-base">
                 <li className="cursor-pointer hover:text-blue-500 transition-colors">
-                  🛒 Hướng dẫn mua hàng
+                  <Link
+                    to="/shopping-guide"
+                    className="flex gap-1 items-center"
+                  >
+                    <FaShoppingCart className="text-sm" /> Hướng dẫn mua hàng
+                  </Link>
                 </li>
                 <li className="cursor-pointer hover:text-blue-500 transition-colors">
-                  🚚 Vận chuyển
-                </li>
-                <li className="cursor-pointer hover:text-blue-500 transition-colors">
-                  💳 Phương thức thanh toán
-                </li>
-                <li className="cursor-pointer hover:text-blue-500 transition-colors">
-                  🔒 Bảo mật dữ liệu
+                  <Link
+                    to="/company-policy"
+                    className="flex gap-1 items-center"
+                  >
+                    <FaExchangeAlt className="text-sm" /> Chính sách đổi trả
+                  </Link>
                 </li>
               </ul>
             </div>
