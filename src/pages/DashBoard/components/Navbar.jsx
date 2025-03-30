@@ -288,9 +288,9 @@ const Navbar = () => {
                         }}
                       >
                         <div className="flex-shrink-0">
-                          {item.imgURL ? (
+                          {item.imgUrl ? (
                             <img 
-                              src={item.imgURL}
+                              src={item.imgUrl}
                               alt={item.title}
                               className="w-16 h-16 object-cover rounded-lg 
                                        shadow-sm group-hover:shadow-md 
