@@ -151,16 +151,30 @@ export const CartProvider = ({ children }) => {
           // Cập nhật số lượng nếu sản phẩm đã tồn tại
           const updatedItems = cartItems.map((item, index) => {
             if (index === existingItemIndex) {
+              const newQuantity = item.quantity + (product.quantity || 1);
               return {
                 ...item,
-                quantity: item.quantity + (product.quantity || 1),
-                totalPrice:
-                  (item.quantity + (product.quantity || 1)) * item.price,
+                quantity: newQuantity,
+                totalPrice: newQuantity * item.price,
               };
             }
             return item;
           });
           setCartItems(updatedItems);
+          const newTotal = updatedItems.reduce(
+            (sum, item) => sum + item.totalPrice,
+            0
+          );
+          setTotalPrice(newTotal);
+
+          // Hiển thị thông báo thành công
+          Swal.fire({
+            icon: "success",
+            title: "Đã thêm vào giỏ hàng",
+            text: "Số lượng sản phẩm đã được cập nhật",
+            showConfirmButton: false,
+            timer: 1500,
+          });
         } else {
           // Thêm sản phẩm mới
           const newItem = {
@@ -168,52 +182,67 @@ export const CartProvider = ({ children }) => {
             quantity: product.quantity || 1,
             totalPrice: (product.quantity || 1) * product.price,
           };
-          setCartItems((prev) => [...prev, newItem]);
+          setCartItems(prev => [...prev, newItem]);
+          setTotalPrice(prev => prev + newItem.totalPrice);
+
+          // Hiển thị thông báo thành công
+          Swal.fire({
+            icon: "success",
+            title: "Đã thêm vào giỏ hàng",
+            text: "Sản phẩm đã được thêm vào giỏ hàng",
+            showConfirmButton: false,
+            timer: 1500,
+          });
         }
-
-        // Cập nhật tổng tiền
-        const updatedItems =
-          existingItemIndex !== -1
-            ? cartItems.map((item, index) => {
-                if (index === existingItemIndex) {
-                  return {
-                    ...item,
-                    quantity: item.quantity + (product.quantity || 1),
-                    totalPrice:
-                      (item.quantity + (product.quantity || 1)) * item.price,
-                  };
-                }
-                return item;
-              })
-            : [
-                ...cartItems,
-                {
-                  ...product,
-                  quantity: product.quantity || 1,
-                  totalPrice: (product.quantity || 1) * product.price,
-                },
-              ];
-
-        const newTotal = updatedItems.reduce(
-          (sum, item) => sum + item.totalPrice,
-          0
-        );
-        setTotalPrice(newTotal);
         return;
       }
 
       // Xử lý cho user đã đăng nhập
-      const response = await cartsAPI.createCarts({
-        productId: product.productId,
-        quantity: product.quantity || 1,
-      });
+      const existingItem = cartItems.find(item => item.productId === product.productId);
+      
+      if (existingItem) {
+        // Nếu sản phẩm đã tồn tại, cập nhật số lượng
+        const newQuantity = existingItem.quantity + (product.quantity || 1);
+        const response = await cartsAPI.editCarts({
+          productId: product.productId,
+          quantity: newQuantity,
+        });
 
-      if (response.data) {
-        await fetchCart();
+        if (response.data) {
+          await fetchCart();
+          Swal.fire({
+            icon: "success",
+            title: "Đã thêm vào giỏ hàng",
+            text: "Số lượng sản phẩm đã được cập nhật",
+            showConfirmButton: false,
+            timer: 1500,
+          });
+        }
+      } else {
+        // Nếu là sản phẩm mới
+        const response = await cartsAPI.createCarts({
+          productId: product.productId,
+          quantity: product.quantity || 1,
+        });
+
+        if (response.data) {
+          await fetchCart();
+          Swal.fire({
+            icon: "success",
+            title: "Đã thêm vào giỏ hàng",
+            text: "Sản phẩm đã được thêm vào giỏ hàng",
+            showConfirmButton: false,
+            timer: 1500,
+          });
+        }
       }
     } catch (error) {
       console.error("Lỗi khi thêm vào giỏ hàng:", error);
-      throw error;
+      Swal.fire({
+        icon: "error",
+        title: "Lỗi",
+        text: error.response?.data || "Không thể thêm sản phẩm vào giỏ hàng",
+      });
     } finally {
       setIsLoading(false);
     }
