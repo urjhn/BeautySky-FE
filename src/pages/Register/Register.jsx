@@ -155,11 +155,36 @@ function Register() {
       }).then(() => navigate("/login"));
       addNotification("Bạn đã đăng ký tài khoản thành công! 🎉");
     } catch (err) {
-      Swal.fire(
-        "Lỗi",
-        err.response?.data?.message || "Đăng ký thất bại!",
-        "error"
-      );
+      // Xử lý các loại lỗi từ backend
+      let errorMessage = "Đăng ký thất bại!";
+      
+      if (err.response && err.response.data) {
+        // Nếu backend trả về chuỗi lỗi trực tiếp
+        if (typeof err.response.data === 'string') {
+          errorMessage = err.response.data;
+        } 
+        // Nếu backend trả về object có message
+        else if (err.response.data.message) {
+          errorMessage = err.response.data.message;
+        }
+        // Nếu backend trả về lỗi validation dạng object
+        else if (typeof err.response.data === 'object') {
+          // Lấy lỗi đầu tiên từ object
+          const firstError = Object.values(err.response.data)[0];
+          if (Array.isArray(firstError)) {
+            errorMessage = firstError[0];
+          } else if (typeof firstError === 'string') {
+            errorMessage = firstError;
+          }
+        }
+      }
+      
+      Swal.fire({
+        icon: 'error',
+        title: 'Lỗi đăng ký',
+        text: errorMessage,
+        confirmButtonColor: '#6bbcfe',
+      });
     } finally {
       setLoading(false);
     }
