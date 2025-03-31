@@ -27,7 +27,40 @@ const blogsAPI = {
     return response;
   },
   deleteBlog: async (id) => {
-    return await axiosInstance.delete(`${endPoint}/${id}`);
+    try {
+      const response = await axiosInstance.delete(`${endPoint}/${id}`);
+      
+      // BE trả về status 204 (NoContent) khi thành công
+      if (response.status === 204) {
+        return {
+          success: true,
+          message: "Blog đã được ẩn thành công"
+        };
+      }
+
+      return {
+        success: false,
+        message: "Không thể ẩn blog"
+      };
+
+    } catch (error) {
+      let errorMessage = "Đã có lỗi xảy ra khi ẩn blog";
+
+      if (error.response) {
+        switch (error.response.status) {
+          case 404:
+            errorMessage = "Không tìm thấy blog này";
+            break;
+          case 400:
+            errorMessage = "Yêu cầu không hợp lệ";
+            break;
+          default:
+            errorMessage = "Không thể ẩn blog";
+        }
+      }
+
+      throw new Error(errorMessage);
+    }
   },
   getSkinType: async (skinType) => {
     return await axiosInstance.get(`${endPoint}/by-skin-type/${skinType}`);
