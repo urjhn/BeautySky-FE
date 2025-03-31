@@ -5,7 +5,6 @@ import GetCarePlanAPI from "../services/getcareplan";
 import Navbar from "../../components/Navbar/Navbar";
 import Footer from "../../components/Footer/Footer";
 import { formatCurrency } from "../../utils/formatCurrency";
-import Swal from "sweetalert2";
 
 const RoutineBuilderPage = () => {
   const { user } = useAuth();
@@ -56,63 +55,6 @@ const RoutineBuilderPage = () => {
     navigate(`/product/${productId}`, { state: { from: location } });
   };
 
-  const saveCarePlan = async () => {
-    if (!user) {
-      setShowLoginPopup(true);
-      return;
-    }
-
-    try {
-      const productsToSave = carePlan.steps.flatMap(step => 
-        step.products.map(product => ({
-          productId: product.productId,
-          productName: product.productName,
-          stepId: step.stepOrder,
-          productImage: product.productImage,
-          productPrice: product.productPrice || product.price
-        }))
-      );
-
-      const saveData = {
-        userId: user.userId,
-        products: productsToSave
-      };
-
-      const response = await GetCarePlanAPI.saveUserCarePlan(saveData);
-
-      if (response.status === 200) {
-        Swal.fire({
-          title: "Thành công!",
-          text: "Lộ trình đã được lưu thành công!",
-          icon: "success",
-          confirmButtonText: "Đóng",
-          confirmButtonColor: "#3085d6",
-        });
-
-        const updatedResponse = await GetCarePlanAPI.getUserCarePlan(user.userId);
-        if (updatedResponse.data) {
-          setCarePlan(updatedResponse.data);
-        }
-      } else {
-        Swal.fire({
-          title: "Lỗi!",
-          text: "Không thể lưu lộ trình. Vui lòng thử lại sau.",
-          icon: "error",
-          confirmButtonText: "Đóng",
-          confirmButtonColor: "#d33",
-        });
-      }
-    } catch (err) {
-      console.error("Error saving care plan:", err);
-      Swal.fire({
-        title: "Lỗi!",
-        text: err.response?.data || "Không thể lưu lộ trình. Vui lòng thử lại sau.",
-        icon: "error",
-        confirmButtonText: "Đóng",
-        confirmButtonColor: "#d33",
-      });
-    }
-  };
 
   if (loading) {
     return (
