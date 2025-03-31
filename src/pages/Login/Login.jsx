@@ -81,12 +81,13 @@ function Login() {
 
   const handleLogin = async (e) => {
     e.preventDefault();
-
+  
     if (!validateForm()) return;
-
+  
     try {
       setLoading(true);
-
+  
+      // Hiển thị loading
       const loadingAlert = Swal.fire({
         title: 'Đang đăng nhập...',
         text: 'Vui lòng đợi trong giây lát',
@@ -95,19 +96,21 @@ function Login() {
           Swal.showLoading();
         }
       });
-
-      // Đăng nhập
+  
+      // Thử đăng nhập
       await login({ ...formData, recaptchaToken });
-
+  
       // Đồng bộ giỏ hàng
       try {
         await syncCartAfterLogin();
       } catch (syncError) {
         console.error('Lỗi khi đồng bộ giỏ hàng:', syncError);
       }
-
+  
+      // Đóng loading
       loadingAlert.close();
-
+  
+      // Thông báo thành công
       await Swal.fire({
         icon: 'success',
         title: 'Đăng nhập thành công!',
@@ -115,16 +118,40 @@ function Login() {
         timer: 1500,
         showConfirmButton: false
       });
-
+  
       addNotification("Bạn đã đăng nhập thành công! 🎉");
+  
     } catch (error) {
       console.error('Login error:', error);
-      Swal.fire({
+      
+      let errorMessage = 'Có lỗi xảy ra, vui lòng thử lại';
+
+      if (error.response?.status === 401) {
+        errorMessage = 'Email hoặc mật khẩu không chính xác';
+      } else if (error.response?.status === 404) {
+        errorMessage = 'Không tìm thấy tài khoản với email này';
+      } else if (error.response?.status === 403) {
+        errorMessage = 'Tài khoản của bạn đã bị khóa';
+      } else if (error.response?.data?.message) {
+        errorMessage = error.response.data.message;
+      }
+
+      // Hiển thị thông báo lỗi
+      await Swal.fire({
         icon: 'error',
         title: 'Đăng nhập thất bại',
-        text: error.response?.data?.message || 'Có lỗi xảy ra, vui lòng thử lại',
-        confirmButtonColor: '#6bbcfe'
+        text: errorMessage,
+        confirmButtonText: 'Thử lại',
+        confirmButtonColor: '#6bbcfe',
+        allowOutsideClick: false,
+        allowEscapeKey: false
+      }).then((result) => {
+        if (result.isConfirmed) {
+          // Reload lại trang khi người dùng bấm "Thử lại"
+          window.location.reload();
+        }
       });
+
     } finally {
       setLoading(false);
     }

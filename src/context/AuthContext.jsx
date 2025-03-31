@@ -1,6 +1,6 @@
 import { createContext, useState, useEffect, useContext } from "react";
 import authAPI from "../services/auth";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
 
 const AuthContext = createContext();
@@ -9,41 +9,70 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
+  const location = useLocation();
+
+  const verifyAndSetUser = (token) => {
+    try {
+      const decodedToken = jwtDecode(token);
+      const currentTime = Date.now() / 1000;
+
+      if (decodedToken.exp && decodedToken.exp < currentTime) {
+        throw new Error('Token expired');
+      }
+
+      const userInfo = {
+        userId: Number(decodedToken.userId) || parseInt(decodedToken.userId),
+        name: decodedToken.name,
+        email: decodedToken.email,
+        role: decodedToken.role,
+        token: token,
+        roleId: decodedToken.role === "Customer" ? 1 : 
+               decodedToken.role === "Staff" ? 2 : 
+               decodedToken.role === "Manager" ? 3 : 1,
+        phone: decodedToken.phone,
+        address: decodedToken.address,
+      };
+
+      setUser(userInfo);
+      return true;
+    } catch (err) {
+      console.error("Token verification failed:", err);
+      return false;
+    }
+  };
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (token) {
-      try {
-        const decodedToken = jwtDecode(token);
-        setUser({
-          userId: Number(decodedToken.userId) || parseInt(decodedToken.userId),
-          name: decodedToken.name,
-          email: decodedToken.email,
-          role: decodedToken.role,
-          token: token,
-          roleId: decodedToken.role === "Customer" ? 1 : 
-                 decodedToken.role === "Staff" ? 2 : 
-                 decodedToken.role === "Manager" ? 3 : 1,
-          phone: decodedToken.phone,
-          address: decodedToken.address,
-        });
-      } catch (err) {
-        console.error("Invalid token:", err);
-        logout();
+    const initializeAuth = async () => {
+      const token = localStorage.getItem("token");
+      const currentPath = location.pathname;
+
+      if (token) {
+        const isValidToken = verifyAndSetUser(token);
+        
+        if (!isValidToken) {
+          logout();
+          return;
+        }
+
+        if (currentPath !== '/login') {
+          localStorage.setItem('lastPath', currentPath);
+        }
+      } else {
+        if (currentPath.includes('dashboard')) {
+          navigate('/login');
+        }
       }
-    }
-    setLoading(false);
-  }, []);
+      setLoading(false);
+    };
+
+    initializeAuth();
+  }, [location.pathname]);
 
   const login = async (userData) => {
     try {
       if (userData.token) {
         const decoded = jwtDecode(userData.token);
-        
-        // Đảm bảo userId luôn là số
         const userId = Number(decoded.userId || decoded.id || decoded.sub);
-        
-        // Xác định roleId một cách chính xác
         const roleId = userData.user?.roleId || 
                       (decoded.role === "Customer" ? 1 : 
                        decoded.role === "Staff" ? 2 : 
@@ -64,11 +93,11 @@ export const AuthProvider = ({ children }) => {
         localStorage.setItem("token", userData.token);
         localStorage.setItem("roleId", roleId.toString());
 
-        // Chuyển hướng dựa vào roleId
+        const savedPath = localStorage.getItem('lastPath');
         if (roleId === 2 || roleId === 3) {
-          navigate("/dashboardlayout");
+          navigate(savedPath && savedPath.includes('dashboard') ? savedPath : "/dashboardlayout");
         } else {
-          navigate("/");
+          navigate(savedPath || "/");
         }
       } else {
         const data = await authAPI.login(userData, navigate);
@@ -89,11 +118,11 @@ export const AuthProvider = ({ children }) => {
         localStorage.setItem("token", data.token);
         localStorage.setItem("roleId", roleId.toString());
 
-        // Chuyển hướng dựa vào roleId
+        const savedPath = localStorage.getItem('lastPath');
         if (roleId === 2 || roleId === 3) {
-          navigate("/dashboardlayout");
+          navigate(savedPath && savedPath.includes('dashboard') ? savedPath : "/dashboardlayout");
         } else {
-          navigate("/");
+          navigate(savedPath || "/");
         }
       }
     } catch (err) {
@@ -114,6 +143,7 @@ export const AuthProvider = ({ children }) => {
   const logout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("roleId");
+    localStorage.removeItem("lastPath");
     setUser(null);
     navigate("/login");
   };
