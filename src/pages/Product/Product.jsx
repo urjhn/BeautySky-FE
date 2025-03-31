@@ -11,7 +11,7 @@ const ProductsPage = () => {
   }, []);
 
   const { fetchProduct } = useDataContext(); // Đảm bảo fetchProduct được gọi khi cần
-  const [setCurrentPage] = useState(1);
+  const [currentPage, setCurrentPage] = useState(1);
   const [selectedSkinType, setSelectedSkinType] = useState("Tất cả");
   const [selectedCategory, setSelectedCategory] = useState("Tất cả");
   const [sortOrder, setSortOrder] = useState("asc");
