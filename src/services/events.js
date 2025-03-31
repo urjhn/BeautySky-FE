@@ -26,10 +26,35 @@ const newsAPI = {
   deleteNewsById: async (id) => {
     try {
       const response = await axiosInstance.delete(`${endPoint}/${id}`);
-      return response.data;
+      
+      // Kiểm tra response
+      if (response.status === 200) {
+        // Thành công
+        return {
+          success: true,
+          message: response.data || "Xóa tin tức thành công"
+        };
+      }
+
+      // Xử lý các trường hợp khác
+      return {
+        success: false,
+        message: "Không thể xóa tin tức"
+      };
+
     } catch (error) {
+      // Xử lý các loại lỗi cụ thể
+      if (error.response) {
+        // Lỗi từ server
+        if (error.response.status === 404) {
+          throw new Error("Không tìm thấy tin tức này");
+        }
+        throw new Error(error.response.data || "Không thể xóa tin tức");
+      }
+      
+      // Lỗi khác
       console.error("Error deleting news:", error);
-      throw error;
+      throw new Error("Đã có lỗi xảy ra khi xóa tin tức");
     }
   },
   getNewsById: async (id, payload) => {
