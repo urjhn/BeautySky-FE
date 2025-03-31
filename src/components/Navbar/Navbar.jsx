@@ -11,6 +11,7 @@ import { Menu, Popover, Avatar } from "antd";
 import productAPI from "../../services/product";
 import blogsAPI from "../../services/blogs"; // Thêm import blogsAPI
 import { HiMenu, HiX } from "react-icons/hi";
+import Swal from "sweetalert2";
 
 const Navbar = () => {
   const navigate = useNavigate();
@@ -123,8 +124,31 @@ const Navbar = () => {
   };
 
   const handleLogout = () => {
-    logout();
-    navigate("/login");
+    // Hiển thị thông báo xác nhận đăng xuất
+    Swal.fire({
+      title: 'Đăng xuất',
+      text: 'Bạn có chắc chắn muốn đăng xuất?',
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonColor: '#3B82F6',
+      cancelButtonColor: '#EF4444',
+      confirmButtonText: 'Đăng xuất',
+      cancelButtonText: 'Hủy',
+    }).then((result) => {
+      if (result.isConfirmed) {
+        logout();
+        // Hiển thị thông báo đăng xuất thành công
+        Swal.fire({
+          title: 'Đã đăng xuất',
+          text: 'Đăng xuất thành công!',
+          icon: 'success',
+          showConfirmButton: false,
+          timer: 1500,
+        }).then(() => {
+          navigate("/login");
+        });
+      }
+    });
   };
 
   const menu = (

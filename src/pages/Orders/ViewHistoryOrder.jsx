@@ -102,7 +102,7 @@ const OrderHistory = () => {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
+      <div className="flex items-center justify-center min-h-screen pt-[80px] sm:pt-[92px] lg:pt-[100px]">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
       </div>
     );
@@ -241,301 +241,303 @@ const OrderHistory = () => {
 
   return (
     <motion.div
-      className="container mx-auto p-4 md:p-6 max-w-7xl"
+      className="min-h-screen bg-gray-50 pt-[80px] sm:pt-[92px] lg:pt-[100px] pb-8"
       variants={containerVariants}
       initial="hidden"
       animate="visible"
     >
-      <motion.h1
-        className="text-3xl md:text-4xl font-bold mb-8 text-center text-gray-800"
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6 }}
-      >
-        Lịch sử đơn hàng
-      </motion.h1>
-
-      {/* Filter Tabs - Cải thiện giao diện */}
-      <div className="flex flex-wrap justify-center gap-4 mb-8">
-        {["All", "Pending", "Completed", "Cancelled"].map((tab) => (
-          <motion.button
-            key={tab}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={() => {
-              setSelectedTab(tab);
-              setCurrentPage(1);
-            }}
-            className={`px-6 py-3 rounded-full font-medium transition-all shadow-md ${
-              selectedTab === tab
-                ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white"
-                : "bg-white text-gray-700 hover:bg-gray-50"
-            }`}
-          >
-            {tab === "All" ? "Tất cả" : getStatusDisplay(tab)}
-          </motion.button>
-        ))}
-      </div>
-
-      {orders.length === 0 ? (
-        <motion.div
-          className="text-center py-16 bg-white rounded-xl shadow-lg"
-          variants={itemVariants}
+      <div className="container mx-auto px-4 md:px-6 max-w-7xl">
+        <motion.h1
+          className="text-2xl sm:text-3xl md:text-4xl font-bold mb-6 sm:mb-8 text-center text-gray-800"
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
         >
-          <div className="text-gray-500 text-xl mb-4">
-            Bạn chưa có đơn hàng nào
-          </div>
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={() => navigate("/product")}
-            className="px-8 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-full hover:shadow-lg transition-all duration-300"
+          Lịch sử đơn hàng
+        </motion.h1>
+
+        {/* Filter Tabs - Cải thiện responsive */}
+        <div className="flex flex-wrap justify-center gap-2 sm:gap-4 mb-6 sm:mb-8">
+          {["All", "Pending", "Completed", "Cancelled"].map((tab) => (
+            <motion.button
+              key={tab}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => {
+                setSelectedTab(tab);
+                setCurrentPage(1);
+              }}
+              className={`px-4 sm:px-6 py-2 sm:py-3 rounded-full text-sm sm:text-base font-medium transition-all shadow-md ${
+                selectedTab === tab
+                  ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white"
+                  : "bg-white text-gray-700 hover:bg-gray-50"
+              }`}
+            >
+              {tab === "All" ? "Tất cả" : getStatusDisplay(tab)}
+            </motion.button>
+          ))}
+        </div>
+
+        {orders.length === 0 ? (
+          <motion.div
+            className="text-center py-12 sm:py-16 bg-white rounded-xl shadow-lg mt-4"
+            variants={itemVariants}
           >
-            Mua sắm ngay
-          </motion.button>
-        </motion.div>
-      ) : (
-        <>
-          {/* Mobile View - Cải thiện card design */}
-          <div className="grid gap-6 md:hidden">
-            {paginatedOrders.map((order) => (
-              <motion.div
-                key={order.orderId}
-                variants={itemVariants}
-                className="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition-shadow"
-              >
-                <div className="flex justify-between items-center mb-4">
-                  <span className="font-bold text-lg">#{order.orderId}</span>
-                  <span
-                    className={`px-4 py-2 rounded-full text-sm font-medium ${getStatusColor(
-                      order.status
-                    )}`}
-                  >
-                    {getStatusDisplay(order.status)}
-                  </span>
-                </div>
+            <div className="text-gray-500 text-lg sm:text-xl mb-4">
+              Bạn chưa có đơn hàng nào
+            </div>
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => navigate("/product")}
+              className="px-6 sm:px-8 py-2 sm:py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-full hover:shadow-lg transition-all duration-300"
+            >
+              Mua sắm ngay
+            </motion.button>
+          </motion.div>
+        ) : (
+          <>
+            {/* Mobile View - Cải thiện responsive */}
+            <div className="grid gap-4 sm:gap-6 md:hidden">
+              {paginatedOrders.map((order) => (
+                <motion.div
+                  key={order.orderId}
+                  variants={itemVariants}
+                  className="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition-shadow"
+                >
+                  <div className="flex justify-between items-center mb-4">
+                    <span className="font-bold text-lg">#{order.orderId}</span>
+                    <span
+                      className={`px-4 py-2 rounded-full text-sm font-medium ${getStatusColor(
+                        order.status
+                      )}`}
+                    >
+                      {getStatusDisplay(order.status)}
+                    </span>
+                  </div>
 
-                <div className="space-y-3">
-                  <p className="text-gray-600">
-                    <i className="far fa-calendar-alt mr-2"></i>
-                    {order.status === "Cancelled"
-                      ? `Ngày hủy: ${dayjs(order.cancelDate).format(
-                          "DD/MM/YYYY HH:mm"
-                        )}`
-                      : `Ngày đặt: ${dayjs(order.orderDate).format(
-                          "DD/MM/YYYY HH:mm"
-                        )}`}
-                  </p>
-                  <p className="font-bold text-xl text-blue-600">
-                    {formatCurrency(order.finalAmount)}
-                  </p>
-                </div>
+                  <div className="space-y-3">
+                    <p className="text-gray-600">
+                      <i className="far fa-calendar-alt mr-2"></i>
+                      {order.status === "Cancelled"
+                        ? `Ngày hủy: ${dayjs(order.cancelDate).format(
+                            "DD/MM/YYYY HH:mm"
+                          )}`
+                        : `Ngày đặt: ${dayjs(order.orderDate).format(
+                            "DD/MM/YYYY HH:mm"
+                          )}`}
+                    </p>
+                    <p className="font-bold text-xl text-blue-600">
+                      {formatCurrency(order.finalAmount)}
+                    </p>
+                  </div>
 
-                <div className="mt-4 flex gap-3">
-                  <motion.button
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    onClick={() => navigate(`/orderdetail/${order.orderId}`)}
-                    className="flex-1 px-4 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg shadow-md hover:shadow-lg transition-all duration-300 flex items-center justify-center gap-2"
-                  >
-                    <EyeIcon className="w-5 h-5" />
-                    Xem chi tiết
-                  </motion.button>
-
-                  {order.status === "Pending" && (
+                  <div className="mt-4 flex gap-3">
                     <motion.button
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
-                      onClick={() => handleCancelOrder(order.orderId)}
-                      className="flex-1 px-4 py-3 bg-red-500 text-white rounded-lg shadow-md hover:bg-red-600 transition-all duration-300 flex items-center justify-center gap-2"
+                      onClick={() => navigate(`/orderdetail/${order.orderId}`)}
+                      className="flex-1 px-4 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg shadow-md hover:shadow-lg transition-all duration-300 flex items-center justify-center gap-2"
                     >
-                      Hủy đơn hàng
+                      <EyeIcon className="w-5 h-5" />
+                      Xem chi tiết
                     </motion.button>
-                  )}
-                </div>
 
-                {order.status === "Cancelled" && (
-                  <div className="mt-3 p-3 bg-red-50 rounded-lg">
-                    <p className="text-sm text-red-700 font-medium">Lý do hủy:</p>
-                    <p className="text-sm text-red-600">{order.cancelledReason || "Không có lý do"}</p>
-                    <p className="text-xs text-red-500 mt-1">
-                      Thời gian hủy: {dayjs(order.cancelledDate).format("DD/MM/YYYY HH:mm")}
-                    </p>
+                    {order.status === "Pending" && (
+                      <motion.button
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                        onClick={() => handleCancelOrder(order.orderId)}
+                        className="flex-1 px-4 py-3 bg-red-500 text-white rounded-lg shadow-md hover:bg-red-600 transition-all duration-300 flex items-center justify-center gap-2"
+                      >
+                        Hủy đơn hàng
+                      </motion.button>
+                    )}
                   </div>
-                )}
-              </motion.div>
-            ))}
-          </div>
 
-          {/* Desktop View - Cải thiện table design */}
-          <div className="hidden md:block">
-            <motion.div
-              variants={itemVariants}
-              className="bg-white rounded-xl shadow-lg overflow-hidden"
-            >
-              <table className="w-full">
-                <thead className="bg-gradient-to-r from-blue-500 to-blue-600 text-white">
-                  <tr>
-                    <th className="px-6 py-4 text-left text-sm font-medium tracking-wider">
-                      Mã đơn hàng
-                    </th>
-                    <th className="px-6 py-4 text-left text-sm font-medium tracking-wider">
-                      Thời gian
-                    </th>
-                    <th className="px-6 py-4 text-left text-sm font-medium tracking-wider">
-                      Trạng thái
-                    </th>
-                    <th className="px-6 py-4 text-left text-sm font-medium tracking-wider">
-                      Tổng tiền
-                    </th>
-                    <th className="px-6 py-4 text-center text-sm font-medium tracking-wider">
-                      Thao tác
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-100">
-                  {paginatedOrders.map((order) => (
-                    <motion.tr
-                      key={order.orderId}
-                      variants={itemVariants}
-                      className="hover:bg-gray-50 transition-colors"
-                    >
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        #{order.orderId}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        {order.status === "Cancelled"
-                          ? `Ngày hủy: ${dayjs(order.cancelDate).format(
-                              "DD/MM/YYYY HH:mm"
-                            )}`
-                          : `Ngày đặt: ${dayjs(order.orderDate).format(
-                              "DD/MM/YYYY HH:mm"
+                  {order.status === "Cancelled" && (
+                    <div className="mt-3 p-3 bg-red-50 rounded-lg">
+                      <p className="text-sm text-red-700 font-medium">Lý do hủy:</p>
+                      <p className="text-sm text-red-600">{order.cancelledReason || "Không có lý do"}</p>
+                      <p className="text-xs text-red-500 mt-1">
+                        Thời gian hủy: {dayjs(order.cancelledDate).format("DD/MM/YYYY HH:mm")}
+                      </p>
+                    </div>
+                  )}
+                </motion.div>
+              ))}
+            </div>
+
+            {/* Desktop View - Cải thiện responsive */}
+            <div className="hidden md:block overflow-x-auto">
+              <motion.div
+                variants={itemVariants}
+                className="bg-white rounded-xl shadow-lg min-w-[800px]"
+              >
+                <table className="w-full">
+                  <thead className="bg-gradient-to-r from-blue-500 to-blue-600 text-white">
+                    <tr>
+                      <th className="px-6 py-4 text-left text-sm font-medium tracking-wider">
+                        Mã đơn hàng
+                      </th>
+                      <th className="px-6 py-4 text-left text-sm font-medium tracking-wider">
+                        Thời gian
+                      </th>
+                      <th className="px-6 py-4 text-left text-sm font-medium tracking-wider">
+                        Trạng thái
+                      </th>
+                      <th className="px-6 py-4 text-left text-sm font-medium tracking-wider">
+                        Tổng tiền
+                      </th>
+                      <th className="px-6 py-4 text-center text-sm font-medium tracking-wider">
+                        Thao tác
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-100">
+                    {paginatedOrders.map((order) => (
+                      <motion.tr
+                        key={order.orderId}
+                        variants={itemVariants}
+                        className="hover:bg-gray-50 transition-colors"
+                      >
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          #{order.orderId}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          {order.status === "Cancelled"
+                            ? `Ngày hủy: ${dayjs(order.cancelDate).format(
+                                "DD/MM/YYYY HH:mm"
+                              )}`
+                            : `Ngày đặt: ${dayjs(order.orderDate).format(
+                                "DD/MM/YYYY HH:mm"
+                              )}`}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span
+                            className={`px-4 py-2 rounded-full text-sm font-medium ${getStatusColor(
+                              order.status
                             )}`}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span
-                          className={`px-4 py-2 rounded-full text-sm font-medium ${getStatusColor(
-                            order.status
-                          )}`}
-                        >
-                          {getStatusDisplay(order.status)}
-                        </span>
-                        {order.status === "Cancelled" && (
-                          <div className="mt-2 text-xs text-red-600">
-                            <p className="font-medium">Lý do: {order.cancelledReason || "Không có lý do"}</p>
-                          </div>
-                        )}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap font-medium text-blue-600">
-                        {formatCurrency(order.finalAmount)}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-center">
-                        <div className="flex items-center justify-center space-x-3">
-                          <motion.button
-                            whileHover={{ scale: 1.05 }}
-                            whileTap={{ scale: 0.95 }}
-                            onClick={() => navigate(`/profilelayout/orderdetail/${order.orderId}`)}
-                            className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-full shadow-md hover:shadow-lg transition-all duration-300"
                           >
-                            <EyeIcon className="w-4 h-4 mr-2" />
-                            Chi tiết
-                          </motion.button>
-
-                          {order.status === "Pending" && (
+                            {getStatusDisplay(order.status)}
+                          </span>
+                          {order.status === "Cancelled" && (
+                            <div className="mt-2 text-xs text-red-600">
+                              <p className="font-medium">Lý do: {order.cancelledReason || "Không có lý do"}</p>
+                            </div>
+                          )}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap font-medium text-blue-600">
+                          {formatCurrency(order.finalAmount)}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-center">
+                          <div className="flex items-center justify-center space-x-3">
                             <motion.button
                               whileHover={{ scale: 1.05 }}
                               whileTap={{ scale: 0.95 }}
-                              onClick={() => handleCancelOrder(order.orderId)}
-                              className="inline-flex items-center px-4 py-2 bg-red-500 text-white rounded-full shadow-md hover:bg-red-600 transition-all duration-300"
+                              onClick={() => navigate(`/profilelayout/orderdetail/${order.orderId}`)}
+                              className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-full shadow-md hover:shadow-lg transition-all duration-300"
                             >
-                              Hủy đơn
+                              <EyeIcon className="w-4 h-4 mr-2" />
+                              Chi tiết
                             </motion.button>
-                          )}
-                        </div>
-                      </td>
-                    </motion.tr>
-                  ))}
-                </tbody>
-              </table>
-            </motion.div>
-          </div>
 
-          {/* Pagination - Cải thiện thiết kế với giới hạn trang */}
-          {totalPages > 1 && (
-            <motion.div
-              variants={itemVariants}
-              className="flex justify-center mt-8 gap-3 items-center"
-            >
-              {/* Nút Previous */}
-              <motion.button
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
-                onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-                className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 ${
-                  currentPage === 1
-                    ? "bg-gray-200 text-gray-500 cursor-not-allowed"
-                    : "bg-white text-gray-700 hover:bg-gray-100 shadow"
-                }`}
-                disabled={currentPage === 1}
+                            {order.status === "Pending" && (
+                              <motion.button
+                                whileHover={{ scale: 1.05 }}
+                                whileTap={{ scale: 0.95 }}
+                                onClick={() => handleCancelOrder(order.orderId)}
+                                className="inline-flex items-center px-4 py-2 bg-red-500 text-white rounded-full shadow-md hover:bg-red-600 transition-all duration-300"
+                              >
+                                Hủy đơn
+                              </motion.button>
+                            )}
+                          </div>
+                        </td>
+                      </motion.tr>
+                    ))}
+                  </tbody>
+                </table>
+              </motion.div>
+            </div>
+
+            {/* Pagination - Cải thiện responsive */}
+            {totalPages > 1 && (
+              <motion.div
+                variants={itemVariants}
+                className="flex justify-center mt-6 sm:mt-8 gap-2 sm:gap-3 items-center flex-wrap"
               >
-                ‹
-              </motion.button>
+                {/* Nút Previous */}
+                <motion.button
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                  onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                  className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 ${
+                    currentPage === 1
+                      ? "bg-gray-200 text-gray-500 cursor-not-allowed"
+                      : "bg-white text-gray-700 hover:bg-gray-100 shadow"
+                  }`}
+                  disabled={currentPage === 1}
+                >
+                  ‹
+                </motion.button>
 
-              {/* Hiển thị các số trang */}
-              {[...Array(totalPages)].map((_, i) => {
-                if (
-                  i + 1 === 1 || // Trang đầu tiên
-                  i + 1 === totalPages || // Trang cuối cùng
-                  (i + 1 >= currentPage - 2 && i + 1 <= currentPage + 2) // Giới hạn hiển thị 5 trang xung quanh trang hiện tại
-                ) {
-                  return (
-                    <motion.button
-                      key={i}
-                      whileHover={{ scale: 1.1 }}
-                      whileTap={{ scale: 0.9 }}
-                      onClick={() => setCurrentPage(i + 1)}
-                      className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 ${
-                        currentPage === i + 1
-                          ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-md"
-                          : "bg-white text-gray-700 hover:bg-gray-100 shadow"
-                      }`}
-                    >
-                      {i + 1}
-                    </motion.button>
-                  );
-                } else if (
-                  i + 1 === currentPage - 3 ||
-                  i + 1 === currentPage + 3
-                ) {
-                  return (
-                    <span key={i} className="px-2 text-gray-500">
-                      ...
-                    </span>
-                  );
-                }
-                return null;
-              })}
+                {/* Hiển thị các số trang */}
+                {[...Array(totalPages)].map((_, i) => {
+                  if (
+                    i + 1 === 1 || // Trang đầu tiên
+                    i + 1 === totalPages || // Trang cuối cùng
+                    (i + 1 >= currentPage - 2 && i + 1 <= currentPage + 2) // Giới hạn hiển thị 5 trang xung quanh trang hiện tại
+                  ) {
+                    return (
+                      <motion.button
+                        key={i}
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.9 }}
+                        onClick={() => setCurrentPage(i + 1)}
+                        className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 ${
+                          currentPage === i + 1
+                            ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-md"
+                            : "bg-white text-gray-700 hover:bg-gray-100 shadow"
+                        }`}
+                      >
+                        {i + 1}
+                      </motion.button>
+                    );
+                  } else if (
+                    i + 1 === currentPage - 3 ||
+                    i + 1 === currentPage + 3
+                  ) {
+                    return (
+                      <span key={i} className="px-2 text-gray-500">
+                        ...
+                      </span>
+                    );
+                  }
+                  return null;
+                })}
 
-              {/* Nút Next */}
-              <motion.button
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
-                onClick={() =>
-                  setCurrentPage((prev) => Math.min(prev + 1, totalPages))
-                }
-                className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 ${
-                  currentPage === totalPages
-                    ? "bg-gray-200 text-gray-500 cursor-not-allowed"
-                    : "bg-white text-gray-700 hover:bg-gray-100 shadow"
-                }`}
-                disabled={currentPage === totalPages}
-              >
-                ›
-              </motion.button>
-            </motion.div>
-          )}
-        </>
-      )}
+                {/* Nút Next */}
+                <motion.button
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                  onClick={() =>
+                    setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+                  }
+                  className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 ${
+                    currentPage === totalPages
+                      ? "bg-gray-200 text-gray-500 cursor-not-allowed"
+                      : "bg-white text-gray-700 hover:bg-gray-100 shadow"
+                  }`}
+                  disabled={currentPage === totalPages}
+                >
+                  ›
+                </motion.button>
+              </motion.div>
+            )}
+          </>
+        )}
+      </div>
     </motion.div>
   );
 };

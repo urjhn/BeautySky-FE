@@ -42,7 +42,8 @@ import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import QuizController from "./pages/DashBoard/pages/QuizController.jsx";
 import RoutineController from "./pages/DashBoard/pages/RoutineController.jsx";
-
+import ShoppingGuide from "./pages/Policy/ShoppingGuide.jsx";
+import CompanyPolicy from "./pages/Policy/CompanyPolicy.jsx";
 // Main Application
 const App = () => (
   <Routes>
@@ -69,6 +70,8 @@ const App = () => (
     <Route path="/unauthorized" element={<Unauthorized />} />
     <Route path="/update-profile" element={<UpdateProfile />} />
     <Route path="/google-callback" element={<GoogleCallback />} />
+    <Route path="/shopping-guide" element={<ShoppingGuide />} />
+    <Route path="/company-policy" element={<CompanyPolicy />} />
     {/* Dashboard Routes (Chỉ Manager và Staff mới truy cập) */}
     <Route
       path="/dashboardlayout"

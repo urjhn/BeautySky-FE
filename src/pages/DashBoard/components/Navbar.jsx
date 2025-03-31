@@ -10,6 +10,7 @@ import { HiMenu } from "react-icons/hi";
 import productAPI from "../../../services/product";
 import blogsAPI from "../../../services/blogs";
 import usersAPI from "../../../services/users";
+import Swal from "sweetalert2";
 
 const Navbar = () => {
   const navigate = useNavigate();
@@ -103,8 +104,31 @@ const Navbar = () => {
   };
 
   const handleLogout = () => {
-    logout();
-    navigate("/login");
+    // Hiển thị thông báo xác nhận đăng xuất
+    Swal.fire({
+      title: 'Đăng xuất',
+      text: 'Bạn có chắc chắn muốn đăng xuất?',
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonColor: '#3B82F6',
+      cancelButtonColor: '#EF4444',
+      confirmButtonText: 'Đăng xuất',
+      cancelButtonText: 'Hủy',
+    }).then((result) => {
+      if (result.isConfirmed) {
+        logout();
+        // Hiển thị thông báo đăng xuất thành công
+        Swal.fire({
+          title: 'Đã đăng xuất',
+          text: 'Đăng xuất thành công!',
+          icon: 'success',
+          showConfirmButton: false,
+          timer: 1500,
+        }).then(() => {
+          navigate("/login");
+        });
+      }
+    });
   };
 
   const menu = (
@@ -288,9 +312,9 @@ const Navbar = () => {
                         }}
                       >
                         <div className="flex-shrink-0">
-                          {item.imgURL ? (
+                          {item.imgUrl ? (
                             <img 
-                              src={item.imgURL}
+                              src={item.imgUrl}
                               alt={item.title}
                               className="w-16 h-16 object-cover rounded-lg 
                                        shadow-sm group-hover:shadow-md 
