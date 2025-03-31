@@ -7,13 +7,61 @@ const blogsAPI = {
     const response = await axiosInstance.get(endPoint);
     return response;
   },
-  createBlog: async (formData) => {
-    const response = await axiosInstance.post(endPoint, formData, {
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
-    });
-    return response;
+  createBlog: async (blogDTO) => {
+    try {
+      const formData = new FormData();
+      
+      // Thêm các trường cơ bản
+      formData.append("Title", blogDTO.title.trim());
+      formData.append("Content", blogDTO.content.trim());
+      formData.append("AuthorId", blogDTO.authorId);
+      formData.append("Status", blogDTO.status || "Draft");
+      formData.append("SkinType", blogDTO.skinType || "All");
+      formData.append("Category", blogDTO.category || "General");
+      formData.append("IsActive", true);
+
+      // Thêm file nếu có
+      if (blogDTO.file) {
+        formData.append("File", blogDTO.file);
+      }
+
+      const response = await axiosInstance.post(endPoint, formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+
+      if (response.status === 201) {
+        return {
+          success: true,
+          data: response.data,
+          message: "Blog đã được tạo thành công"
+        };
+      }
+
+      return {
+        success: false,
+        message: "Không thể tạo blog"
+      };
+
+    } catch (error) {
+      let errorMessage = "Đã có lỗi xảy ra khi tạo blog";
+
+      if (error.response) {
+        switch (error.response.status) {
+          case 400:
+            errorMessage = "Dữ liệu không hợp lệ";
+            break;
+          case 500:
+            errorMessage = "Lỗi server khi tạo blog";
+            break;
+          default:
+            errorMessage = "Không thể tạo blog";
+        }
+      }
+
+      throw new Error(errorMessage);
+    }
   },
   searchBlog: async (id) => {
     return await axiosInstance.get(`${endPoint}/${id}`);
