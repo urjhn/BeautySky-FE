@@ -8,7 +8,6 @@ import { ReviewProvider } from "./context/ReviewContext.jsx";
 import { NewsProvider } from "./context/EvenContext.jsx";
 import { UsersProvider } from "./context/UserContext.jsx";
 import { OrdersProvider } from "./context/OrdersContext.jsx";
-import { ThemeProvider } from "./pages/DashBoard/context/ThemeContext.jsx";
 import { BlogsProvider } from "./context/BlogsContext.jsx";
 import { AuthProvider } from "./context/AuthContext.jsx";
 import { QuizProvider } from "./context/QuizContext.jsx";
@@ -28,13 +27,11 @@ root.render(
               <DataProvider>
                 <QuizProvider>
                   <ReviewProvider>
-                    <ThemeProvider>
                       <NewsProvider>
                         <BlogsProvider>
                           <App />
-                        </BlogsProvider>
+                        </BlogsProvider> 
                       </NewsProvider>
-                    </ThemeProvider>
                   </ReviewProvider>
                 </QuizProvider>
               </DataProvider>

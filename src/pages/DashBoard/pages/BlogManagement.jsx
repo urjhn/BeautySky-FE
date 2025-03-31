@@ -87,31 +87,57 @@ const BlogManagement = () => {
   // Handle Add Blog
   const handleAdd = async () => {
     try {
-      if (
-        !newBlog.title.trim() ||
-        !newBlog.content.trim() ||
-        !newBlog.authorId
-      ) {
-        Swal.fire("Lỗi", "Vui lòng nhập đầy đủ thông tin", "error");
+      // Validate dữ liệu
+      if (!newBlog.title?.trim()) {
+        Swal.fire("Lỗi", "Vui lòng nhập tiêu đề blog", "error");
+        return;
+      }
+      if (!newBlog.content?.trim()) {
+        Swal.fire("Lỗi", "Vui lòng nhập nội dung blog", "error");
+        return;
+      }
+      if (!newBlog.authorId) {
+        Swal.fire("Lỗi", "Vui lòng nhập ID tác giả", "error");
+        return;
+      }
+      if (!newBlog.status) {
+        Swal.fire("Lỗi", "Vui lòng chọn trạng thái", "error");
+        return;
+      }
+      if (!newBlog.skinType) {
+        Swal.fire("Lỗi", "Vui lòng chọn loại da", "error");
+        return;
+      }
+      if (!newBlog.category) {
+        Swal.fire("Lỗi", "Vui lòng chọn danh mục", "error");
         return;
       }
 
-      const formData = new FormData();
-      formData.append("title", newBlog.title.trim());
-      formData.append("content", newBlog.content.trim());
-      formData.append("authorId", newBlog.authorId);
-      formData.append("status", newBlog.status || "Draft");
-      formData.append("skinType", newBlog.skinType || "All");
-      formData.append("category", newBlog.category || "General");
+      // Hiển thị loading
+      Swal.fire({
+        title: "Đang xử lý...",
+        text: "Vui lòng chờ trong giây lát",
+        allowOutsideClick: false,
+        showConfirmButton: false,
+        willOpen: () => {
+          Swal.showLoading();
+        },
+      });
 
-      if (selectedFile) {
-        formData.append("file", selectedFile);
-      }
+      const blogData = {
+        title: newBlog.title,
+        content: newBlog.content,
+        authorId: newBlog.authorId,
+        status: newBlog.status,
+        skinType: newBlog.skinType,
+        category: newBlog.category,
+        file: selectedFile
+      };
 
-      const response = await blogsAPI.createBlog(formData);
+      const response = await blogsAPI.createBlog(blogData);
 
-      if (response.status === 201) {
-        await fetchBlogs();
+      if (response.success) {
+        await fetchBlogs(); // Refresh danh sách blog
         setIsAdding(false);
         setNewBlog({
           title: "",
@@ -124,11 +150,22 @@ const BlogManagement = () => {
         });
         setSelectedFile(null);
         setPreviewImage(null);
-        Swal.fire("Thành công", "Blog đã được thêm", "success");
+
+        Swal.fire({
+          icon: "success",
+          title: "Thành công!",
+          text: "Blog đã được thêm thành công",
+          timer: 1500,
+          showConfirmButton: false
+        });
       }
     } catch (error) {
       console.error("Lỗi khi thêm blog:", error);
-      Swal.fire("Lỗi", "Không thể thêm blog", "error");
+      Swal.fire({
+        icon: "error",
+        title: "Lỗi!",
+        text: error.message || "Không thể thêm blog",
+      });
     }
   };
 
@@ -327,11 +364,14 @@ const BlogManagement = () => {
       </div>
 
       {isEditing && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 p-4 z-[1000] mt-[72px]">
-          <div className="bg-white p-6 rounded-xl w-full max-w-4xl max-h-[calc(100vh-100px)] overflow-y-auto shadow-2xl transform transition-all duration-300">
-            <div className="flex justify-between items-center border-b pb-4 mb-6">
-              <h2 className="text-2xl font-bold text-blue-800">
-                <i className="fas fa-edit mr-2"></i> Chỉnh sửa Blog
+        <div className="fixed inset-0 flex items-center justify-center bg-black/70 p-4 z-[1000] backdrop-blur-md">
+          <div className="bg-white p-8 rounded-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto shadow-2xl transform transition-all duration-300 border border-blue-100">
+            <div className="flex justify-between items-center border-b border-blue-100 pb-4 mb-6">
+              <h2 className="text-2xl font-bold text-blue-800 flex items-center">
+                <i className="fas fa-edit mr-3 text-blue-600"></i>
+                <span className="bg-gradient-to-r from-blue-600 to-blue-400 text-transparent bg-clip-text">
+                  Chỉnh sửa Blog
+                </span>
               </h2>
               <button 
                 onClick={() => {
@@ -339,114 +379,123 @@ const BlogManagement = () => {
                   setSelectedFile(null);
                   setPreviewImage(null);
                 }}
-                className="text-gray-500 hover:text-red-500 transition-colors"
+                className="text-gray-400 hover:text-red-500 transition-all duration-300 hover:rotate-90 transform"
               >
-                <i className="fas fa-times text-xl"></i>
+                <i className="fas fa-times text-2xl"></i>
               </button>
             </div>
 
-            <div className="space-y-5">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Tiêu đề
+            <div className="space-y-6">
+              <div className="group">
+                <label className="block text-sm font-semibold text-gray-700 mb-2 group-hover:text-blue-600 transition-colors duration-200">
+                  <i className="fas fa-heading mr-2"></i>Tiêu đề
                 </label>
                 <input
                   type="text"
-                  className="block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 transition-colors duration-200"
+                  className="block w-full rounded-xl border-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 transition-all duration-200 hover:border-blue-300"
                   value={editBlog.title}
-                  onChange={(e) =>
-                    setEditBlog({ ...editBlog, title: e.target.value })
-                  }
+                  onChange={(e) => setEditBlog({ ...editBlog, title: e.target.value })}
+                  placeholder="Nhập tiêu đề blog..."
                 />
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Nội dung
+              <div className="group">
+                <label className="block text-sm font-semibold text-gray-700 mb-2 group-hover:text-blue-600 transition-colors duration-200">
+                  <i className="fas fa-paragraph mr-2"></i>Nội dung
                 </label>
                 <textarea
-                  className="block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 transition-colors duration-200"
+                  className="block w-full rounded-xl border-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 transition-all duration-200 hover:border-blue-300"
                   rows={8}
                   value={editBlog.content}
-                  onChange={(e) =>
-                    setEditBlog({ ...editBlog, content: e.target.value })
-                  }
+                  onChange={(e) => setEditBlog({ ...editBlog, content: e.target.value })}
+                  placeholder="Nhập nội dung blog..."
                 />
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    <i className="fas fa-image mr-1"></i> Hình ảnh
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="group">
+                  <label className="block text-sm font-semibold text-gray-700 mb-2 group-hover:text-blue-600 transition-colors duration-200">
+                    <i className="fas fa-image mr-2"></i>Hình ảnh
                   </label>
+                  <div className="relative">
                   <input
                     type="file"
                     accept="image/*"
                     onChange={handleFileChange}
-                    className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
-                  />
-                  <div className="mt-3 border rounded-lg p-2 bg-gray-50">
+                      className="block w-full text-sm text-gray-500 
+                      file:mr-4 file:py-2.5 file:px-4 file:rounded-full file:border-0 
+                      file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 
+                      hover:file:bg-blue-100 transition-all duration-200
+                      cursor-pointer"
+                    />
+                    <div className="mt-4 border-2 border-dashed border-gray-200 rounded-xl p-4 bg-gray-50 group-hover:border-blue-300 transition-all duration-200">
                     {previewImage ? (
+                        <div className="relative group/image">
                       <img
                         src={previewImage}
                         alt="Preview"
-                        className="h-40 object-cover rounded-lg mx-auto"
+                            className="h-48 w-full object-cover rounded-lg shadow-md transform group-hover/image:scale-[1.02] transition-all duration-300"
                       />
+                          <div className="absolute inset-0 bg-black bg-opacity-0 group-hover/image:bg-opacity-20 transition-all duration-300 rounded-lg flex items-center justify-center">
+                            <i className="fas fa-search-plus text-white opacity-0 group-hover/image:opacity-100 text-2xl"></i>
+                          </div>
+                        </div>
                     ) : editBlog.imgURL ? (
+                        <div className="relative group/image">
                       <img
                         src={editBlog.imgURL}
                         alt="Current"
-                        className="h-40 object-cover rounded-lg mx-auto"
-                      />
-                    ) : (
-                      <div className="h-40 flex items-center justify-center text-gray-400">
-                        <i className="fas fa-image text-4xl"></i>
-                      </div>
-                    )}
+                            className="h-48 w-full object-cover rounded-lg shadow-md transform group-hover/image:scale-[1.02] transition-all duration-300"
+                          />
+                          <div className="absolute inset-0 bg-black bg-opacity-0 group-hover/image:bg-opacity-20 transition-all duration-300 rounded-lg flex items-center justify-center">
+                            <i className="fas fa-search-plus text-white opacity-0 group-hover/image:opacity-100 text-2xl"></i>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="h-48 flex items-center justify-center text-gray-400 flex-col">
+                          <i className="fas fa-cloud-upload-alt text-4xl mb-2"></i>
+                          <span className="text-sm">Kéo thả hoặc click để chọn ảnh</span>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
 
-                <div className="space-y-5">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      ID Tác giả
+                <div className="space-y-4">
+                  <div className="group">
+                    <label className="block text-sm font-semibold text-gray-700 mb-2 group-hover:text-blue-600 transition-colors duration-200">
+                      <i className="fas fa-user-edit mr-2"></i>ID Tác giả
                     </label>
                     <input
                       type="text"
-                      className="block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 transition-colors duration-200"
+                      className="block w-full rounded-xl border-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 transition-all duration-200 hover:border-blue-300"
                       value={editBlog.authorId}
-                      onChange={(e) =>
-                        setEditBlog({ ...editBlog, authorId: e.target.value })
-                      }
+                      onChange={(e) => setEditBlog({ ...editBlog, authorId: e.target.value })}
                     />
                   </div>
 
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Trạng thái
+                  <div className="group">
+                    <label className="block text-sm font-semibold text-gray-700 mb-2 group-hover:text-blue-600 transition-colors duration-200">
+                      <i className="fas fa-toggle-on mr-2"></i>Trạng thái
                     </label>
                     <select
-                      className="block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 transition-colors duration-200"
+                      className="block w-full rounded-xl border-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 transition-all duration-200 hover:border-blue-300"
                       value={editBlog.status}
-                      onChange={(e) =>
-                        setEditBlog({ ...editBlog, status: e.target.value })
-                      }
+                      onChange={(e) => setEditBlog({ ...editBlog, status: e.target.value })}
                     >
-                      <option value="Draft">Draft</option>
-                      <option value="Published">Published</option>
+                      <option value="Draft">Bản nháp</option>
+                      <option value="Published">Đã xuất bản</option>
                     </select>
                   </div>
 
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Loại da
+                  <div className="group">
+                    <label className="block text-sm font-semibold text-gray-700 mb-2 group-hover:text-blue-600 transition-colors duration-200">
+                      <i className="fas fa-smile mr-2"></i>Loại da
                     </label>
                     <select
-                      className="block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 transition-colors duration-200"
+                      className="block w-full rounded-xl border-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 transition-all duration-200 hover:border-blue-300"
                       value={editBlog.skinType}
-                      onChange={(e) =>
-                        setEditBlog({ ...editBlog, skinType: e.target.value })
-                      }
+                      onChange={(e) => setEditBlog({ ...editBlog, skinType: e.target.value })}
                     >
                       <option value="Da Thường">Da Thường</option>
                       <option value="Da Khô">Da Khô</option>
@@ -456,16 +505,14 @@ const BlogManagement = () => {
                     </select>
                   </div>
 
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Danh mục
+                  <div className="group">
+                    <label className="block text-sm font-semibold text-gray-700 mb-2 group-hover:text-blue-600 transition-colors duration-200">
+                      <i className="fas fa-tags mr-2"></i>Danh mục
                     </label>
                     <select
-                      className="block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 transition-colors duration-200"
+                      className="block w-full rounded-xl border-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 transition-all duration-200 hover:border-blue-300"
                       value={editBlog.category}
-                      onChange={(e) =>
-                        setEditBlog({ ...editBlog, category: e.target.value })
-                      }
+                      onChange={(e) => setEditBlog({ ...editBlog, category: e.target.value })}
                     >
                       <option value="Tẩy Trang">Tẩy Trang</option>
                       <option value="Sữa Rửa Mặt">Sữa Rửa Mặt</option>
@@ -479,22 +526,24 @@ const BlogManagement = () => {
               </div>
             </div>
 
-            <div className="flex justify-end space-x-3 mt-8">
+            <div className="flex justify-end space-x-4 mt-8 pt-4 border-t border-gray-100">
               <button
-                className="px-5 py-2 bg-gray-500 text-white rounded-full hover:bg-gray-600 transition-all duration-300 flex items-center gap-2"
+                className="px-6 py-2.5 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition-all duration-300 flex items-center gap-2 group"
                 onClick={() => {
                   setIsEditing(false);
                   setSelectedFile(null);
                   setPreviewImage(null);
                 }}
               >
-                <i className="fas fa-times"></i> Hủy
+                <i className="fas fa-times group-hover:rotate-90 transition-all duration-300"></i>
+                <span>Hủy</span>
               </button>
               <button
-                className="px-5 py-2 bg-blue-500 text-white rounded-full hover:bg-blue-600 transition-all duration-300 flex items-center gap-2"
+                className="px-6 py-2.5 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-all duration-300 flex items-center gap-2 group hover:shadow-lg"
                 onClick={handleSave}
               >
-                <i className="fas fa-save"></i> Lưu
+                <i className="fas fa-save group-hover:scale-110 transition-all duration-300"></i>
+                <span>Lưu thay đổi</span>
               </button>
             </div>
           </div>
@@ -502,11 +551,14 @@ const BlogManagement = () => {
       )}
 
       {isAdding && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 p-4 z-[1000] mt-[72px]">
-          <div className="bg-white p-6 rounded-xl w-full max-w-4xl max-h-[calc(100vh-100px)] overflow-y-auto shadow-2xl transform transition-all duration-300">
-            <div className="flex justify-between items-center border-b pb-4 mb-6">
-              <h2 className="text-2xl font-bold text-blue-800">
-                <i className="fas fa-plus-circle mr-2"></i> Thêm Blog Mới
+        <div className="fixed inset-0 flex items-center justify-center bg-black/70 p-4 z-[1000] backdrop-blur-md">
+          <div className="bg-white p-8 rounded-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto shadow-2xl transform transition-all duration-300 border border-blue-100">
+            <div className="flex justify-between items-center border-b border-blue-100 pb-4 mb-6">
+              <h2 className="text-2xl font-bold text-blue-800 flex items-center">
+                <i className="fas fa-plus-circle mr-3 text-blue-600"></i>
+                <span className="bg-gradient-to-r from-blue-600 to-blue-400 text-transparent bg-clip-text">
+                  Thêm Blog Mới
+                </span>
               </h2>
               <button 
                 onClick={() => {
@@ -514,109 +566,116 @@ const BlogManagement = () => {
                   setSelectedFile(null);
                   setPreviewImage(null);
                 }}
-                className="text-gray-500 hover:text-red-500 transition-colors"
+                className="text-gray-400 hover:text-red-500 transition-all duration-300 hover:rotate-90 transform"
               >
-                <i className="fas fa-times text-xl"></i>
+                <i className="fas fa-times text-2xl"></i>
               </button>
             </div>
 
-            <div className="space-y-5">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Tiêu đề
+            <div className="space-y-6">
+              <div className="group">
+                <label className="block text-sm font-semibold text-gray-700 mb-2 group-hover:text-blue-600 transition-colors duration-200">
+                  <i className="fas fa-heading mr-2"></i>Tiêu đề
                 </label>
                 <input
                   type="text"
-                  className="block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 transition-colors duration-200"
+                  className="block w-full rounded-xl border-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 transition-all duration-200 hover:border-blue-300"
                   value={newBlog.title}
-                  onChange={(e) =>
-                    setNewBlog({ ...newBlog, title: e.target.value })
-                  }
+                  onChange={(e) => setNewBlog({ ...newBlog, title: e.target.value })}
+                  placeholder="Nhập tiêu đề blog..."
                 />
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Nội dung
+              <div className="group">
+                <label className="block text-sm font-semibold text-gray-700 mb-2 group-hover:text-blue-600 transition-colors duration-200">
+                  <i className="fas fa-paragraph mr-2"></i>Nội dung
                 </label>
                 <textarea
-                  className="block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 transition-colors duration-200"
+                  className="block w-full rounded-xl border-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 transition-all duration-200 hover:border-blue-300"
                   rows={8}
                   value={newBlog.content}
-                  onChange={(e) =>
-                    setNewBlog({ ...newBlog, content: e.target.value })
-                  }
+                  onChange={(e) => setNewBlog({ ...newBlog, content: e.target.value })}
+                  placeholder="Nhập nội dung blog..."
                 />
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    <i className="fas fa-image mr-1"></i> Hình ảnh
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="group">
+                  <label className="block text-sm font-semibold text-gray-700 mb-2 group-hover:text-blue-600 transition-colors duration-200">
+                    <i className="fas fa-image mr-2"></i>Hình ảnh
                   </label>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleFileChange}
-                    className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
-                  />
-                  <div className="mt-3 border rounded-lg p-2 bg-gray-50">
-                    {previewImage ? (
-                      <img
-                        src={previewImage}
-                        alt="Preview"
-                        className="h-40 object-cover rounded-lg mx-auto"
-                      />
-                    ) : (
-                      <div className="h-40 flex items-center justify-center text-gray-400">
-                        <i className="fas fa-image text-4xl"></i>
-                      </div>
-                    )}
+                  <div className="relative">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleFileChange}
+                      className="block w-full text-sm text-gray-500 
+                      file:mr-4 file:py-2.5 file:px-4 file:rounded-full file:border-0 
+                      file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 
+                      hover:file:bg-blue-100 transition-all duration-200
+                      cursor-pointer"
+                    />
+                    <div className="mt-4 border-2 border-dashed border-gray-200 rounded-xl p-4 bg-gray-50 group-hover:border-blue-300 transition-all duration-200">
+                      {previewImage ? (
+                        <div className="relative group/image">
+                          <img
+                            src={previewImage}
+                            alt="Preview"
+                            className="h-48 w-full object-cover rounded-lg shadow-md transform group-hover/image:scale-[1.02] transition-all duration-300"
+                          />
+                          <div className="absolute inset-0 bg-black bg-opacity-0 group-hover/image:bg-opacity-20 transition-all duration-300 rounded-lg flex items-center justify-center">
+                            <i className="fas fa-search-plus text-white opacity-0 group-hover/image:opacity-100 text-2xl"></i>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="h-48 flex items-center justify-center text-gray-400 flex-col">
+                          <i className="fas fa-cloud-upload-alt text-4xl mb-2"></i>
+                          <span className="text-sm">Kéo thả hoặc click để chọn ảnh</span>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
 
-                <div className="space-y-5">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      ID Tác giả
+                <div className="space-y-4">
+                  <div className="group">
+                    <label className="block text-sm font-semibold text-gray-700 mb-2 group-hover:text-blue-600 transition-colors duration-200">
+                      <i className="fas fa-user-edit mr-2"></i>ID Tác giả
                     </label>
                     <input
                       type="text"
-                      className="block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 transition-colors duration-200"
+                      className="block w-full rounded-xl border-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 transition-all duration-200 hover:border-blue-300"
                       value={newBlog.authorId}
-                      onChange={(e) =>
-                        setNewBlog({ ...newBlog, authorId: e.target.value })
-                      }
+                      onChange={(e) => setNewBlog({ ...newBlog, authorId: e.target.value })}
+                      placeholder="Nhập ID tác giả..."
                     />
                   </div>
 
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Trạng thái
+                  <div className="group">
+                    <label className="block text-sm font-semibold text-gray-700 mb-2 group-hover:text-blue-600 transition-colors duration-200">
+                      <i className="fas fa-toggle-on mr-2"></i>Trạng thái
                     </label>
                     <select
-                      className="block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 transition-colors duration-200"
+                      className="block w-full rounded-xl border-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 transition-all duration-200 hover:border-blue-300"
                       value={newBlog.status}
-                      onChange={(e) =>
-                        setNewBlog({ ...newBlog, status: e.target.value })
-                      }
+                      onChange={(e) => setNewBlog({ ...newBlog, status: e.target.value })}
                     >
-                      <option value="Draft">Draft</option>
-                      <option value="Published">Published</option>
+                      <option value="">Chọn trạng thái</option>
+                      <option value="Draft">Bản nháp</option>
+                      <option value="Published">Đã xuất bản</option>
                     </select>
                   </div>
 
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Loại da
+                  <div className="group">
+                    <label className="block text-sm font-semibold text-gray-700 mb-2 group-hover:text-blue-600 transition-colors duration-200">
+                      <i className="fas fa-smile mr-2"></i>Loại da
                     </label>
                     <select
-                      className="block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 transition-colors duration-200"
+                      className="block w-full rounded-xl border-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 transition-all duration-200 hover:border-blue-300"
                       value={newBlog.skinType}
-                      onChange={(e) =>
-                        setNewBlog({ ...newBlog, skinType: e.target.value })
-                      }
+                      onChange={(e) => setNewBlog({ ...newBlog, skinType: e.target.value })}
                     >
+                      <option value="">Chọn loại da</option>
                       <option value="Da Thường">Da Thường</option>
                       <option value="Da Khô">Da Khô</option>
                       <option value="Da Dầu">Da Dầu</option>
@@ -625,17 +684,16 @@ const BlogManagement = () => {
                     </select>
                   </div>
 
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Danh mục
+                  <div className="group">
+                    <label className="block text-sm font-semibold text-gray-700 mb-2 group-hover:text-blue-600 transition-colors duration-200">
+                      <i className="fas fa-tags mr-2"></i>Danh mục
                     </label>
                     <select
-                      className="block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 transition-colors duration-200"
+                      className="block w-full rounded-xl border-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 transition-all duration-200 hover:border-blue-300"
                       value={newBlog.category}
-                      onChange={(e) =>
-                        setNewBlog({ ...newBlog, category: e.target.value })
-                      }
+                      onChange={(e) => setNewBlog({ ...newBlog, category: e.target.value })}
                     >
+                      <option value="">Chọn danh mục</option>
                       <option value="Tẩy Trang">Tẩy Trang</option>
                       <option value="Sữa Rửa Mặt">Sữa Rửa Mặt</option>
                       <option value="Serum">Serum</option>
@@ -648,22 +706,24 @@ const BlogManagement = () => {
               </div>
             </div>
 
-            <div className="flex justify-end space-x-3 mt-8">
+            <div className="flex justify-end space-x-4 mt-8 pt-4 border-t border-gray-100">
               <button
-                className="px-5 py-2 bg-gray-500 text-white rounded-full hover:bg-gray-600 transition-all duration-300 flex items-center gap-2"
+                className="px-6 py-2.5 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition-all duration-300 flex items-center gap-2 group"
                 onClick={() => {
                   setIsAdding(false);
                   setSelectedFile(null);
                   setPreviewImage(null);
                 }}
               >
-                <i className="fas fa-times"></i> Hủy
+                <i className="fas fa-times group-hover:rotate-90 transition-all duration-300"></i>
+                <span>Hủy</span>
               </button>
               <button
-                className="px-5 py-2 bg-blue-500 text-white rounded-full hover:bg-blue-600 transition-all duration-300 flex items-center gap-2"
+                className="px-6 py-2.5 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-all duration-300 flex items-center gap-2 group hover:shadow-lg"
                 onClick={handleAdd}
               >
-                <i className="fas fa-plus"></i> Thêm
+                <i className="fas fa-plus group-hover:scale-110 transition-all duration-300"></i>
+                <span>Thêm blog</span>
               </button>
             </div>
           </div>
