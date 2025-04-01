@@ -8,7 +8,7 @@ Sky Beauty là điểm đến tuyệt vời cho những ai đang tìm kiếm cá
 Thông tin liên hệ:
 Trụ sở chính: Lô E2a-7, Đường D1, Khu Công Nghệ Cao, Thủ Đức, TP.HCM
 Hotline: (028) 7300 5588
-Số điện thoại: 0937748123
+Số điện thoại: 0937748231
 Email: company.fbeauty@fpt.net.vn
 
 Danh mục sản phẩm chính:

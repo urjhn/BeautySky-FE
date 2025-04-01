@@ -1,7 +1,7 @@
 import React from 'react';
 import { FaShoppingBag } from "react-icons/fa";
 import dayjs from 'dayjs';
-
+import { Link } from "react-router-dom";
 const OrdersTable = ({ orders }) => {
   return (
     <div className="bg-white rounded-xl shadow-lg p-4 md:p-6 hover:shadow-xl transition-shadow">
@@ -10,9 +10,11 @@ const OrdersTable = ({ orders }) => {
           <FaShoppingBag className="text-blue-500" />
           Đơn hàng gần đây
         </h2>
+        <Link to="/dashboardlayout/orders">
         <button className="text-blue-500 hover:text-blue-600 text-sm font-medium">
           Xem tất cả →
         </button>
+      </Link>
       </div>
 
       {/* Mobile View */}
