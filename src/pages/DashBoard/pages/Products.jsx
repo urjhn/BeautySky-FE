@@ -270,7 +270,6 @@ const handleAddProduct = async (formData) => {
   }
 };
 
-// Replace your existing handleSaveEdit with this:
 const handleSaveEdit = async (formData) => {
   try {
     setLoading(true);
@@ -278,6 +277,15 @@ const handleSaveEdit = async (formData) => {
     if (!editingProduct || !editingProduct.productId) {
       throw new Error("Missing product ID");
     }
+    
+    // Modified check that only flags true duplicates
+const nameExists = products.some(p => 
+  p.productName === formData.productName && 
+  p.productId !== editingProduct.productId
+);
+    
+    console.log("FormData:", formData);
+    console.log("EditingProduct:", editingProduct);
     
     const response = await productApi.editProduct(
       editingProduct.productId,
@@ -293,7 +301,6 @@ const handleSaveEdit = async (formData) => {
         text: "Sản phẩm đã được cập nhật thành công!",
       });
       
-      // Refresh product list
       fetchProduct();
     } else {
       throw new Error("Edit failed");
@@ -310,6 +317,8 @@ const handleSaveEdit = async (formData) => {
     setLoading(false);
   }
 };
+
+
 
   const columns = React.useMemo(
     () => [

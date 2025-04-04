@@ -20,7 +20,6 @@ import Customers from "./pages/DashBoard/pages/Customers.jsx";
 import Order from "./pages/DashBoard/pages/Order.jsx";
 import Products from "./pages/DashBoard/pages/Products.jsx";
 import Report from "./pages/DashBoard/pages/Report.jsx";
-import Setting from "./pages/DashBoard/pages/Setting.jsx";
 import BlogManagement from "./pages/DashBoard/pages/BlogManagement.jsx";
 import Promotion from "./pages/DashBoard/pages/Promotion.jsx";
 import AboutUs from "./pages/AboutUs/AboutUs.jsx";
@@ -101,7 +100,6 @@ const App = () => (
       <Route path="events" element={<Events />} />
       <Route path="quizzes" element={<QuizController/>} />
       <Route path="routines" element={<RoutineController/>} />
-      <Route path="settings" element={<Setting />} />
       <Route path="profileadmin" element={<ProfileAdmin />} />
     </Route>
     {/*Layout ProfileProfile */}

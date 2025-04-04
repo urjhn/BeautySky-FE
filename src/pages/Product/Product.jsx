@@ -1,22 +1,16 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 import { Filter, Star, Sun, Droplet } from "lucide-react";
 import Navbar from "../../components/Navbar/Navbar";
 import Footer from "../../components/Footer/Footer";
-import { useCart } from "../../context/CartContext";
 import { useDataContext } from "../../context/DataContext";
-import PaginationComponent from "../../components/Pagination/Pagination.jsx";
 import ProductList from "./ProductList";
-
-const ITEMS_PER_PAGE = 12; // Đồng bộ với ProductList.js
 
 const ProductsPage = () => {
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
 
-  const { addToCart } = useCart();
-  const { products, fetchProduct, isLoading } = useDataContext(); // Đảm bảo fetchProduct được gọi khi cần
+  const { fetchProduct } = useDataContext(); // Đảm bảo fetchProduct được gọi khi cần
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedSkinType, setSelectedSkinType] = useState("Tất cả");
   const [selectedCategory, setSelectedCategory] = useState("Tất cả");

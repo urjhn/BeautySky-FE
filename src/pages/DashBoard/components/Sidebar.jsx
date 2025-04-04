@@ -4,9 +4,8 @@ import {
   FaUsers,
   FaBox,
   FaHome,
-  FaCog,
   FaTags,
-  FaFileAlt,
+  FaFileAlt,  
   FaBlog,
   FaCalendarAlt,
   FaBars,
@@ -152,11 +151,6 @@ const Sidebar = () => {
                 to="/dashboardlayout/quizzes"
               />
               <NavItem icon={<FaHome />} title="Cửa hàng" to="/" />
-              <NavItem
-                icon={<FaCog />}
-                title="Cài đặt"
-                to="/dashboardlayout/settings"
-              />
             </ul>
           </div>
         </nav>

@@ -93,27 +93,63 @@ const DashboardEvents = () => {
   };
 
   const handleDelete = async (eventId) => {
-    Swal.fire({
-      title: "Bạn có chắc chắn muốn xóa?",
-      text: "Hành động này không thể hoàn tác!",
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonColor: "#d33",
-      cancelButtonColor: "#3085d6",
-      confirmButtonText: "OK",
-      cancelButtonText: "Hủy",
-    }).then(async (result) => {
-      if (result.isConfirmed) {
-        try {
-          await newsAPI.deleteNewsById(eventId);
-          fetchNews();
-          Swal.fire("Đã xóa!", "Sự kiện đã được xóa thành công.", "success");
-        } catch (error) {
-          console.error("Error deleting event:", error);
-          Swal.fire("Lỗi!", "Không thể xóa sự kiện.", "error");
-        }
+    try {
+      // Hiển thị confirm dialog
+      const confirmResult = await Swal.fire({
+        title: "Bạn có chắc chắn muốn xóa?",
+        text: "Hành động này không thể hoàn tác!",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#d33",
+        cancelButtonColor: "#3085d6",
+        confirmButtonText: "Xác nhận xóa",
+        cancelButtonText: "Hủy",
+        showLoaderOnConfirm: true,
+        preConfirm: async () => {
+          try {
+            // Hiển thị loading khi đang xử lý
+            Swal.showLoading();
+            
+            const response = await newsAPI.deleteNewsById(eventId);
+            if (response.success) {
+              return response;
+            }
+            
+            throw new Error(response.message || 'Không thể xóa sự kiện');
+          } catch (error) {
+            Swal.showValidationMessage(
+              error.message || 'Có lỗi xảy ra khi xóa sự kiện'
+            );
+          }
+        },
+        allowOutsideClick: () => !Swal.isLoading()
+      });
+
+      // Nếu người dùng xác nhận và xóa thành công
+      if (confirmResult.isConfirmed) {
+        // Refresh lại danh sách
+        await fetchNews();
+        
+        // Thông báo thành công
+        await Swal.fire({
+          icon: "success",
+          title: "Đã xóa!",
+          text: "Sự kiện đã được xóa thành công",
+          timer: 1500,
+          showConfirmButton: false
+        });
       }
-    });
+    } catch (error) {
+      console.error("Error deleting event:", error);
+      
+      // Thông báo lỗi
+      await Swal.fire({
+        icon: "error",
+        title: "Lỗi!",
+        text: error.message || "Không thể xóa sự kiện",
+        confirmButtonColor: "#3085d6"
+      });
+    }
   };
 
   const handlePageChange = (newPage) => {
