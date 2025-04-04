@@ -493,6 +493,10 @@ const ProductDetail = () => {
                   +
                 </button>
               </div>
+              <span className="ml-12 font-semibold text-gray-700">
+                  SL còn trong kho:
+                </span>
+                <span className="ml-2 font-bold text-pink-500">{product.quantity}</span>
             </div>
 
             <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
