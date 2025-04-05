@@ -493,6 +493,25 @@ const ProductDetail = () => {
                   +
                 </button>
               </div>
+              
+              {/* Hiển thị số lượng sản phẩm còn lại */}
+              <div className="ml-4 flex items-center">
+                <span className="text-sm text-gray-600">
+                  {product.quantity > 0 ? (
+                    <>
+                      <span className="font-medium">Còn lại:</span>{" "}
+                      <span className={`${product.quantity <= 10 ? "text-red-500 font-semibold" : "text-green-600"}`}>
+                        {product.quantity}
+                      </span>{" "}
+                      {product.quantity <= 10 && (
+                        <span className="text-xs text-red-500 animate-pulse">(Sắp hết hàng)</span>
+                      )}
+                    </>
+                  ) : (
+                    <span className="text-red-500 font-semibold">Hết hàng</span>
+                  )}
+                </span>
+              </div>
             </div>
 
             <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
