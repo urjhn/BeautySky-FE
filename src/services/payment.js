@@ -63,7 +63,50 @@ const paymentsAPI = {
     } catch (error) {
         throw new Error(error.response?.data?.message || 'Lỗi xử lý callback');
     }
-}
+},
+  confirmDelivery: async (orderId) => {
+    if (!orderId) {
+      throw new Error('OrderId là bắt buộc');
+    }
+
+    try {
+      const response = await axiosInstance.post(
+        `${endPoint}/confirm-delivery/${orderId}`,
+        {},
+        {
+          timeout: 10000,
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+
+      if (response.status === 200) {
+        return response.data;
+      }
+
+      throw new Error(response.data?.message || 'Có lỗi xảy ra khi xác nhận giao hàng');
+    } catch (error) {
+      console.error('Error in confirmDelivery:', error);
+      
+      if (error.response) {
+        const { status, data } = error.response;
+        
+        switch (status) {
+          case 404:
+            throw new Error(data.message || 'Không tìm thấy đơn hàng');
+          case 400:
+            throw new Error(data.message || 'Đơn hàng không ở trạng thái phù hợp');
+          case 500:
+            throw new Error(data.message || 'Lỗi server khi xử lý giao hàng');
+          default:
+            throw new Error(data.message || `Lỗi không xác định: ${status}`);
+        }
+      }
+      
+      throw error;
+    }
+  },
 };
 
 export default paymentsAPI;

@@ -21,12 +21,14 @@ import { useNavigate } from "react-router-dom";
 const ORDER_STATUS = {
   PENDING: "Pending",
   COMPLETED: "Completed",
+  DELIVERED: "Delivered",
   CANCELLED: "Cancelled",
 };
 
 const STATUS_MAP = {
   [ORDER_STATUS.PENDING]: "Chờ xử lý",
   [ORDER_STATUS.COMPLETED]: "Đã hoàn thành",
+  [ORDER_STATUS.DELIVERED]: "Đã giao hàng thành công",
   [ORDER_STATUS.CANCELLED]: "Đã hủy",
 };
 
@@ -298,6 +300,8 @@ const Order = () => {
         return "bg-blue-100 text-blue-800";
       case ORDER_STATUS.COMPLETED:
         return "bg-green-100 text-green-800";
+      case ORDER_STATUS.DELIVERED:
+        return "bg-blue-100 text-blue-800";
       case ORDER_STATUS.CANCELLED:
         return "bg-red-100 text-red-800";
       default:
@@ -398,6 +402,7 @@ const Order = () => {
                 <option value="All">Tất cả trạng thái</option>
                 <option value="Pending">Chờ xử lý</option>
                 <option value="Completed">Đã hoàn thành</option>
+                <option value="Delivered">Đã giao hàng thành công</option>
                 <option value="Cancelled">Đã hủy</option>
               </select>
             </div>

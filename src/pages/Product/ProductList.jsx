@@ -28,6 +28,7 @@ const ProductList = ({ selectedSkinType, selectedCategory, sortOrder }) => {
   });
 
   const [paymentMethod, setPaymentMethod] = useState("VNPay");
+  const [userPoints, setUserPoints] = useState(0);
   const [promotions, setPromotions] = useState([]);
   const [selectedVoucher, setSelectedVoucher] = useState(null);
 
@@ -37,31 +38,62 @@ const ProductList = ({ selectedSkinType, selectedCategory, sortOrder }) => {
 
   useEffect(() => {
     if (user) {
+      console.log(user)
       setFormData({
         name: user.name || "",
         email: user.email || "",
         phone: user.phone || "",
         address: user.address || "",
+        point: user.point || 0,
       });
     }
   }, [user]);
 
   useEffect(() => {
-    const fetchPromotions = async () => {
+    const fetchMyPromotions = async () => {
       try {
-        const response = await promotionsAPI.getAll();
-        if (response.status === 200) {
-          setPromotions(response.data);
+        if (user) {
+          const response = await promotionsAPI.getMyPromotions();
+          if (response.status === 200) {
+            const { userPoint, promotion } = response.data;
+            setUserPoints(userPoint);
+            // Chỉ nhận các khuyến mãi đang hoạt động và trong thời hạn
+            setPromotions(promotion);
+          }
         }
       } catch (error) {
         console.error("Lỗi khi tải danh sách khuyến mãi:", error);
+        if (error.response?.status === 404) {
+          setPromotions([]);
+          Swal.fire({
+            icon: 'info',
+            title: 'Không có khuyến mãi',
+            html: `
+              <div class="text-left">
+                <p>Hiện tại không có khuyến mãi nào phù hợp. Có thể do:</p>
+                <ul class="list-disc pl-4 mt-2 space-y-1">
+                  <li>Bạn chưa đủ điểm để đổi khuyến mãi</li>
+                  <li>Không có khuyến mãi đang hoạt động</li>
+                  <li>Các khuyến mãi đã hết hạn</li>
+                </ul>
+              </div>
+            `,
+            confirmButtonText: 'Đồng ý'
+          });
+        } else if (error.response?.status === 401) {
+          Swal.fire({
+            icon: 'error',
+            title: 'Lỗi xác thực',
+            text: 'Vui lòng đăng nhập lại để tiếp tục.',
+            confirmButtonText: 'Đồng ý'
+          });
+        }
       }
     };
 
-    if (user) {
-      fetchPromotions();
-    }
+    fetchMyPromotions();
   }, [user]);
+
 
   const filteredProducts = useMemo(() => {
     return products
@@ -569,11 +601,21 @@ const ProductList = ({ selectedSkinType, selectedCategory, sortOrder }) => {
                   {/* Mã giảm giá */}
                   {promotions.length > 0 && (
                     <div className="bg-gray-50 rounded-xl p-4 transform transition-all duration-300 hover:shadow-lg">
-                      <h4 className="font-medium text-gray-700 mb-3 flex items-center gap-2">
-                        <i className="fas fa-tag text-blue-500"></i>
-                        Mã giảm giá
+                      <h4 className="font-medium text-gray-700 mb-3 flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <i className="fas fa-tag text-blue-500"></i>
+                          Mã giảm giá
+                        </div>
+                        {user && (
+                          <div className="bg-gradient-to-r from-blue-50 to-blue-100 px-3 py-1.5 rounded-full flex items-center gap-1.5">
+                            <i className="fas fa-star text-yellow-400"></i>
+                            <span className="text-sm font-medium text-gray-700">
+                              Điểm của bạn: <span className="text-blue-600 font-bold">{userPoints}</span>
+                            </span>
+                          </div>
+                        )}
                       </h4>
-                      
+
                       {!user ? (
                         <div className="text-center p-3 bg-yellow-50 rounded-lg border border-yellow-200">
                           <i className="fas fa-exclamation-circle text-yellow-500 mr-2"></i>
@@ -583,80 +625,73 @@ const ProductList = ({ selectedSkinType, selectedCategory, sortOrder }) => {
                         </div>
                       ) : (
                         <>
-                      <select
-                        className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-300 focus:border-blue-500 transition-all"
+                          <select
+                            className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-300 focus:border-blue-500 transition-all"
                             onChange={(e) => {
                               const selectedPromo = promotions.find(
                                 (v) => v.promotionId === parseInt(e.target.value)
                               );
                               
                               if (selectedPromo) {
-                                // Kiểm tra điểm tích lũy
-                                if (user.point < selectedPromo.requiredPoint) {
-                                  Swal.fire({
-                                    icon: 'error',
-                                    title: 'Không đủ điểm!',
-                                    html: `
-                                      <div class="text-left">
-                                        <p class="mb-2">Bạn không đủ điểm để sử dụng mã giảm giá này.</p>
-                                        <ul class="list-disc pl-4 space-y-1 text-sm">
-                                          <li>Điểm hiện tại của bạn: <span class="font-semibold text-blue-600">${user.point} điểm</span></li>
-                                          <li>Điểm yêu cầu: <span class="font-semibold text-red-600">${selectedPromo.requiredPoint} điểm</span></li>
-                                          <li>Còn thiếu: <span class="font-semibold text-red-600">${selectedPromo.requiredPoint - user.point} điểm</span></li>
-                                        </ul>
-                                        <p class="mt-2 text-sm text-gray-600">Hãy tích thêm điểm để sử dụng ưu đãi này!</p>
-                                      </div>
-                                    `
-                                  });
-                                  e.target.value = ""; // Reset select về giá trị mặc định
-                                  return;
-                                }
                                 setSelectedVoucher(selectedPromo);
+                                // Hiển thị thông tin chi tiết về voucher
+                                Swal.fire({
+                                  icon: 'info',
+                                  title: 'Xác nhận sử dụng khuyến mãi',
+                                  html: `
+                                    <div class="text-left">
+                                      <p class="mb-2">Bạn sẽ sử dụng ${selectedPromo.discountPercentage} điểm để được giảm ${selectedPromo.discountPercentage}%</p>
+                                      <ul class="list-disc pl-4 space-y-1 text-sm">
+                                        <li>Điểm hiện tại: <span class="font-semibold text-blue-600">${userPoints} điểm</span></li>
+                                        <li>Điểm sau khi sử dụng: <span class="font-semibold text-green-600">${userPoints - selectedPromo.discountPercentage} điểm</span></li>
+                                      </ul>
+                                      <p class="mt-2 text-sm text-gray-600">
+                                        Khuyến mãi có hiệu lực đến: ${new Date(selectedPromo.endDate).toLocaleDateString('vi-VN')}
+                                      </p>
+                                    </div>
+                                  `,
+                                  showCancelButton: true,
+                                  confirmButtonText: 'Xác nhận',
+                                  cancelButtonText: 'Hủy'
+                                }).then((result) => {
+                                  if (!result.isConfirmed) {
+                                    setSelectedVoucher(null);
+                                    e.target.value = "";
+                                  }
+                                });
                               } else {
                                 setSelectedVoucher(null);
                               }
                             }}
-                      >
-                        <option value="">Không sử dụng</option>
-                        {promotions
-                          .filter((promo) => promo.isActive)
-                          .map((promo) => (
-                            <option
-                              key={promo.promotionId}
-                              value={promo.promotionId}
-                                  disabled={user.point < promo.requiredPoint}
-                            >
-                              {promo.promotionName} - {promo.discountPercentage}%
-                                  {user.point < promo.requiredPoint 
-                                    ? ` (Cần thêm ${promo.requiredPoint - user.point} điểm)`
-                                    : ''}
-                            </option>
-                          ))}
-                      </select>
-                      
-                      {selectedVoucher && (
-                            <div className="mt-2 space-y-2">
+                          >
+                            <option value="">Chọn mã giảm giá</option>
+                            {promotions.map((promo) => (
+                              <option
+                                key={promo.promotionId}
+                                value={promo.promotionId}
+                              >
+                                {promo.promotionName} - Giảm {promo.discountPercentage}%
+                                (Hết hạn: {new Date(promo.endDate).toLocaleDateString('vi-VN')})
+                              </option>
+                            ))}
+                          </select>
+
+                          {selectedVoucher && (
+                            <div className="mt-3 space-y-2 bg-blue-50 p-3 rounded-lg">
                               <div className="text-green-600 text-sm font-medium flex justify-between">
-                          <span>Giảm giá {selectedVoucher.discountPercentage}%:</span>
-                          <span>-{formatCurrency((selectedProduct?.price * selectedVoucher.discountPercentage) / 100)}</span>
-                        </div>
+                                <span>Giảm giá {selectedVoucher.discountPercentage}%:</span>
+                                <span>-{formatCurrency((selectedProduct?.price * selectedVoucher.discountPercentage) / 100)}</span>
+                              </div>
                               <div className="text-gray-500 text-xs flex justify-between">
                                 <span>Điểm sẽ bị trừ:</span>
-                                <span className="font-medium text-blue-600">{selectedVoucher.requiredPoint} điểm</span>
+                                <span className="font-medium text-blue-600">{selectedVoucher.discountPercentage} điểm</span>
                               </div>
                               <div className="text-gray-500 text-xs flex justify-between">
                                 <span>Điểm còn lại sau khi sử dụng:</span>
-                                <span className="font-medium text-blue-600">{user.point - selectedVoucher.requiredPoint} điểm</span>
+                                <span className="font-medium text-blue-600">{userPoints - selectedVoucher.discountPercentage} điểm</span>
                               </div>
                             </div>
                           )}
-
-                          <div className="mt-3 pt-3 border-t border-gray-200">
-                            <div className="flex justify-between items-center text-sm">
-                              <span className="text-gray-600">Điểm tích lũy hiện tại:</span>
-                              <span className="font-semibold text-blue-600">{user.point} điểm</span>
-                            </div>
-                          </div>
                         </>
                       )}
                     </div>
