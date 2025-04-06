@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { FaSpinner, FaExclamationTriangle, FaShoppingCart } from 'react-icons/fa';
 import Navbar from '../../components/Navbar/Navbar';
 import Footer from '../../components/Footer/Footer';
+import paymentAPI from '../../services/payment';
 
 const PaymentCallback = () => {
     const location = useLocation();
@@ -11,53 +12,69 @@ const PaymentCallback = () => {
     const [error, setError] = useState(null);
 
     useEffect(() => {
-        const queryParams = new URLSearchParams(location.search);
-        const responseCode = queryParams.get('vnp_ResponseCode');
-        const orderId = queryParams.get('orderId');
-        const status = queryParams.get('status');
+        const processPayment = async () => {
+            try {
+                const queryParams = new URLSearchParams(location.search);
+                // const vnp_ResponseCode = queryParams.get('vnp_ResponseCode');
+                // const vnp_TxnRef = queryParams.get('vnp_TxnRef');
 
-        if (responseCode) {
-            if (responseCode === '00') {
-                // Thanh toán thành công
-                navigate('/paymentsuccess', {
-                    state: {
-                        orderId: queryParams.get('vnp_TxnRef'),
-                        message: 'Thanh toán thành công!',
-                        status: 'Completed' // Thêm status vào state
+                // if (!vnp_ResponseCode || !vnp_TxnRef) {
+                //     throw new Error('Thiếu thông tin thanh toán');
+                // }
+
+                // Gọi API để xử lý payment callback
+                const response = await paymentAPI.processVnPayCallback(location.search);
+
+                console.log(response)
+
+                if (response.status === 200) {
+                    const { orderId, paymentId } = response.data;
+                    navigate('/paymentsuccess', {
+                        state: {
+                            orderId: orderId,
+                            paymentId: paymentId,
+                            message: 'Thanh toán thành công!',
+                            status: 'Completed'
+                        }
+                    });
+                } else {
+                    // Xử lý các trường hợp lỗi khác
+                    throw new Error(response.data?.message || 'Có lỗi xảy ra trong quá trình xử lý thanh toán');
+                }
+            } catch (error) {
+                console.error('Payment processing error:', error);
+                
+                // Xử lý các loại lỗi cụ thể
+                if (error.response) {
+                    switch (error.response.status) {
+                        case 404:
+                            navigate('/paymentfailed', {
+                                state: {
+                                    error: 'Không tìm thấy đơn hàng',
+                                    orderId: error.response.data?.orderId
+                                }
+                            });
+                            break;
+                        case 400:
+                            navigate('/paymentfailed', {
+                                state: {
+                                    error: 'Đơn hàng không hợp lệ hoặc đã được thanh toán',
+                                    orderId: error.response.data?.orderId
+                                }
+                            });
+                            break;
+                        default:
+                            setError(error.response.data?.message || 'Có lỗi xảy ra trong quá trình xử lý thanh toán');
+                            setIsProcessing(false);
                     }
-                });
-            } else {
-                // Thanh toán thất bại
-                navigate('/paymentfailed', {
-                    state: {
-                        error: 'Thanh toán thất bại: ' + (responseCode === '24' ? 'Giao dịch bị hủy' : 'Lỗi thanh toán'),
-                        orderId: queryParams.get('vnp_TxnRef')
-                    }
-                });
+                } else {
+                    setError(error.message || 'Có lỗi xảy ra trong quá trình xử lý thanh toán');
+                    setIsProcessing(false);
+                }
             }
-        } 
-        else if (orderId) {
-            const message = queryParams.get('message');
-            if (location.pathname.includes('paymentsuccess')) {
-                navigate('/paymentsuccess', {
-                    state: {
-                        orderId: orderId,
-                        message: 'Thanh toán thành công!',
-                        status: status || 'Completed' // Sử dụng status từ BE hoặc mặc định là Completed
-                    }
-                });
-            } else {
-                navigate('/paymentfailed', {
-                    state: {
-                        error: message || 'Thanh toán thất bại',
-                        orderId: orderId
-                    }
-                });
-            }
-        } else {
-            setError('Không tìm thấy thông tin thanh toán');
-            setIsProcessing(false);
-        }
+        };
+
+        processPayment();
     }, [location, navigate]);
 
     if (isProcessing) {
