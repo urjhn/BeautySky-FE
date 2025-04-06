@@ -26,6 +26,7 @@ export const AuthProvider = ({ children }) => {
                  decodedToken.role === "Manager" ? 3 : 1,
           phone: decodedToken.phone,
           address: decodedToken.address,
+          point: decodedToken.point,  
         });
       } catch (err) {
         console.error("Invalid token:", err);
@@ -83,6 +84,7 @@ export const AuthProvider = ({ children }) => {
           roleId: roleId,
           phone: decoded.phone,
           address: decoded.address,
+          point: decoded.point,
         };
         
         setUser(userInfo);
