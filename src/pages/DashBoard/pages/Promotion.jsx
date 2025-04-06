@@ -16,9 +16,12 @@ const PromotionManagement = () => {
     discount: "",
     startDate: "",
     endDate: "",
+    quantity: 0,
+    isActive: true
   });
   const [showModal, setShowModal] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
+  const [statusFilter, setStatusFilter] = useState('all'); // 'all', 'upcoming', 'active', 'expired'
 
   // 🟢 Lấy danh sách khuyến mãi từ API khi component được render
   useEffect(() => {
@@ -32,13 +35,20 @@ const PromotionManagement = () => {
               id: promo.promotionId,
               name: promo.promotionName,
               discount: `${promo.discountPercentage}%`,
-              startDate: promo.startDate.split("T")[0],
-              endDate: promo.endDate.split("T")[0], // Lấy phần yyyy-MM-dd
+              startDate: new Date(promo.startDate).toISOString().split("T")[0],
+              endDate: new Date(promo.endDate).toISOString().split("T")[0],
+              isActive: promo.isActive,
+              quantity: promo.quantity || 0
             }))
           );
         }
       } catch (error) {
         console.error("Lỗi khi tải danh sách khuyến mãi:", error);
+        Swal.fire({
+          icon: "error",
+          title: "Lỗi!",
+          text: "Không thể tải danh sách khuyến mãi.",
+        });
       } finally {
         setLoading(false);
       }
@@ -54,29 +64,46 @@ const PromotionManagement = () => {
   };
 
   const handleAddClick = () => {
-    setForm({ id: null, name: "", discount: "", startDate: "", endDate: "" });
+    setForm({ id: null, name: "", discount: "", startDate: "", endDate: "", quantity: 0, isActive: true });
     setIsEditing(false);
     setShowModal(true);
   };
 
-  // Sửa lại hàm lọc để tìm kiếm trên tất cả các trường thông tin
+  // Cập nhật hàm lọc để xử lý chính xác hơn
   const filteredPromotions = promotions.filter((promo) => {
     const searchLower = searchTerm.toLowerCase().trim();
-    
-    // Nếu không có từ khóa tìm kiếm, hiển thị tất cả khuyến mãi
+    const currentTime = new Date();
+    const startDate = new Date(promo.startDate);
+    const endDate = new Date(promo.endDate);
+
+    // Lọc theo trạng thái trước
+    if (statusFilter !== 'all') {
+      switch (statusFilter) {
+        case 'upcoming':
+          // Chưa bắt đầu: thời gian hiện tại < startDate
+          if (!(currentTime < startDate)) return false;
+          break;
+        case 'active':
+          // Đang diễn ra: startDate <= thời gian hiện tại <= endDate
+          if (!(currentTime >= startDate && currentTime <= endDate)) return false;
+          break;
+        case 'expired':
+          // Đã kết thúc: thời gian hiện tại > endDate
+          if (!(currentTime > endDate)) return false;
+          break;
+        default:
+          break;
+      }
+    }
+
+    // Sau đó lọc theo từ khóa tìm kiếm
     if (!searchLower) return true;
-    
-    // Tìm kiếm trên tất cả các trường thông tin
+
     return (
-      // Tìm theo tên
       (promo.name && promo.name.toLowerCase().includes(searchLower)) ||
-      // Tìm theo phần trăm giảm giá (bỏ dấu % để so sánh)
       (promo.discount && promo.discount.replace('%', '').includes(searchLower)) ||
-      // Tìm theo ngày bắt đầu
       (promo.startDate && promo.startDate.includes(searchLower)) ||
-      // Tìm theo ngày kết thúc
       (promo.endDate && promo.endDate.includes(searchLower)) ||
-      // Tìm theo ID
       (promo.id && promo.id.toString().includes(searchLower))
     );
   });
@@ -87,106 +114,150 @@ const PromotionManagement = () => {
     currentPage * PAGE_SIZE
   );
 
-  // 🟢 Thêm hoặc sửa khuyến mãi
+  // Cập nhật hàm getPromotionStatus để đồng bộ với logic lọc
+  const getPromotionStatus = (startDate, endDate) => {
+    const currentTime = new Date();
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+
+    if (currentTime < start) {
+      return { text: "Chưa bắt đầu", color: "bg-yellow-100 text-yellow-800" };
+    } else if (currentTime > end) {
+      return { text: "Đã kết thúc", color: "bg-red-100 text-red-800" };
+    } else {
+      return { text: "Đang diễn ra", color: "bg-green-100 text-green-800" };
+    }
+  };
+
+  // Thêm hàm để đếm số lượng theo từng trạng thái
+  const getStatusCounts = () => {
+    const currentTime = new Date();
+    return {
+      total: promotions.length,
+      upcoming: promotions.filter(p => currentTime < new Date(p.startDate)).length,
+      active: promotions.filter(p => {
+        const start = new Date(p.startDate);
+        const end = new Date(p.endDate);
+        return currentTime >= start && currentTime <= end;
+      }).length,
+      expired: promotions.filter(p => currentTime > new Date(p.endDate)).length
+    };
+  };
+
+  // Trong phần JSX, cập nhật hiển thị số lượng
+  const statusCounts = getStatusCounts();
+
+  // �� Thêm hoặc sửa khuyến mãi
   const handleAddOrEditPromotion = async () => {
     try {
-      if (!form.name || !form.discount || !form.startDate || !form.endDate) {
+      if (!form.name || !form.discount || !form.startDate || !form.endDate || form.quantity < 0) {
         Swal.fire({
           icon: "warning",
           title: "Lỗi!",
-          text: "Vui lòng nhập đầy đủ thông tin!",
+          text: "Vui lòng nhập đầy đủ thông tin và số lượng không được âm!",
+        });
+        return;
+      }
+
+      // Kiểm tra ngày bắt đầu không được trước ngày hiện tại
+      if (new Date(form.startDate) < new Date().setHours(0, 0, 0, 0)) {
+        Swal.fire({
+          icon: "error",
+          title: "Lỗi!",
+          text: "Ngày bắt đầu không thể trước ngày hiện tại!",
+        });
+        return;
+      }
+
+      // Kiểm tra ngày kết thúc phải sau ngày bắt đầu
+      if (new Date(form.endDate) <= new Date(form.startDate)) {
+        Swal.fire({
+          icon: "error",
+          title: "Lỗi!",
+          text: "Ngày kết thúc phải sau ngày bắt đầu!",
         });
         return;
       }
 
       const payload = {
         promotionName: form.name,
-        discountPercentage: isNaN(parseInt(form.discount))
-          ? 0
-          : parseInt(form.discount),
+        discountPercentage: parseInt(form.discount),
         startDate: form.startDate,
         endDate: form.endDate,
-        isActive: true,
+        quantity: parseInt(form.quantity),
+        isActive: true
       };
 
       if (isEditing) {
-        try {
-          const response = await promotionsAPI.editPromotions(form.id, {
-            ...payload,
-            promotionId: form.id,
-          });
+        const response = await promotionsAPI.editPromotions(form.id, {
+          ...payload,
+          promotionId: form.id,
+        });
 
-          if (response.status === 204) {
-            // API trả về NoContent (204), tự cập nhật dữ liệu trên UI
-            setPromotions((prev) =>
-              prev.map((p) =>
-                p.id === form.id
-                  ? {
-                      id: form.id,
-                      name: form.name,
-                      discount: `${form.discount}%`,
-                      startDate: form.startDate,
-                      endDate: form.endDate,
-                    }
-                  : p
-              )
-            );
+        if (response.status === 200) {
+          setPromotions((prev) =>
+            prev.map((p) =>
+              p.id === form.id
+                ? {
+                    ...p,
+                    name: form.name,
+                    discount: `${form.discount}%`,
+                    startDate: form.startDate,
+                    endDate: form.endDate,
+                    quantity: form.quantity,
+                  }
+                : p
+            )
+          );
 
-            Swal.fire({
-              icon: "success",
-              title: "Cập nhật thành công!",
-              text: "Khuyến mãi đã được cập nhật.",
-              timer: 2000,
-              showConfirmButton: false,
-            });
-          }
-        } catch (error) {
           Swal.fire({
-            icon: "error",
-            title: "Lỗi!",
-            text: "Không thể cập nhật khuyến mãi, vui lòng thử lại.",
+            icon: "success",
+            title: "Cập nhật thành công!",
+            timer: 2000,
+            showConfirmButton: false,
           });
         }
       } else {
-        try {
-          const response = await promotionsAPI.createPromotions(payload);
+        const response = await promotionsAPI.createPromotions(payload);
 
-          if (response?.data) {
-            setPromotions((prev) => [
-              ...prev,
-              {
-                id: response.data.promotionId,
-                name: response.data.promotionName,
-                discount: `${response.data.discountPercentage}%`,
-                startDate: response.data.startDate.split("T")[0],
-                endDate: response.data.endDate.split("T")[0],
-              },
-            ]);
+        if (response.status === 200) {
+          const newPromo = {
+            id: response.data.promotionId,
+            name: form.name,
+            discount: `${form.discount}%`,
+            startDate: form.startDate,
+            endDate: form.endDate,
+            quantity: form.quantity,
+            isActive: true
+          };
+          
+          setPromotions((prev) => [...prev, newPromo]);
 
-            Swal.fire({
-              icon: "success",
-              title: "Thêm thành công!",
-              text: "Khuyến mãi mới đã được thêm.",
-              timer: 2000,
-              showConfirmButton: false,
-            });
-          }
-        } catch (error) {
           Swal.fire({
-            icon: "error",
-            title: "Lỗi!",
-            text: "Không thể thêm khuyến mãi, vui lòng thử lại.",
+            icon: "success",
+            title: "Thêm thành công!",
+            timer: 2000,
+            showConfirmButton: false,
           });
         }
       }
 
       setShowModal(false);
-      setForm({ id: null, name: "", discount: "", startDate: "", endDate: "" });
+      setForm({
+        id: null,
+        name: "",
+        discount: "",
+        startDate: "",
+        endDate: "",
+        quantity: 0,
+        isActive: true
+      });
     } catch (error) {
+      console.error("Lỗi:", error);
       Swal.fire({
         icon: "error",
         title: "Lỗi!",
-        text: "Có lỗi xảy ra, vui lòng thử lại.",
+        text: error.response?.data || "Có lỗi xảy ra, vui lòng thử lại.",
       });
     }
   };
@@ -255,12 +326,51 @@ const PromotionManagement = () => {
           </div>
         </div>
 
+        {/* Thêm bộ lọc trạng thái */}
+        <div className="relative w-full sm:w-48">
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            className="w-full p-2 border border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all appearance-none"
+          >
+            <option value="all">Tất cả trạng thái</option>
+            <option value="upcoming">Chưa bắt đầu</option>
+            <option value="active">Đang diễn ra</option>
+            <option value="expired">Đã kết thúc</option>
+          </select>
+          <div className="absolute right-3 top-3 pointer-events-none text-gray-500">
+            <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+            </svg>
+          </div>
+        </div>
+
         <button
           onClick={handleAddClick}
           className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center justify-center shadow-md hover:shadow-lg transform hover:scale-105 transition-all duration-200"
         >
           <FaPlus className="mr-2" /> Thêm khuyến mãi
         </button>
+      </div>
+
+      {/* Thêm hiển thị số lượng khuyến mãi theo trạng thái */}
+      <div className="mb-4 flex flex-wrap gap-4">
+        <div className="bg-gray-100 px-4 py-2 rounded-lg">
+          <span className="text-sm text-gray-600">Tổng số: </span>
+          <span className="font-semibold">{statusCounts.total}</span>
+        </div>
+        <div className="bg-yellow-50 px-4 py-2 rounded-lg">
+          <span className="text-sm text-yellow-600">Chưa bắt đầu: </span>
+          <span className="font-semibold">{statusCounts.upcoming}</span>
+        </div>
+        <div className="bg-green-50 px-4 py-2 rounded-lg">
+          <span className="text-sm text-green-600">Đang diễn ra: </span>
+          <span className="font-semibold">{statusCounts.active}</span>
+        </div>
+        <div className="bg-red-50 px-4 py-2 rounded-lg">
+          <span className="text-sm text-red-600">Đã kết thúc: </span>
+          <span className="font-semibold">{statusCounts.expired}</span>
+        </div>
       </div>
 
       {/* Loading State - cải thiện */}
@@ -278,8 +388,10 @@ const PromotionManagement = () => {
                 <tr>
                   <th className="py-3 px-4 text-sm md:text-base font-semibold text-left">Tên</th>
                   <th className="py-3 px-4 text-sm md:text-base font-semibold text-center">Giảm giá</th>
+                  <th className="py-3 px-4 text-sm md:text-base font-semibold text-center">Số lượng</th>
                   <th className="py-3 px-4 text-sm md:text-base font-semibold text-center hidden sm:table-cell">Ngày bắt đầu</th>
                   <th className="py-3 px-4 text-sm md:text-base font-semibold text-center hidden sm:table-cell">Ngày hết hạn</th>
+                  <th className="py-3 px-4 text-sm md:text-base font-semibold text-center">Trạng thái</th>
                   <th className="py-3 px-4 text-sm md:text-base font-semibold text-center">Actions</th>
                 </tr>
               </thead>
@@ -294,7 +406,9 @@ const PromotionManagement = () => {
                   paginatedPromotions.map((promo, index) => (
                     <tr 
                       key={promo.id} 
-                      className={`border-b hover:bg-blue-50 transition-colors ${index % 2 === 0 ? 'bg-gray-50' : 'bg-white'}`}
+                      className={`border-b hover:bg-blue-50 transition-colors ${
+                        index % 2 === 0 ? 'bg-gray-50' : 'bg-white'
+                      }`}
                     >
                       <td className="py-3 px-4 text-sm md:text-base">{promo.name}</td>
                       <td className="py-3 px-4 text-sm md:text-base text-center">
@@ -302,8 +416,25 @@ const PromotionManagement = () => {
                           {promo.discount}
                         </span>
                       </td>
-                      <td className="py-3 px-4 text-sm md:text-base text-center hidden sm:table-cell">{promo.startDate}</td>
-                      <td className="py-3 px-4 text-sm md:text-base text-center hidden sm:table-cell">{promo.endDate}</td>
+                      <td className="py-3 px-4 text-sm md:text-base text-center">
+                        {promo.quantity}
+                      </td>
+                      <td className="py-3 px-4 text-sm md:text-base text-center hidden sm:table-cell">
+                        {promo.startDate}
+                      </td>
+                      <td className="py-3 px-4 text-sm md:text-base text-center hidden sm:table-cell">
+                        {promo.endDate}
+                      </td>
+                      <td className="py-3 px-4 text-center">
+                        {(() => {
+                          const status = getPromotionStatus(promo.startDate, promo.endDate);
+                          return (
+                            <span className={`px-2 py-1 rounded-full text-xs font-semibold ${status.color}`}>
+                              {status.text}
+                            </span>
+                          );
+                        })()}
+                      </td>
                       <td className="py-3 px-4">
                         <div className="flex justify-center space-x-3">
                           <button
@@ -410,6 +541,17 @@ const PromotionManagement = () => {
                   placeholder="Nhập % giảm giá"
                   value={form.discount}
                   onChange={(e) => setForm({...form, discount: e.target.value.replace(/\D/g, "")})}
+                  className="w-full p-2.5 text-sm md:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Số lượng</label>
+                <input
+                  type="number"
+                  placeholder="Nhập số lượng"
+                  value={form.quantity}
+                  onChange={(e) => setForm({...form, quantity: e.target.value.replace(/\D/g, "")})}
                   className="w-full p-2.5 text-sm md:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>

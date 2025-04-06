@@ -118,9 +118,25 @@ const Sidebar = () => {
               <h2 className="text-xl font-bold text-gray-800 mb-1">
                 {currentUser?.fullName || "Guest"}
               </h2>
-              <p className="text-gray-500 text-sm">
+              <p className="text-gray-500 text-sm mb-4">
                 {currentUser?.email || "No email available"}
               </p>
+              
+              {/* Thêm phần hiển thị điểm tích lũy */}
+              <div className="mt-4 pt-4 border-t border-gray-100">
+                <div className="bg-gradient-to-r from-blue-50 to-blue-100 rounded-lg p-4">
+                  <div className="flex items-center justify-center gap-2 mb-2">
+                    <i className="fas fa-star text-yellow-400"></i>
+                    <span className="font-medium text-gray-700">Điểm tích lũy</span>
+                  </div>
+                  <div className="text-2xl font-bold text-blue-600">
+                    {currentUser?.point || 0} điểm
+                  </div>
+                  <div className="text-xs text-gray-500 mt-1">
+                    Tích điểm để nhận ưu đãi
+                  </div>
+                </div>
+              </div>
             </div>
 
             {/* Navigation */}

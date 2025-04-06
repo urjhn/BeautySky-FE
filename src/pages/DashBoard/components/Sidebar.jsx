@@ -132,7 +132,7 @@ const Sidebar = () => {
               />
               <NavItem
                 icon={<FaFileAlt />}
-                title="Báo cáo"
+                title="Đánh giá"
                 to="/dashboardlayout/reports"
               />
               <NavItem

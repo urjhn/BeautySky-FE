@@ -25,6 +25,7 @@ const NextArrow = ({ onClick }) => (
 const Hero = () => {
   const { news, fetchNews } = useNewsContext();
   const [loading, setLoading] = useState(true);
+  const [activeEvents, setActiveEvents] = useState([]);
 
   useEffect(() => {
     const loadEvents = async () => {
@@ -33,6 +34,12 @@ const Hero = () => {
     };
     loadEvents();
   }, []);
+
+  // Lọc các sự kiện active mỗi khi news thay đổi
+  useEffect(() => {
+    const filteredEvents = news.filter(event => event.isActive);
+    setActiveEvents(filteredEvents);
+  }, [news]);
 
   const settings = {
     dots: true,
@@ -54,9 +61,9 @@ const Hero = () => {
       <div className="w-full">
         {loading ? (
           <p className="text-center text-white">Đang tải sự kiện...</p>
-        ) : (
+        ) : activeEvents.length > 0 ? (
           <Slider {...settings} className="w-full">
-            {news.map((event) => (
+            {activeEvents.map((event) => (
               <div
                 key={event.id}
                 className="relative w-full h-[400px] sm:h-[500px] md:h-[600px]"
@@ -83,6 +90,10 @@ const Hero = () => {
               </div>
             ))}
           </Slider>
+        ) : (
+          <div className="flex justify-center items-center h-[400px] bg-gray-100">
+            <p className="text-gray-500 text-lg">Hiện không có sự kiện nào đang diễn ra</p>
+          </div>
         )}
       </div>
     </div>

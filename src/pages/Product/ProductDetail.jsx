@@ -54,7 +54,7 @@ const ProductDetail = () => {
         // Tìm các sản phẩm liên quan (cùng danh mục hoặc loại da)
         const related = products.filter(p => 
           p.productId !== foundProduct.productId && 
-          (p.categoryName === foundProduct.categoryName && 
+          (p.categoryName === foundProduct.categoryName || 
            p.skinTypeName === foundProduct.skinTypeName)
         ).slice(0, 4); // Giới hạn 4 sản phẩm
         
@@ -114,6 +114,16 @@ const ProductDetail = () => {
   };
 
   const handleAddToCart = async (productToAdd, quantityToAdd = 1) => {
+    if (new Date(productToAdd.expire) <= new Date()) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Sản phẩm đã hết hạn',
+        text: 'Sản phẩm này đã hết hạn sử dụng!',
+        confirmButtonColor: '#3085d6'
+      });
+      return;
+    }
+
     if (productToAdd.quantity === 0) {
       Swal.fire({
         icon: 'error',
@@ -149,6 +159,16 @@ const ProductDetail = () => {
   const handleRelatedProductAddToCart = async (relatedProduct, e) => {
     e.stopPropagation(); // Ngăn chặn sự kiện click lan ra ngoài
     
+    if (new Date(relatedProduct.expire) <= new Date()) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Sản phẩm đã hết hạn',
+        text: 'Sản phẩm này đã hết hạn sử dụng!',
+        confirmButtonColor: '#3085d6'
+      });
+      return;
+    }
+
     if (relatedProduct.quantity === 0) {
       Swal.fire({
         icon: 'error',
@@ -414,9 +434,20 @@ const ProductDetail = () => {
           </div>
 
           <div className="md:ml-6 lg:ml-10 flex flex-col justify-between mt-4 md:mt-0 w-full space-y-4 sm:space-y-6">
-            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-800 hover:text-blue-600 transition-colors duration-300">
-              {product.productName}
-            </h1>
+            <div className="flex items-center gap-2">
+              <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-800 hover:text-blue-600 transition-colors duration-300">
+                {product.productName}
+              </h1>
+              {new Date(product.expire) <= new Date() ? (
+                <span className="bg-red-500 text-white px-3 py-1 rounded-full text-sm font-semibold animate-pulse">
+                  Hết hạn
+                </span>
+              ) : (
+                <span className="bg-green-500 text-white px-3 py-1 rounded-full text-sm font-semibold">
+                  Còn hạn
+                </span>
+              )}
+            </div>
 
             <div className="flex items-center space-x-4">
               <Rating
@@ -463,6 +494,16 @@ const ProductDetail = () => {
                   {product.categoryName || "Không xác định"}
                 </span>
               </div>
+              <div className="flex flex-col">
+                <span className="text-gray-600 text-sm">Hạn sử dụng</span>
+                <span className={`font-semibold ${
+                  new Date(product.expire) <= new Date() 
+                    ? 'text-red-600' 
+                    : 'text-green-600'
+                }`}>
+                  {new Date(product.expire).toLocaleDateString('vi-VN')}
+                </span>
+              </div>
             </div>
 
             <div className="flex items-center bg-gray-50 p-4 rounded-lg">
@@ -493,24 +534,43 @@ const ProductDetail = () => {
                   +
                 </button>
               </div>
-              <span className="ml-12 font-semibold text-gray-700">
-                  SL còn trong kho:
+              
+              {/* Hiển thị số lượng sản phẩm còn lại */}
+              <div className="ml-4 flex items-center">
+                <span className="text-sm text-gray-600">
+                  {product.quantity > 0 ? (
+                    <>
+                      <span className="font-medium">Còn lại:</span>{" "}
+                      <span className={`${product.quantity <= 10 ? "text-red-500 font-semibold" : "text-green-600"}`}>
+                        {product.quantity}
+                      </span>{" "}
+                      {product.quantity <= 10 && (
+                        <span className="text-xs text-red-500 animate-pulse">(Sắp hết hàng)</span>
+                      )}
+                    </>
+                  ) : (
+                    <span className="text-red-500 font-semibold">Hết hàng</span>
+                  )}
                 </span>
-                <span className="ml-2 font-bold text-pink-500">{product.quantity}</span>
+              </div>
             </div>
 
             <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
               <button
                 className={`w-full py-3 sm:py-4 rounded-lg font-semibold transition-all flex items-center justify-center gap-2 ${
-                  product.quantity === 0
+                  product.quantity === 0 || new Date(product.expire) <= new Date()
                     ? "bg-gray-400 text-gray-800 cursor-not-allowed"
                     : "bg-blue-600 hover:bg-blue-700 text-white transform hover:scale-105"
                 }`}
                 onClick={() => handleAddToCart(product, quantity)}
-                disabled={product.quantity === 0}
+                disabled={product.quantity === 0 || new Date(product.expire) <= new Date()}
               >
                 <FaShoppingCart className="text-xl" />
-                {product.quantity === 0 ? "Hết hàng" : "Thêm vào giỏ hàng"}
+                {product.quantity === 0 
+                  ? "Hết hàng" 
+                  : new Date(product.expire) <= new Date()
+                    ? "Sản phẩm hết hạn"
+                    : "Thêm vào giỏ hàng"}
               </button>
               <button
                 className="w-full bg-gray-200 text-gray-800 py-3 sm:py-4 rounded-lg font-semibold hover:bg-gray-300 transition-all flex items-center justify-center gap-2 transform hover:scale-105"

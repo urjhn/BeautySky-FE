@@ -7,6 +7,7 @@ import orderAPI from "../../services/order";
 import { useAuth } from "../../context/AuthContext";
 import dayjs from "dayjs";
 import Swal from "sweetalert2";
+import paymentAPI from "../../services/payment";
 
 // Thêm animation variants cho Framer Motion
 const containerVariants = {
@@ -86,6 +87,7 @@ const OrderHistory = () => {
       Pending: "Đang xử lý",
       Completed: "Đã giao hàng",
       Cancelled: "Đã hủy",
+      Delivered : "Đã nhận được hàng",
     };
     return statusMap[status] || status;
   };
@@ -96,6 +98,7 @@ const OrderHistory = () => {
       Pending: "bg-yellow-100 text-yellow-800",
       Completed: "bg-green-100 text-green-800",
       Cancelled: "bg-red-100 text-red-800",
+      Delivered: "bg-blue-100 text-blue-800"
     };
     return colorMap[status] || "bg-gray-100 text-gray-800";
   };
@@ -239,6 +242,101 @@ const OrderHistory = () => {
     }
   };
 
+  // Thêm hàm xử lý thanh toán VNPay
+  const handlePaymentVNPay = async (order) => {
+    try {
+      Swal.fire({
+        title: "Đang xử lý...",
+        text: "Vui lòng chờ trong giây lát",
+        allowOutsideClick: false,
+        didOpen: () => {
+          Swal.showLoading();
+        },
+      });
+
+      const paymentRequest = {
+        orderId: order.orderId,
+        amount: parseInt(order.finalAmount),
+        orderInfo: `Thanh toan don hang #${order.orderId}`,
+        orderType: "other",
+        language: "vn",
+        name: user?.name || "",
+        orderDescription: `Don hang ${order.orderId}`,
+      };
+
+      const vnpayResponse = await paymentAPI.createVNPayPayment(paymentRequest);
+
+      if (vnpayResponse.paymentUrl) {
+        window.location.href = vnpayResponse.paymentUrl;
+      }
+    } catch (error) {
+      console.error("Lỗi khi tạo thanh toán:", error);
+      Swal.fire({
+        icon: "error",
+        title: "Lỗi!",
+        text: "Không thể tạo thanh toán. Vui lòng thử lại sau.",
+      });
+    }
+  };
+
+  // Thêm hàm xử lý xác nhận đã nhận hàng
+  const handleConfirmDelivery = async (orderId) => {
+    try {
+      await Swal.fire({
+        title: 'Xác nhận đã nhận hàng?',
+        text: 'Bạn đã nhận được đơn hàng và kiểm tra hàng hóa chưa?',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Đã nhận hàng',
+        cancelButtonText: 'Chưa nhận'
+      }).then(async (result) => {
+        if (result.isConfirmed) {
+          // Hiển thị loading
+          Swal.fire({
+            title: 'Đang xử lý...',
+            text: 'Vui lòng chờ trong giây lát',
+            allowOutsideClick: false,
+            didOpen: () => {
+              Swal.showLoading();
+            }
+          });
+
+          const response = await paymentAPI.confirmDelivery(orderId);
+
+          // Cập nhật state orders với thông tin mới
+          setOrders(prevOrders =>
+            prevOrders.map(order =>
+              order.orderId === orderId
+                ? {
+                    ...order,
+                    status: 'Delivered',
+                    deliveryDate: new Date().toISOString()
+                  }
+                : order
+            )
+          );
+
+          await Swal.fire({
+            icon: 'success',
+            title: 'Xác nhận thành công',
+            text: 'Cảm ơn bạn đã xác nhận đã nhận hàng!',
+            timer: 1500,
+            showConfirmButton: false
+          });
+        }
+      });
+    } catch (error) {
+      console.error('Lỗi khi xác nhận đã nhận hàng:', error);
+      Swal.fire({
+        icon: 'error',
+        title: 'Lỗi',
+        text: error.response?.data?.message || 'Không thể xác nhận. Vui lòng thử lại sau.'
+      });
+    }
+  };
+
   return (
     <motion.div
       className="min-h-screen bg-gray-50 pt-[80px] sm:pt-[92px] lg:pt-[100px] pb-8"
@@ -297,13 +395,14 @@ const OrderHistory = () => {
           </motion.div>
         ) : (
           <>
-            {/* Mobile View - Cải thiện responsive */}
+            {/* Mobile View */}
             <div className="grid gap-4 sm:gap-6 md:hidden">
               {paginatedOrders.map((order) => (
                 <motion.div
                   key={order.orderId}
                   variants={itemVariants}
-                  className="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition-shadow"
+                  className="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition-shadow cursor-pointer"
+                  onClick={() => navigate(`/profilelayout/orderdetail/${order.orderId}`)}
                 >
                   <div className="flex justify-between items-center mb-4">
                     <span className="font-bold text-lg">#{order.orderId}</span>
@@ -320,12 +419,8 @@ const OrderHistory = () => {
                     <p className="text-gray-600">
                       <i className="far fa-calendar-alt mr-2"></i>
                       {order.status === "Cancelled"
-                        ? `Ngày hủy: ${dayjs(order.cancelDate).format(
-                            "DD/MM/YYYY HH:mm"
-                          )}`
-                        : `Ngày đặt: ${dayjs(order.orderDate).format(
-                            "DD/MM/YYYY HH:mm"
-                          )}`}
+                        ? `Ngày hủy: ${dayjs(order.cancelDate).format("DD/MM/YYYY HH:mm")}`
+                        : `Ngày đặt: ${dayjs(order.orderDate).format("DD/MM/YYYY HH:mm")}`}
                     </p>
                     <p className="font-bold text-xl text-blue-600">
                       {formatCurrency(order.finalAmount)}
@@ -333,24 +428,47 @@ const OrderHistory = () => {
                   </div>
 
                   <div className="mt-4 flex gap-3">
-                    <motion.button
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                      onClick={() => navigate(`/orderdetail/${order.orderId}`)}
-                      className="flex-1 px-4 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg shadow-md hover:shadow-lg transition-all duration-300 flex items-center justify-center gap-2"
-                    >
-                      <EyeIcon className="w-5 h-5" />
-                      Xem chi tiết
-                    </motion.button>
+                    {order.status === "Pending" && (
+                      <motion.button
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                        onClick={(e) => {
+                          e.stopPropagation(); // Ngăn chặn sự kiện click lan ra ngoài
+                          handlePaymentVNPay(order);
+                        }}
+                        className="flex-1 px-4 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg shadow-md hover:shadow-lg transition-all duration-300 flex items-center justify-center gap-2"
+                      >
+                        <i className="fas fa-credit-card"></i>
+                        Thanh toán lại
+                      </motion.button>
+                    )}
 
                     {order.status === "Pending" && (
                       <motion.button
                         whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.98 }}
-                        onClick={() => handleCancelOrder(order.orderId)}
+                        onClick={(e) => {
+                          e.stopPropagation(); // Ngăn chặn sự kiện click lan ra ngoài
+                          handleCancelOrder(order.orderId);
+                        }}
                         className="flex-1 px-4 py-3 bg-red-500 text-white rounded-lg shadow-md hover:bg-red-600 transition-all duration-300 flex items-center justify-center gap-2"
                       >
                         Hủy đơn hàng
+                      </motion.button>
+                    )}
+
+                    {order.status === "Completed" && (
+                      <motion.button
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleConfirmDelivery(order.orderId);
+                        }}
+                        className="flex-1 px-4 py-3 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-lg shadow-md hover:shadow-lg transition-all duration-300 flex items-center justify-center gap-2"
+                      >
+                        <i className="fas fa-check-circle"></i>
+                        Đã nhận hàng
                       </motion.button>
                     )}
                   </div>
@@ -368,12 +486,9 @@ const OrderHistory = () => {
               ))}
             </div>
 
-            {/* Desktop View - Cải thiện responsive */}
+            {/* Desktop View */}
             <div className="hidden md:block overflow-x-auto">
-              <motion.div
-                variants={itemVariants}
-                className="bg-white rounded-xl shadow-lg min-w-[800px]"
-              >
+              <motion.div variants={itemVariants} className="bg-white rounded-xl shadow-lg min-w-[800px]">
                 <table className="w-full">
                   <thead className="bg-gradient-to-r from-blue-500 to-blue-600 text-white">
                     <tr>
@@ -399,7 +514,8 @@ const OrderHistory = () => {
                       <motion.tr
                         key={order.orderId}
                         variants={itemVariants}
-                        className="hover:bg-gray-50 transition-colors"
+                        className="hover:bg-gray-50 transition-colors cursor-pointer"
+                        onClick={() => navigate(`/profilelayout/orderdetail/${order.orderId}`)}
                       >
                         <td className="px-6 py-4 whitespace-nowrap">
                           #{order.orderId}
@@ -432,24 +548,47 @@ const OrderHistory = () => {
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-center">
                           <div className="flex items-center justify-center space-x-3">
-                            <motion.button
-                              whileHover={{ scale: 1.05 }}
-                              whileTap={{ scale: 0.95 }}
-                              onClick={() => navigate(`/profilelayout/orderdetail/${order.orderId}`)}
-                              className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-full shadow-md hover:shadow-lg transition-all duration-300"
-                            >
-                              <EyeIcon className="w-4 h-4 mr-2" />
-                              Chi tiết
-                            </motion.button>
-
                             {order.status === "Pending" && (
+                              <>
+                                <motion.button
+                                  whileHover={{ scale: 1.05 }}
+                                  whileTap={{ scale: 0.95 }}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handlePaymentVNPay(order);
+                                  }}
+                                  className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-full shadow-md hover:shadow-lg transition-all duration-300"
+                                >
+                                  <i className="fas fa-credit-card mr-2"></i>
+                                  Thanh toán lại
+                                </motion.button>
+
+                                <motion.button
+                                  whileHover={{ scale: 1.05 }}
+                                  whileTap={{ scale: 0.95 }}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleCancelOrder(order.orderId);
+                                  }}
+                                  className="inline-flex items-center px-4 py-2 bg-red-500 text-white rounded-full shadow-md hover:bg-red-600 transition-all duration-300"
+                                >
+                                  Hủy đơn
+                                </motion.button>
+                              </>
+                            )}
+
+                            {order.status === "Completed" && (
                               <motion.button
                                 whileHover={{ scale: 1.05 }}
                                 whileTap={{ scale: 0.95 }}
-                                onClick={() => handleCancelOrder(order.orderId)}
-                                className="inline-flex items-center px-4 py-2 bg-red-500 text-white rounded-full shadow-md hover:bg-red-600 transition-all duration-300"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleConfirmDelivery(order.orderId);
+                                }}
+                                className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-full shadow-md hover:shadow-lg transition-all duration-300"
                               >
-                                Hủy đơn
+                                <i className="fas fa-check-circle mr-2"></i>
+                                Đã nhận hàng
                               </motion.button>
                             )}
                           </div>
