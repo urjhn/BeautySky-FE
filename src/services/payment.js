@@ -3,14 +3,17 @@ import axiosInstance from "../config/axios/axiosInstance";
 const endPoint = "/Payments";
 
 const paymentsAPI = {
-  processAndConfirmPayment: async (orderId) => {
-    if (!orderId) {
-      throw new Error('OrderId là bắt buộc');
-    }
-
+  processAndConfirmPayment: async (orderId = null) => {
     try {
+      let url = `${endPoint}/ProcessAndConfirmPayment`;
+      
+      // Nếu có orderId, thêm vào query params
+      if (orderId) {
+        url += `?orderId=${orderId}`;
+      }
+
       const response = await axiosInstance.post(
-        `${endPoint}/ProcessAndConfirmPayment/${orderId}`,
+        url,
         {},
         {
           timeout: 10000,
@@ -19,20 +22,38 @@ const paymentsAPI = {
           }
         }
       );
-           
-      // Xử lý dựa trên status và trả về dữ liệu phù hợp
-      if (response.status >= 200 && response.status < 300) {
-        return response.data;
-      } else {
-        throw new Error(response.data || 'Có lỗi xảy ra khi xử lý thanh toán');
+
+      // Kiểm tra response status và data
+      if (response.status === 200 && response.data.success) {
+        return {
+          success: true,
+          message: response.data.message,
+          data: response.data
+        };
       }
+
+      // Xử lý các trường hợp lỗi khác
+      throw new Error(response.data.message || 'Có lỗi xảy ra khi xử lý thanh toán');
+
     } catch (error) {
       console.error('Error in processAndConfirmPayment:', error);
+      
+      // Xử lý các loại lỗi cụ thể
       if (error.response) {
         const { status, data } = error.response;
-        throw new Error(data || `Lỗi: ${status}`);
+        
+        switch (status) {
+          case 400:
+            throw new Error(data || 'Đơn hàng không tồn tại hoặc đã được xử lý');
+          case 500:
+            throw new Error(data || 'Lỗi server khi xử lý thanh toán');
+          default:
+            throw new Error(data || `Lỗi không xác định: ${status}`);
+        }
       }
-      throw error;
+
+      // Xử lý lỗi network hoặc lỗi khác
+      throw new Error(error.message || 'Không thể kết nối đến server');
     }
   },
   deletePayment: async (paymentId) => {
@@ -139,7 +160,24 @@ const paymentsAPI = {
                 'Accept': 'application/json'
             }
         });
-        console.log(response)
+
+        if (response.status === 200 && response.data.success) {
+          try {
+              await axiosInstance.post(
+                  `${endPoint}/UpdateOrderStatusAfterDelay?orderId=${response.data.orderId}`,
+                  null,
+                  {
+                      headers: {
+                          'Content-Type': 'application/json'
+                      }
+                  }
+              );
+              console.log('Đã gọi API cập nhật trạng thái tự động');
+          } catch (updateError) {
+              console.error('Lỗi khi gọi API cập nhật trạng thái:', updateError);
+          }
+      }
+
         return response;
     } catch (error) {
         // Nếu BE redirect, chúng ta sẽ nhận được error network
@@ -151,7 +189,77 @@ const paymentsAPI = {
             throw new Error('redirect');
         }
     }
-}
+},
+  
+  processAndConfirmMultiplePayments: async () => {
+    try {
+      const response = await axiosInstance.post(
+        `${endPoint}/ProcessAndConfirmPayment`,
+        {},
+        {
+          timeout: 15000, // Tăng timeout vì xử lý nhiều đơn hàng
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+
+      if (response.status === 200 && response.data.success) {
+        return {
+          success: true,
+          message: response.data.message,
+          data: response.data
+        };
+      }
+
+      throw new Error(response.data.message || 'Có lỗi xảy ra khi xử lý thanh toán hàng loạt');
+
+    } catch (error) {
+      console.error('Error in processAndConfirmMultiplePayments:', error);
+      
+      if (error.response) {
+        const { status, data } = error.response;
+        
+        switch (status) {
+          case 400:
+            throw new Error(data || 'Không có đơn hàng nào cần xử lý');
+          case 500:
+            throw new Error(data || 'Lỗi server khi xử lý thanh toán hàng loạt');
+          default:
+            throw new Error(data || `Lỗi không xác định: ${status}`);
+        }
+      }
+
+      throw new Error(error.message || 'Không thể kết nối đến server');
+    }
+  },
+  updateOrderStatusAfterDelay: async (orderId) => {
+    try {
+      const response = await axiosInstance.post(
+        `${endPoint}/UpdateOrderStatusAfterDelay`,
+        null,
+        {
+          params: { orderId },
+          timeout: 10000, // Tăng timeout vì có delay 35 giây
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+
+      if (response.status === 200) {
+        return {
+          success: true,
+          message: 'Đã cập nhật trạng thái đơn hàng'
+        };
+      }
+
+      throw new Error(response.data?.message || 'Có lỗi xảy ra khi cập nhật trạng thái đơn hàng');
+    } catch (error) {
+      console.error('Error in updateOrderStatusAfterDelay:', error);
+      throw error;
+    }
+  },
 };
 
 export default paymentsAPI;

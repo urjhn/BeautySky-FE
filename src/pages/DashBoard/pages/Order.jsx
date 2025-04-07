@@ -21,6 +21,7 @@ import { useNavigate } from "react-router-dom";
 const ORDER_STATUS = {
   PENDING: "Pending",
   COMPLETED: "Completed",
+  SHIPPING: "Shipping",
   DELIVERED: "Delivered",
   CANCELLED: "Cancelled",
 };
@@ -28,6 +29,7 @@ const ORDER_STATUS = {
 const STATUS_MAP = {
   [ORDER_STATUS.PENDING]: "Chờ xử lý",
   [ORDER_STATUS.COMPLETED]: "Đã hoàn thành",
+  [ORDER_STATUS.SHIPPING]: "Đang giao hàng",
   [ORDER_STATUS.DELIVERED]: "Đã giao hàng thành công",
   [ORDER_STATUS.CANCELLED]: "Đã hủy",
 };
@@ -105,32 +107,33 @@ const Order = () => {
         });
 
         try {
-          // Gọi API để xử lý thanh toán và xác nhận đơn hàng
-          const response = await paymentsAPI.processAndConfirmPayment(orderId);
-          // Cập nhật state ngay lập tức - đã sửa cách truy cập dữ liệu
+          // Gọi API mới với query parameter
+        const response = await paymentsAPI.processAndConfirmPayment(orderId);
+
+          if (response.success) {
+            // Cập nhật state orders
           setOrders((prevOrders) =>
             prevOrders.map((order) =>
               order.orderId === orderId
                 ? {
                     ...order,
                     status: ORDER_STATUS.COMPLETED,
-                    paymentStatus: "Confirmed",
-                    // Kiểm tra nhiều cấu trúc phản hồi có thể có
-                    paymentId: response.paymentId || (response.data && response.data.paymentId) || 0,
+                      paymentStatus: "Confirmed"
                   }
                 : order
             )
           );
 
-          // Tải lại dữ liệu từ server
-          await fetchOrdersData();
+            // Tải lại dữ liệu từ server
+            await fetchOrdersData();
 
           await Swal.fire({
             icon: "success",
             title: "Thành công",
-            text: "Đã duyệt và thanh toán đơn hàng thành công",
-            timer: 1500,
-          });
+              text: "Đã duyệt và thanh toán đơn hàng thành công. Đơn hàng sẽ tự động chuyển sang trạng thái giao hàng sau 5 phút.",
+              timer: 3000,
+            });
+          }
         } catch (apiError) {
           console.error("Lỗi API khi duyệt đơn:", apiError);
           Swal.fire({
@@ -186,72 +189,26 @@ const Order = () => {
         didOpen: () => Swal.showLoading(),
       });
 
-      const results = await Promise.allSettled(
-        pendingOrders.map(async (order) => {
-          try {
-            const response = await paymentsAPI.processAndConfirmPayment(
-              order.orderId
-            );
-            
-            return {
-              orderId: order.orderId,
-              success: true,
-              // Kiểm tra nhiều cấu trúc dữ liệu có thể có
-              data: response.data || response
-            };
-          } catch (error) {
-            console.error(`Lỗi khi xử lý đơn hàng ${order.orderId}:`, error);
-            return {
-              orderId: order.orderId,
-              success: false,
-              error: error.response?.data || error.message,
-            };
-          }
-        })
-      );
+      // Gọi API mới không cần orderId để xử lý tất cả đơn hàng pending
+      const response = await paymentsAPI.processAndConfirmPayment();
 
-      const successful = results.filter((r) => r.status === "fulfilled" && r.value?.success).length;
-      const failed = pendingOrders.length - successful;
+      if (response.success) {
+        // Tải lại dữ liệu từ server
+        await fetchOrdersData();
 
-      setOrders((prevOrders) =>
-        prevOrders.map((order) => {
-          const resultItem = results.find(
-            (r) => r.status === "fulfilled" && r.value?.orderId === order.orderId && r.value?.success
-          );
-          
-          if (resultItem) {
-            const resultData = resultItem.value.data;
-            return {
-              ...order,
-              status: ORDER_STATUS.COMPLETED,
-              paymentStatus: "Confirmed",
-              // Xử lý nhiều cấu trúc dữ liệu có thể có
-              paymentId: resultData.paymentId || (resultData.data && resultData.data.paymentId) || 0,
-              paymentDate: resultData.paymentDate || (resultData.data && resultData.data.paymentDate) || new Date().toISOString(),
-            };
-          }
-          return order;
-        })
-      );
-
-      await fetchOrdersData();
-
-      await Swal.fire({
-        icon: successful > 0 ? "success" : "warning",
-        title: "Kết quả xử lý",
-        html: `
-          <div class="text-left">
-            <p>✅ Thành công: ${successful} đơn hàng</p>
-            ${failed > 0 ? `<p>❌ Thất bại: ${failed} đơn hàng</p>` : ""}
-          </div>
-        `,
-      });
+        await Swal.fire({
+          icon: "success",
+          title: "Thành công",
+          html: "Đã duyệt tất cả đơn hàng thành công. Các đơn hàng sẽ tự động chuyển sang trạng thái giao hàng sau 5 phút.",
+          timer: 3000,
+        });
+      }
     } catch (error) {
       console.error("Lỗi khi duyệt tất cả đơn hàng:", error);
       Swal.fire({
         icon: "error",
         title: "Lỗi",
-        text: "Có lỗi xảy ra khi duyệt đơn hàng. Vui lòng thử lại.",
+        text: error.response?.data || error.message || "Có lỗi xảy ra khi duyệt đơn hàng. Vui lòng thử lại.",
       });
     }
   };
@@ -264,22 +221,22 @@ const Order = () => {
       return dateB - dateA; // Sắp xếp từ mới nhất đến cũ nhất
     })
     .filter((order) => {
-      const searchLower = searchTerm.toLowerCase();
-      const matchesSearch = [
-        order.orderId,
-        order.userFullName,
-        order.userPhone,
-        order.userAddress,
+    const searchLower = searchTerm.toLowerCase();
+    const matchesSearch = [
+      order.orderId,
+      order.userFullName,
+      order.userPhone,
+      order.userAddress,
         order.finalAmount,
-        order.status,
-      ].some((field) => String(field).toLowerCase().includes(searchLower));
+      order.status,
+    ].some((field) => String(field).toLowerCase().includes(searchLower));
 
       // Sửa lại logic lọc theo status
       const matchesStatus =
         filterStatus === "All" || order.status === filterStatus;
 
       return matchesSearch && matchesStatus;
-    });
+  });
 
   const totalPages = Math.ceil(filteredOrders.length / ordersPerPage);
   const currentOrders = filteredOrders.slice(
@@ -296,10 +253,10 @@ const Order = () => {
     switch (status) {
       case ORDER_STATUS.PENDING:
         return "bg-yellow-100 text-yellow-800";
-      case ORDER_STATUS.PROCESSING:
-        return "bg-blue-100 text-blue-800";
       case ORDER_STATUS.COMPLETED:
         return "bg-green-100 text-green-800";
+      case ORDER_STATUS.SHIPPING:
+        return "bg-purple-100 text-purple-800";
       case ORDER_STATUS.DELIVERED:
         return "bg-blue-100 text-blue-800";
       case ORDER_STATUS.CANCELLED:
@@ -402,6 +359,7 @@ const Order = () => {
                 <option value="All">Tất cả trạng thái</option>
                 <option value="Pending">Chờ xử lý</option>
                 <option value="Completed">Đã hoàn thành</option>
+                <option value="Shipping">Đang giao hàng</option>
                 <option value="Delivered">Đã giao hàng thành công</option>
                 <option value="Cancelled">Đã hủy</option>
               </select>
@@ -621,15 +579,15 @@ const Order = () => {
                   (pageNum >= currentPage - 1 && pageNum <= currentPage + 1)
                 ) {
                   return (
-                    <button
+                <button
                       key={pageNum}
                       onClick={() => setCurrentPage(pageNum)}
                       className={`w-8 h-8 flex items-center justify-center rounded-lg ${
                         currentPage === pageNum
-                          ? "bg-blue-500 text-white"
-                          : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                      }`}
-                    >
+                      ? "bg-blue-500 text-white"
+                      : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                  }`}
+                >
                       {pageNum}
                     </button>
                   );
@@ -654,7 +612,7 @@ const Order = () => {
                 }`}
               >
                 &gt;
-              </button>
+                </button>
             </nav>
           </div>
         )}
