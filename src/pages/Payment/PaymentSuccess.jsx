@@ -10,6 +10,10 @@ const PaymentSuccess = () => {
     const navigate = useNavigate();
 
     // Hiệu ứng confetti khi component được mount
+    // ní có thể sửa lại ở trong trang này cho nó call về api confirm-payment/{orderId} 
+    // trong cái orderId mà bạn kia navigate qua đang sai đấy 
+    // phải split nó ra để lấy cái orderId đúng mà BE nó truyền lên
+    // rồi làm service để call về api confirm-payment/{orderId} truyền đúng biến orderId là đc ấy 
     React.useEffect(() => {
         confetti({
             particleCount: 100,

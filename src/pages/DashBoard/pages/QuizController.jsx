@@ -704,21 +704,26 @@ const handleDelete = async (questionId) => {
                           />
                         </div>
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Loại da
-                          </label>
-                          <input
-                            type="text"
-                            value={answer.skinTypeId}
-                            onChange={(e) => {
-                              const updatedQuestions = [...newSet.questions];
-                              updatedQuestions[qIndex].answers[aIndex].skinTypeId = e.target.value;
-                              setNewSet({ ...newSet, questions: updatedQuestions });
-                            }}
-                            className="w-full p-2 border rounded-lg"
-                            placeholder="Loại da"
-                          />
-                        </div>
+  <label className="block text-sm font-medium text-gray-700 mb-1">
+    Loại da
+  </label>
+  
+  <input
+    type="text"
+    value={answer.skinTypeId}
+    onChange={(e) => {
+      const updatedQuestions = [...newSet.questions];
+      updatedQuestions[qIndex].answers[aIndex].skinTypeId = e.target.value;
+      setNewSet({ ...newSet, questions: updatedQuestions });
+    }}
+    className="w-full p-2 border rounded-lg"
+    placeholder="Nhập loại da (VD: 1, 2, 3...)"
+  />
+  
+  <div className="mt-1 text-xs text-gray-500">
+    <span className="font-medium">Mã loại da:</span> 1-Dầu, 2-Khô, 3-Thường, 4-Hỗn hợp, 5-Nhạy cảm
+  </div>
+</div>
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-1">
                             Điểm
