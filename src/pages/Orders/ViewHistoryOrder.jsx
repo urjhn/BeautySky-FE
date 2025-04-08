@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { EyeIcon, CreditCardIcon } from "@heroicons/react/24/solid";
 import { useNavigate } from "react-router-dom";
 import { formatCurrency } from "../../utils/formatCurrency";
 import orderAPI from "../../services/order";
@@ -40,6 +39,7 @@ const OrderHistory = () => {
   const [loading, setLoading] = useState(true);
   const itemsPerPage = 7;
   const [pendingStatusChange, setPendingStatusChange] = useState(new Set());
+  const [pendingCodOrders, setPendingCodOrders] = useState(new Set());
 
   // Fetch orders từ BE
   useEffect(() => {
@@ -120,6 +120,52 @@ const OrderHistory = () => {
       return () => clearInterval(interval);
     }
   }, [pendingStatusChange]);
+
+  // Thêm useEffect để kiểm tra trạng thái đơn hàng COD
+  useEffect(() => {
+    const checkCodOrderStatus = async () => {
+      const ordersToCheck = Array.from(pendingCodOrders);
+      for (const orderId of ordersToCheck) {
+        try {
+          const response = await orderAPI.getOrderDetail(orderId);
+          if (response && response.status === "Shipping") {
+            setOrders(prevOrders =>
+              prevOrders.map(order =>
+                order.orderId === orderId
+                  ? {
+                      ...order,
+                      status: "Shipping",
+                      shippingDate: response.shippingDate
+                    }
+                  : order
+              )
+            );
+            
+            setPendingCodOrders(prev => {
+              const newSet = new Set(prev);
+              newSet.delete(orderId);
+              return newSet;
+            });
+
+            Swal.fire({
+              icon: 'info',
+              title: 'Trạng thái đơn hàng đã cập nhật',
+              text: 'Đơn hàng của bạn đang được giao',
+              timer: 3000,
+              showConfirmButton: false
+            });
+          }
+        } catch (error) {
+          console.error(`Lỗi khi kiểm tra trạng thái đơn hàng COD ${orderId}:`, error);
+        }
+      }
+    };
+
+    if (pendingCodOrders.size > 0) {
+      const interval = setInterval(checkCodOrderStatus, 10000);
+      return () => clearInterval(interval);
+    }
+  }, [pendingCodOrders]);
 
   // Lọc đơn hàng theo status
   const filteredOrders = orders.filter((order) =>
@@ -352,7 +398,7 @@ const OrderHistory = () => {
         confirmButtonColor: '#3085d6',
         cancelButtonColor: '#d33',
         confirmButtonText: 'Xác nhận đã nhận hàng',
-        cancelButtonText: 'Kiểm tra lại'
+        cancelButtonText: 'Kiểm tra lại' 
       });
 
       if (result.isConfirmed) {
@@ -403,49 +449,6 @@ const OrderHistory = () => {
         title: 'Lỗi',
         text: error.response?.data?.message || 'Không thể xác nhận. Vui lòng thử lại sau.',
         confirmButtonText: 'Đóng'
-      });
-    }
-  };
-
-  // Cập nhật hàm xử lý callback từ VNPay
-  const handlePaymentCallback = async (queryParams) => {
-    try {
-      const response = await paymentAPI.processVnPayCallback(queryParams);
-      
-      if (response.success) {
-        // Cập nhật trạng thái đơn hàng sang Completed
-        setOrders(prevOrders =>
-          prevOrders.map(order =>
-            order.orderId === response.orderId
-              ? {
-                  ...order,
-                  status: "Completed",
-                  paymentId: response.paymentId
-                }
-              : order
-          )
-        );
-
-        // Thêm vào danh sách theo dõi
-        setPendingStatusChange(prev => new Set(prev).add(response.orderId));
-
-        // Hiển thị thông báo thành công
-        await Swal.fire({
-          icon: 'success',
-          title: 'Thanh toán thành công',
-          text: 'Đơn hàng của bạn sẽ tự động chuyển sang trạng thái giao hàng sau 30 giây',
-          timer: 3000,
-          showConfirmButton: false
-        });
-      } else {
-        throw new Error(response.message || 'Thanh toán thất bại');
-      }
-    } catch (error) {
-      console.error('Lỗi khi xử lý callback:', error);
-      Swal.fire({
-        icon: 'error',
-        title: 'Lỗi',
-        text: error.message || 'Không thể xử lý kết quả thanh toán'
       });
     }
   };

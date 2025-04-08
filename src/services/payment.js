@@ -160,24 +160,6 @@ const paymentsAPI = {
                 'Accept': 'application/json'
             }
         });
-
-        if (response.status === 200 && response.data.success) {
-          try {
-              await axiosInstance.post(
-                  `${endPoint}/UpdateOrderStatusAfterDelay?orderId=${response.data.orderId}`,
-                  null,
-                  {
-                      headers: {
-                          'Content-Type': 'application/json'
-                      }
-                  }
-              );
-              console.log('Đã gọi API cập nhật trạng thái tự động');
-          } catch (updateError) {
-              console.error('Lỗi khi gọi API cập nhật trạng thái:', updateError);
-          }
-      }
-
         return response;
     } catch (error) {
         // Nếu BE redirect, chúng ta sẽ nhận được error network
@@ -233,31 +215,49 @@ const paymentsAPI = {
       throw new Error(error.message || 'Không thể kết nối đến server');
     }
   },
-  updateOrderStatusAfterDelay: async (orderId) => {
+  
+  startShipping: async (orderId) => {
     try {
       const response = await axiosInstance.post(
-        `${endPoint}/UpdateOrderStatusAfterDelay`,
-        null,
+        `${endPoint}/start-shipping/${orderId}`,
+        {},
         {
-          params: { orderId },
-          timeout: 10000, // Tăng timeout vì có delay 35 giây
+          timeout: 10000,
           headers: {
             'Content-Type': 'application/json'
           }
         }
       );
 
-      if (response.status === 200) {
+      if (response.status === 200 && response.data.success) {
         return {
           success: true,
-          message: 'Đã cập nhật trạng thái đơn hàng'
+          message: response.data.message,
+          order: response.data.order
         };
       }
 
-      throw new Error(response.data?.message || 'Có lỗi xảy ra khi cập nhật trạng thái đơn hàng');
+      throw new Error(response.data?.message || 'Có lỗi xảy ra khi bắt đầu giao hàng');
+
     } catch (error) {
-      console.error('Error in updateOrderStatusAfterDelay:', error);
-      throw error;
+      console.error('Error in startShipping:', error);
+      
+      if (error.response) {
+        const { status, data } = error.response;
+        
+        switch (status) {
+          case 404:
+            throw new Error(data.message || 'Không tìm thấy đơn hàng');
+          case 400:
+            throw new Error(data.message || 'Đơn hàng chưa được thanh toán hoặc không ở trạng thái phù hợp');
+          case 500:
+            throw new Error(data.message || 'Lỗi server khi xử lý giao hàng');
+          default:
+            throw new Error(data.message || `Lỗi không xác định: ${status}`);
+        }
+      }
+
+      throw new Error(error.message || 'Không thể kết nối đến server');
     }
   },
 };
