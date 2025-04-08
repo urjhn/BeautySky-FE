@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { EyeIcon, CreditCardIcon } from "@heroicons/react/24/solid";
 import { useNavigate } from "react-router-dom";
 import { formatCurrency } from "../../utils/formatCurrency";
 import orderAPI from "../../services/order";
@@ -39,6 +38,8 @@ const OrderHistory = () => {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const itemsPerPage = 7;
+  const [pendingStatusChange, setPendingStatusChange] = useState(new Set());
+  const [pendingCodOrders, setPendingCodOrders] = useState(new Set());
 
   // Fetch orders từ BE
   useEffect(() => {
@@ -70,6 +71,102 @@ const OrderHistory = () => {
     }
   }, [user]);
 
+  // Thêm useEffect để kiểm tra trạng thái đơn hàng
+  useEffect(() => {
+    const checkOrderStatus = async () => {
+      const ordersToCheck = Array.from(pendingStatusChange);
+      for (const orderId of ordersToCheck) {
+        try {
+          const response = await orderAPI.getOrderDetail(orderId);
+          if (response && response.status === "Shipping") {
+            // Cập nhật UI khi trạng thái đã chuyển sang Shipping
+            setOrders(prevOrders =>
+              prevOrders.map(order =>
+                order.orderId === orderId
+                  ? {
+                      ...order,
+                      status: "Shipping",
+                      shippingDate: response.shippingDate
+                    }
+                  : order
+              )
+            );
+            
+            // Xóa khỏi danh sách theo dõi
+            setPendingStatusChange(prev => {
+              const newSet = new Set(prev);
+              newSet.delete(orderId);
+              return newSet;
+            });
+
+            // Hiển thị thông báo
+            Swal.fire({
+              icon: 'info',
+              title: 'Trạng thái đơn hàng đã cập nhật',
+              text: 'Đơn hàng của bạn đang được giao',
+              timer: 3000,
+              showConfirmButton: false
+            });
+          }
+        } catch (error) {
+          console.error(`Lỗi khi kiểm tra trạng thái đơn hàng ${orderId}:`, error);
+        }
+      }
+    };
+
+    // Kiểm tra mỗi 10 giây nếu có đơn hàng cần theo dõi
+    if (pendingStatusChange.size > 0) {
+      const interval = setInterval(checkOrderStatus, 10000);
+      return () => clearInterval(interval);
+    }
+  }, [pendingStatusChange]);
+
+  // Thêm useEffect để kiểm tra trạng thái đơn hàng COD
+  useEffect(() => {
+    const checkCodOrderStatus = async () => {
+      const ordersToCheck = Array.from(pendingCodOrders);
+      for (const orderId of ordersToCheck) {
+        try {
+          const response = await orderAPI.getOrderDetail(orderId);
+          if (response && response.status === "Shipping") {
+            setOrders(prevOrders =>
+              prevOrders.map(order =>
+                order.orderId === orderId
+                  ? {
+                      ...order,
+                      status: "Shipping",
+                      shippingDate: response.shippingDate
+                    }
+                  : order
+              )
+            );
+            
+            setPendingCodOrders(prev => {
+              const newSet = new Set(prev);
+              newSet.delete(orderId);
+              return newSet;
+            });
+
+            Swal.fire({
+              icon: 'info',
+              title: 'Trạng thái đơn hàng đã cập nhật',
+              text: 'Đơn hàng của bạn đang được giao',
+              timer: 3000,
+              showConfirmButton: false
+            });
+          }
+        } catch (error) {
+          console.error(`Lỗi khi kiểm tra trạng thái đơn hàng COD ${orderId}:`, error);
+        }
+      }
+    };
+
+    if (pendingCodOrders.size > 0) {
+      const interval = setInterval(checkCodOrderStatus, 10000);
+      return () => clearInterval(interval);
+    }
+  }, [pendingCodOrders]);
+
   // Lọc đơn hàng theo status
   const filteredOrders = orders.filter((order) =>
     selectedTab === "All" ? true : order.status === selectedTab
@@ -85,9 +182,10 @@ const OrderHistory = () => {
   const getStatusDisplay = (status) => {
     const statusMap = {
       Pending: "Đang xử lý",
-      Completed: "Đã giao hàng",
+      Completed: "Đã thanh toán",
       Cancelled: "Đã hủy",
-      Delivered : "Đã nhận được hàng",
+      Shipping: "Đang giao hàng",
+      Delivered: "Đã nhận được hàng",
     };
     return statusMap[status] || status;
   };
@@ -98,7 +196,8 @@ const OrderHistory = () => {
       Pending: "bg-yellow-100 text-yellow-800",
       Completed: "bg-green-100 text-green-800",
       Cancelled: "bg-red-100 text-red-800",
-      Delivered: "bg-blue-100 text-blue-800"
+      Shipping: "bg-purple-100 text-purple-800",
+      Delivered: "bg-blue-100 text-blue-800"            
     };
     return colorMap[status] || "bg-gray-100 text-gray-800";
   };
@@ -282,29 +381,40 @@ const OrderHistory = () => {
   // Thêm hàm xử lý xác nhận đã nhận hàng
   const handleConfirmDelivery = async (orderId) => {
     try {
-      await Swal.fire({
+      const result = await Swal.fire({
         title: 'Xác nhận đã nhận hàng?',
-        text: 'Bạn đã nhận được đơn hàng và kiểm tra hàng hóa chưa?',
+        html: `
+          <div class="text-left">
+            <p class="mb-3">Vui lòng kiểm tra kỹ:</p>
+            <ul class="list-disc pl-4 space-y-2 text-sm">
+              <li>Đơn hàng đã được giao đến bạn</li>
+              <li>Sản phẩm còn nguyên vẹn, không bị hư hỏng</li>
+              <li>Đúng số lượng và chủng loại đã đặt</li>
+            </ul>
+          </div>
+        `,
         icon: 'question',
         showCancelButton: true,
         confirmButtonColor: '#3085d6',
         cancelButtonColor: '#d33',
-        confirmButtonText: 'Đã nhận hàng',
-        cancelButtonText: 'Chưa nhận'
-      }).then(async (result) => {
-        if (result.isConfirmed) {
-          // Hiển thị loading
-          Swal.fire({
-            title: 'Đang xử lý...',
-            text: 'Vui lòng chờ trong giây lát',
-            allowOutsideClick: false,
-            didOpen: () => {
-              Swal.showLoading();
-            }
-          });
+        confirmButtonText: 'Xác nhận đã nhận hàng',
+        cancelButtonText: 'Kiểm tra lại' 
+      });
 
-          const response = await paymentAPI.confirmDelivery(orderId);
+      if (result.isConfirmed) {
+        // Hiển thị loading
+        Swal.fire({
+          title: 'Đang xử lý...',
+          text: 'Vui lòng chờ trong giây lát',
+          allowOutsideClick: false,
+          didOpen: () => {
+            Swal.showLoading();
+          }
+        });
 
+        const response = await paymentAPI.confirmDelivery(orderId);
+
+        if (response.success) {
           // Cập nhật state orders với thông tin mới
           setOrders(prevOrders =>
             prevOrders.map(order =>
@@ -321,18 +431,24 @@ const OrderHistory = () => {
           await Swal.fire({
             icon: 'success',
             title: 'Xác nhận thành công',
-            text: 'Cảm ơn bạn đã xác nhận đã nhận hàng!',
-            timer: 1500,
+            html: `
+              <div class="text-center">
+                <p class="mb-2">Cảm ơn bạn đã xác nhận đã nhận hàng!</p>
+                <p class="text-sm text-gray-600">Hãy đánh giá sản phẩm để nhận thêm ưu đãi nhé!</p>
+              </div>
+            `,
+            timer: 2000,
             showConfirmButton: false
           });
         }
-      });
+      }
     } catch (error) {
       console.error('Lỗi khi xác nhận đã nhận hàng:', error);
       Swal.fire({
         icon: 'error',
         title: 'Lỗi',
-        text: error.response?.data?.message || 'Không thể xác nhận. Vui lòng thử lại sau.'
+        text: error.response?.data?.message || 'Không thể xác nhận. Vui lòng thử lại sau.',
+        confirmButtonText: 'Đóng'
       });
     }
   };
@@ -356,7 +472,7 @@ const OrderHistory = () => {
 
         {/* Filter Tabs - Cải thiện responsive */}
         <div className="flex flex-wrap justify-center gap-2 sm:gap-4 mb-6 sm:mb-8">
-          {["All", "Pending", "Completed", "Cancelled"].map((tab) => (
+          {["All", "Pending", "Completed", "Shipping", "Delivered", "Cancelled"].map((tab) => (
             <motion.button
               key={tab}
               whileHover={{ scale: 1.05 }}
@@ -457,7 +573,7 @@ const OrderHistory = () => {
                       </motion.button>
                     )}
 
-                    {order.status === "Completed" && (
+                    {order.status === "Shipping" && (
                       <motion.button
                         whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.98 }}
@@ -468,7 +584,7 @@ const OrderHistory = () => {
                         className="flex-1 px-4 py-3 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-lg shadow-md hover:shadow-lg transition-all duration-300 flex items-center justify-center gap-2"
                       >
                         <i className="fas fa-check-circle"></i>
-                        Đã nhận hàng
+                        Đã nhận được hàng
                       </motion.button>
                     )}
                   </div>
@@ -577,7 +693,7 @@ const OrderHistory = () => {
                               </>
                             )}
 
-                            {order.status === "Completed" && (
+                            {order.status === "Shipping" && (
                               <motion.button
                                 whileHover={{ scale: 1.05 }}
                                 whileTap={{ scale: 0.95 }}
@@ -588,7 +704,7 @@ const OrderHistory = () => {
                                 className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-full shadow-md hover:shadow-lg transition-all duration-300"
                               >
                                 <i className="fas fa-check-circle mr-2"></i>
-                                Đã nhận hàng
+                                Đã nhận được hàng
                               </motion.button>
                             )}
                           </div>

@@ -60,7 +60,7 @@ const RevenueChart = ({ revenueGrowth }) => {
         <div>
           <h3 className="text-sm sm:text-base md:text-lg font-semibold text-gray-800">
             📊 Phân tích doanh thu
-          </h3>
+      </h3>
           <p className="text-xs sm:text-sm text-gray-500 mt-0.5">
             Tổng doanh thu: {" "}
             {new Intl.NumberFormat("vi-VN", {

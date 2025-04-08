@@ -180,6 +180,42 @@ const ProductList = ({ selectedSkinType, selectedCategory, sortOrder }) => {
 
   const handlePayment = async () => {
     try {
+      // Validate thông tin người dùng
+      if (!user) {
+        Swal.fire({
+          icon: 'warning',
+          title: 'Vui lòng đăng nhập',
+          text: 'Bạn cần đăng nhập để thực hiện thanh toán',
+          confirmButtonText: 'Đăng nhập ngay',
+          showCancelButton: true,
+          cancelButtonText: 'Để sau'
+        }).then((result) => {
+          if (result.isConfirmed) {
+            navigate('/login');
+          }
+        });
+        return;
+      }
+
+      if (!formData.name || !formData.phone || !formData.address) {
+        Swal.fire({
+          icon: 'error',
+          title: 'Thiếu thông tin',
+          html: `
+            <div class="text-left">
+              <p class="mb-2">Vui lòng cập nhật đầy đủ thông tin:</p>
+              <ul class="list-disc pl-4">
+                ${!formData.name ? '<li>Họ tên người nhận</li>' : ''}
+                ${!formData.phone ? '<li>Số điện thoại</li>' : ''}
+                ${!formData.address ? '<li>Địa chỉ giao hàng</li>' : ''}
+              </ul>
+            </div>
+          `,
+          confirmButtonText: 'Cập nhật thông tin'
+        });
+        return;
+      }
+
       Swal.fire({
         title: "Đang xử lý...",
         allowOutsideClick: false,
@@ -196,89 +232,134 @@ const ProductList = ({ selectedSkinType, selectedCategory, sortOrder }) => {
       ];
 
       const promotionId = selectedVoucher ? Number(selectedVoucher.promotionId) : null;
-      const orderResponse = await orderAPI.createOrder(promotionId, orderProducts);
+      
+      try {
+        const orderResponse = await orderAPI.createOrder(promotionId, orderProducts);
 
-      if (orderResponse.orderId) {
-        if (paymentMethod === "VNPay") {
-          const paymentRequest = {
-            orderId: orderResponse.orderId,
-            amount: parseInt(discountedPrice),
-            orderInfo: `Thanh toan don hang #${orderResponse.orderId}`,
-            orderType: "other",
-            language: "vn",
-            name: formData.name,
-            orderDescription: `Don hang ${orderResponse.orderId}`,
-          };
+        if (orderResponse.orderId) {
+          if (paymentMethod === "VNPay") {
+            const paymentRequest = {
+              orderId: orderResponse.orderId,
+              amount: parseInt(discountedPrice),
+              orderInfo: `Thanh toan don hang #${orderResponse.orderId}`,
+              orderType: "other",
+              language: "vn",
+              name: formData.name,
+              orderDescription: `Don hang ${orderResponse.orderId}`,
+            };
 
-          const vnpayResponse = await paymentAPI.createVNPayPayment(
-            paymentRequest
-          );
+            try {
+              const vnpayResponse = await paymentAPI.createVNPayPayment(paymentRequest);
 
-          if (vnpayResponse.paymentUrl) {
-            localStorage.setItem(
-              "pendingOrder",
-              JSON.stringify({
-                orderId: orderResponse.orderId,
-                amount: parseInt(discountedPrice),
-                products: [
-                  {
-                    ...selectedProduct,
-                    price: parseInt(selectedProduct.price),
-                  },
-                ],
-              })
-            );
+              if (vnpayResponse.paymentUrl) {
+                localStorage.setItem(
+                  "pendingOrder",
+                  JSON.stringify({
+                    orderId: orderResponse.orderId,
+                    amount: parseInt(discountedPrice),
+                    products: [
+                      {
+                        ...selectedProduct,
+                        price: parseInt(selectedProduct.price),
+                      },
+                    ],
+                  })
+                );
 
-            window.location.href = vnpayResponse.paymentUrl;
+                window.location.href = vnpayResponse.paymentUrl;
+              } else {
+                throw new Error("Không nhận được URL thanh toán từ VNPay");
+              }
+            } catch (vnpayError) {
+              Swal.fire({
+                icon: "error",
+                title: "Lỗi thanh toán VNPay",
+                html: `
+                  <div class="text-left">
+                    <p class="mb-2">Không thể kết nối với cổng thanh toán VNPay:</p>
+                    <p class="text-sm text-gray-600">${vnpayError.message || 'Vui lòng thử lại sau hoặc chọn phương thức thanh toán khác'}</p>
+                  </div>
+                `,
+                confirmButtonText: "Đồng ý"
+              });
+            }
+          } else {
+            // Xử lý thanh toán tiền mặt
+            Swal.close();
+
+            await Swal.fire({
+              icon: "success",
+              title: "Đặt hàng thành công!",
+              html: `
+                <div class="text-left">
+                  <p class="mb-2">Cảm ơn bạn đã đặt hàng. Thông tin đơn hàng:</p>
+                  <ul class="list-none space-y-2">
+                    <li><strong>Mã đơn hàng:</strong> #${orderResponse.orderId}</li>
+                    <li><strong>Tổng tiền:</strong> ${formatCurrency(discountedPrice)}</li>
+                    <li><strong>Phương thức:</strong> Thanh toán khi nhận hàng</li>
+                  </ul>
+                  <p class="mt-3 text-sm text-gray-600">Chúng tôi sẽ liên hệ với bạn trong thời gian sớm nhất!</p>
+                </div>
+              `,
+              confirmButtonText: "Đồng ý",
+            });
+
+            const productInfo = {
+              productId: selectedProduct.productId,
+              productName: selectedProduct.productName,
+              quantity: 1,
+              price: selectedProduct.price,
+              productImage:
+                selectedProduct.productsImages?.[0]?.imageUrl ||
+                selectedProduct.image,
+            };
+
+            const orderInfo = {
+              orderId: orderResponse.orderId,
+              totalAmount: selectedProduct.price,
+              discountAmount: selectedVoucher ? 
+                (selectedProduct.price * selectedVoucher.discountPercentage) / 100 : 0,
+              finalAmount: discountedPrice,
+              products: [productInfo],
+              paymentMethod: "Cash",
+            };
+
+            navigate("/ordersuccess", {
+              state: {
+                orderDetails: orderInfo,
+              },
+            });
           }
-        } else {
-          // Xử lý thanh toán tiền mặt
-          Swal.close();
-
-          await Swal.fire({
-            icon: "success",
-            title: "Đặt hàng thành công!",
-            text: "Cảm ơn bạn đã đặt hàng. Chúng tôi sẽ liên hệ với bạn sớm nhất!",
-            confirmButtonColor: "#3085d6",
-            confirmButtonText: "Đồng ý",
-          });
-
-          // Tạo object sản phẩm với đầy đủ thông tin
-          const productInfo = {
-            productId: selectedProduct.productId,
-            productName: selectedProduct.productName,
-            quantity: 1,
-            price: selectedProduct.price,
-            productImage:
-              selectedProduct.productsImages?.[0]?.imageUrl ||
-              selectedProduct.image,
-          };
-
-          const orderInfo = {
-            orderId: orderResponse.orderId,
-            totalAmount: selectedProduct.price,
-            discountAmount: selectedVoucher ? 
-              (selectedProduct.price * selectedVoucher.discountPercentage) / 100 : 0,
-            finalAmount: discountedPrice,
-            products: [productInfo],
-            paymentMethod: "Cash",
-          };
-
-          navigate("/ordersuccess", {
-            state: {
-              orderDetails: orderInfo,
-            },
-          });
         }
+      } catch (orderError) {
+        Swal.fire({
+          icon: "error",
+          title: "Lỗi tạo đơn hàng",
+          html: `
+            <div class="text-left">
+              <p class="mb-2">Không thể tạo đơn hàng:</p>
+              <p class="text-sm text-gray-600">${orderError.response?.data?.message || orderError.message || 'Vui lòng thử lại sau'}</p>
+              ${orderError.response?.data?.errors ? `
+                <ul class="list-disc pl-4 mt-2 text-sm text-red-500">
+                  ${orderError.response.data.errors.map(err => `<li>${err}</li>`).join('')}
+                </ul>
+              ` : ''}
+            </div>
+          `,
+          confirmButtonText: "Đồng ý"
+        });
       }
     } catch (error) {
-      Swal.close();
-      console.error("Error:", error);
       Swal.fire({
         icon: "error",
-        title: "Lỗi!",
-        text: error.message || "Đã có lỗi xảy ra khi thanh toán.",
-        confirmButtonColor: "#3085d6",
+        title: "Lỗi hệ thống",
+        html: `
+          <div class="text-left">
+            <p class="mb-2">Đã xảy ra lỗi không mong muốn:</p>
+            <p class="text-sm text-gray-600">${error.message || 'Vui lòng thử lại sau'}</p>
+          </div>
+        `,
+        confirmButtonText: "Đồng ý"
       });
     }
   };
