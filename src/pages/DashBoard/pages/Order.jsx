@@ -108,29 +108,37 @@ const Order = () => {
 
         try {
           // Gọi API mới với query parameter
-        const response = await paymentsAPI.processAndConfirmPayment(orderId);
+          const response = await paymentsAPI.processAndConfirmPayment(orderId);
 
           if (response.success) {
-            // Cập nhật state orders
-          setOrders((prevOrders) =>
-            prevOrders.map((order) =>
-              order.orderId === orderId
-                ? {
-                    ...order,
-                    status: ORDER_STATUS.COMPLETED,
+            // Cập nhật state orders ngay lập tức
+            setOrders((prevOrders) =>
+              prevOrders.map((order) =>
+                order.orderId === orderId
+                  ? {
+                      ...order,
+                      status: ORDER_STATUS.COMPLETED,
                       paymentStatus: "Confirmed"
-                  }
-                : order
-            )
-          );
+                    }
+                  : order
+              )
+            );
 
             // Tải lại dữ liệu từ server
             await fetchOrdersData();
 
-          await Swal.fire({
-            icon: "success",
-            title: "Thành công",
-              text: "Đã duyệt và thanh toán đơn hàng thành công. Đơn hàng sẽ tự động chuyển sang trạng thái giao hàng sau 5 phút.",
+            await Swal.fire({
+              icon: "success",
+              title: "Thành công",
+              html: `
+                <div class="text-center">
+                  <p>Đã duyệt và thanh toán đơn hàng thành công.</p>
+                  <p class="mt-2 text-sm text-gray-600">Đơn hàng sẽ tự động chuyển sang trạng thái giao hàng sau 30 giây.</p>
+                  <div class="mt-3 bg-blue-50 p-2 rounded-lg inline-block">
+                    <span class="text-blue-600 font-medium">Trạng thái hiện tại: Đã hoàn thành</span>
+                  </div>
+                </div>
+              `,
               timer: 3000,
             });
           }
@@ -199,7 +207,15 @@ const Order = () => {
         await Swal.fire({
           icon: "success",
           title: "Thành công",
-          html: "Đã duyệt tất cả đơn hàng thành công. Các đơn hàng sẽ tự động chuyển sang trạng thái giao hàng sau 5 phút.",
+          html: `
+            <div class="text-center">
+              <p>Đã duyệt tất cả đơn hàng thành công.</p>
+              <p class="mt-2 text-sm text-gray-600">Các đơn hàng sẽ tự động chuyển sang trạng thái giao hàng sau 30 giây.</p>
+              <div class="mt-3 bg-blue-50 p-2 rounded-lg inline-block">
+                <span class="text-blue-600 font-medium">Trạng thái hiện tại: Đã hoàn thành</span>
+              </div>
+            </div>
+          `,
           timer: 3000,
         });
       }
