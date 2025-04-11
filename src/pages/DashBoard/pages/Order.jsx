@@ -53,7 +53,6 @@ const Order = () => {
       if (ordersData && ordersData.length > 0) {
         const processedOrders = ordersData.map((order) => {
           const userData = order.user || {};
-          const paymentData = order.payment || {};
 
           return {
             ...order,
@@ -64,8 +63,6 @@ const Order = () => {
             userId: userData.userId || null,
             finalAmount: order.finalAmount || 0,
             paymentStatus: order.paymentId ? "Confirmed" : "Pending",
-            paymentId: order.paymentId || null,
-            paymentTypeId: paymentData.paymentTypeId || null,
             // Đảm bảo các trường này được lấy đúng từ response
             cancelledDate: order.cancelledDate || order.cancelDate,
             cancelledReason: order.cancelledReason || order.cancelReason || "Không có lý do"
@@ -111,29 +108,37 @@ const Order = () => {
 
         try {
           // Gọi API mới với query parameter
-        const response = await paymentsAPI.processAndConfirmPayment(orderId);
+          const response = await paymentsAPI.processAndConfirmPayment(orderId);
 
           if (response.success) {
-            // Cập nhật state orders
-          setOrders((prevOrders) =>
-            prevOrders.map((order) =>
-              order.orderId === orderId
-                ? {
-                    ...order,
-                    status: ORDER_STATUS.SHIPPING,
+            // Cập nhật state orders ngay lập tức
+            setOrders((prevOrders) =>
+              prevOrders.map((order) =>
+                order.orderId === orderId
+                  ? {
+                      ...order,
+                      status: ORDER_STATUS.COMPLETED,
                       paymentStatus: "Confirmed"
-                  }
-                : order
-            )
-          );
+                    }
+                  : order
+              )
+            );
 
             // Tải lại dữ liệu từ server
             await fetchOrdersData();
 
-          await Swal.fire({
-            icon: "success",
-            title: "Thành công",
-              text: "Đã duyệt và thanh toán đơn hàng thành công. Đơn hàng sẽ tự động chuyển sang trạng thái giao hàng .",
+            await Swal.fire({
+              icon: "success",
+              title: "Thành công",
+              html: `
+                <div class="text-center">
+                  <p>Đã duyệt và thanh toán đơn hàng thành công.</p>
+                  <p class="mt-2 text-sm text-gray-600">Đơn hàng sẽ tự động chuyển sang trạng thái giao hàng sau 30 giây.</p>
+                  <div class="mt-3 bg-blue-50 p-2 rounded-lg inline-block">
+                    <span class="text-blue-600 font-medium">Trạng thái hiện tại: Đã hoàn thành</span>
+                  </div>
+                </div>
+              `,
               timer: 3000,
             });
           }
@@ -202,7 +207,15 @@ const Order = () => {
         await Swal.fire({
           icon: "success",
           title: "Thành công",
-          html: "Đã duyệt tất cả đơn hàng thành công. Các đơn hàng sẽ tự động chuyển sang trạng thái giao hàng .",
+          html: `
+            <div class="text-center">
+              <p>Đã duyệt tất cả đơn hàng thành công.</p>
+              <p class="mt-2 text-sm text-gray-600">Các đơn hàng sẽ tự động chuyển sang trạng thái giao hàng sau 30 giây.</p>
+              <div class="mt-3 bg-blue-50 p-2 rounded-lg inline-block">
+                <span class="text-blue-600 font-medium">Trạng thái hiện tại: Đã hoàn thành</span>
+              </div>
+            </div>
+          `,
           timer: 3000,
         });
       }
@@ -212,63 +225,6 @@ const Order = () => {
         icon: "error",
         title: "Lỗi",
         text: error.response?.data || error.message || "Có lỗi xảy ra khi duyệt đơn hàng. Vui lòng thử lại.",
-      });
-    }
-  };
-
-  // Thêm hàm xử lý chuyển trạng thái sang shipping
-  const handleStartShipping = async (orderId) => {
-    try {
-      const result = await Swal.fire({
-        title: "Xác nhận giao hàng",
-        text: `Bạn có chắc muốn chuyển đơn hàng #${orderId} sang trạng thái giao hàng?`,
-        icon: "question",
-        showCancelButton: true,
-        confirmButtonText: "Xác nhận",
-        cancelButtonText: "Hủy",
-        confirmButtonColor: "#10B981",
-        cancelButtonColor: "#EF4444",
-      });
-
-      if (result.isConfirmed) {
-        Swal.fire({
-          title: "Đang xử lý...",
-          text: "Vui lòng chờ trong giây lát",
-          allowOutsideClick: false,
-          didOpen: () => Swal.showLoading(),
-        });
-
-        const response = await paymentsAPI.startShipping(orderId);
-
-        if (response.success) {
-          // Cập nhật state orders
-          setOrders((prevOrders) =>
-            prevOrders.map((order) =>
-              order.orderId === orderId
-                ? {
-                    ...order,
-                    status: ORDER_STATUS.SHIPPING,
-                    shippingDate: response.order.shippingDate,
-                  }
-                : order
-            )
-          );
-
-          await Swal.fire({
-            icon: "success",
-            title: "Thành công",
-            text: "Đã chuyển đơn hàng sang trạng thái giao hàng",
-            timer: 2000,
-            showConfirmButton: false,
-          });
-        }
-      }
-    } catch (error) {
-      console.error("Lỗi khi chuyển trạng thái:", error);
-      Swal.fire({
-        icon: "error",
-        title: "Lỗi",
-        text: error.message || "Không thể chuyển trạng thái đơn hàng",
       });
     }
   };
@@ -289,8 +245,6 @@ const Order = () => {
       order.userAddress,
         order.finalAmount,
       order.status,
-      order.paymentTypeId,
-      order.paymentId,
     ].some((field) => String(field).toLowerCase().includes(searchLower));
 
       // Sửa lại logic lọc theo status
@@ -326,55 +280,6 @@ const Order = () => {
       default:
         return "bg-gray-100 text-gray-800";
     }
-  };
-
-  // Thêm hàm kiểm tra trạng thái thanh toán
-  const getPaymentStatusDisplay = (order) => {
-    // Nếu là thanh toán VNPay (paymentTypeId = 1)
-    if (order.payment?.paymentTypeId === 1) {
-      // Nếu đã có paymentId và trạng thái là Completed hoặc sau đó
-      if (order.paymentId && 
-          (order.status === ORDER_STATUS.COMPLETED || 
-           order.status === ORDER_STATUS.SHIPPING || 
-           order.status === ORDER_STATUS.DELIVERED)) {
-        return "Đã thanh toán";
-      }
-      return "Chưa thanh toán";
-    }
-    
-    // Nếu là COD (paymentTypeId = 2)
-    if (order.payment?.paymentTypeId === 2) {
-      // Chỉ hiển thị Đã thanh toán khi đã giao hàng thành công
-      if (order.status === ORDER_STATUS.DELIVERED) {
-        return "Đã thanh toán";
-      }
-      return "Chưa thanh toán (COD)";
-    }
-    
-    return "Chưa thanh toán";
-  };
-
-  const getPaymentStatusColor = (order) => {
-    // Nếu là thanh toán VNPay (paymentTypeId = 1)
-    if (order.payment?.paymentTypeId === 1) {
-      if (order.paymentId && 
-          (order.status === ORDER_STATUS.COMPLETED || 
-           order.status === ORDER_STATUS.SHIPPING || 
-           order.status === ORDER_STATUS.DELIVERED)) {
-        return "bg-green-100 text-green-800";
-      }
-      return "bg-yellow-100 text-yellow-800";
-    }
-    
-    // Nếu là COD (paymentTypeId = 2)
-    if (order.payment?.paymentTypeId === 2) {
-      if (order.status === ORDER_STATUS.DELIVERED) {
-        return "bg-green-100 text-green-800";
-      }
-      return "bg-yellow-100 text-yellow-800";
-    }
-    
-    return "bg-yellow-100 text-yellow-800";
   };
 
   // Tải dữ liệu ban đầu
@@ -501,8 +406,12 @@ const Order = () => {
                   <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(order.status)}`}>
                     {getStatusDisplay(order.status)}
                   </span>
-                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getPaymentStatusColor(order)}`}>
-                    {getPaymentStatusDisplay(order)}
+                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                    order.paymentStatus === "Confirmed"
+                      ? "bg-green-100 text-green-800"
+                      : "bg-yellow-100 text-yellow-800"
+                  }`}>
+                    {order.paymentStatus === "Confirmed" ? "Đã thanh toán" : "Chưa thanh toán"}
                   </span>
                 </div>
               </div>
@@ -547,16 +456,6 @@ const Order = () => {
                 >
                   <FaCheckCircle className="w-4 h-4" />
                   <span>Duyệt đơn</span>
-                </button>
-              )}
-
-              {order.status === ORDER_STATUS.COMPLETED && (
-                <button
-                  onClick={() => handleStartShipping(order.orderId)}
-                  className="w-full mt-3 px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition-colors flex items-center justify-center gap-2"
-                >
-                  <FaShoppingBag className="w-4 h-4" />
-                  <span>Bắt đầu giao hàng</span>
                 </button>
               )}
             </div>
@@ -638,9 +537,15 @@ const Order = () => {
                   </td>
                   <td className="p-4">
                     <span
-                      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getPaymentStatusColor(order)}`}
+                      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                        order.paymentStatus === "Confirmed"
+                          ? "bg-green-100 text-green-800"
+                          : "bg-yellow-100 text-yellow-800"
+                      }`}
                     >
-                      {getPaymentStatusDisplay(order)}
+                      {order.paymentStatus === "Confirmed"
+                        ? "Đã thanh toán"
+                        : "Chưa thanh toán"}
                     </span>
                   </td>
                   <td className="p-4 text-center">
@@ -651,21 +556,14 @@ const Order = () => {
                             onClick={() => handleApproveOrder(order.orderId)}
                             className="px-3 py-1.5 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-transform transform hover:-translate-y-1 hover:shadow-lg flex items-center gap-1"
                             title="Duyệt đơn"
+                            style={{
+                              boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08)",
+                            }}
                           >
                             <FaCheckCircle className="w-4 h-4" />
                             <span className="text-sm">Duyệt</span>
                           </button>
                         )}
-                      {order.status === ORDER_STATUS.COMPLETED && (
-                        <button
-                          onClick={() => handleStartShipping(order.orderId)}
-                          className="px-3 py-1.5 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition-transform transform hover:-translate-y-1 hover:shadow-lg flex items-center gap-1"
-                          title="Bắt đầu giao hàng"
-                        >
-                          <FaShoppingBag className="w-4 h-4" />
-                          <span className="text-sm">Giao hàng</span>
-                        </button>
-                      )}
                     </div>
                   </td>
                 </tr>

@@ -26,7 +26,7 @@ const QuizController = () => {
     ]
   });
 
-  const itemsPerPage = 5;
+  const itemsPerPage = 3;
 
   useEffect(() => {
     if (questions.length > 0 && answers.length > 0) {
@@ -133,6 +133,8 @@ const QuizController = () => {
   const startIndex = (currentPage - 1) * itemsPerPage;
   const displayedQuestions = filteredQuestions.slice(startIndex, startIndex + itemsPerPage);
 
+
+
   const createQuestionAndAnswers = async (question) => {
     try {
       if (!question.questionText || question.questionText.trim().length < 3) {
@@ -199,119 +201,23 @@ const QuizController = () => {
           await Promise.all(answerPromises);
           return questionId;
         } else {
-          console.error("Could not find newly created question");
-          throw new Error("Could not find newly created question");
+          console.error("Không thể tìm thấy câu hỏi vừa được tạo");
+          throw new Error("Không thể tìm thấy câu hỏi vừa được tạo");
         }
-      } else {
-        throw new Error("Failed to create question: " + JSON.stringify(newQuestionResponse.data));
-      }
-    } catch (error) {
-      console.error("Error creating question and answers:", error);
-      if (error.response && error.response.data) {
-        console.error("API error details:", error.response.data);
-        throw new Error(`Lỗi từ API: ${JSON.stringify(error.response.data)}`);
-      }
-      throw error;
-    }
-  };
-
-  const handleSaveQuestion = async () => {
-    try {
-      // Validation
-      if (!newQuestion.questionText || newQuestion.questionText.trim() === "") {
-        Swal.fire({
-          icon: 'error',
-          title: 'Lỗi!',
-          text: 'Vui lòng nhập nội dung cho câu hỏi.',
-        });
-        return;
-      }
-      
-      const validAnswers = newQuestion.answers.filter(a => a.answerText.trim() !== "");
-      if (validAnswers.length === 0) {
-        Swal.fire({
-          icon: 'error',
-          title: 'Lỗi!',
-          text: 'Câu hỏi phải có ít nhất một câu trả lời.',
-        });
-        return;
-      }
-
-      if (editingQuestion) {
-        // Update existing question
-        const questionData = {
-          questionId: newQuestion.questionId,
-          questionText: newQuestion.questionText.trim(),
-          orderNumber: newQuestion.orderNumber || 1,
-          quizId: newQuestion.quizId
+        } else {
+          throw new Error("Không thể tạo câu hỏi: " + JSON.stringify(newQuestionResponse.data));
+        }
+        } catch (error) {
+          console.error("Lỗi khi tạo câu hỏi và câu trả lời:", error);
+          if (error.response && error.response.data) {
+            console.error("Chi tiết lỗi API:", error.response.data);
+            throw new Error(`Lỗi từ API: ${JSON.stringify(error.response.data)}`);
+          }
+          throw error;
+        }
         };
-        
-        // Update question
-        await questionsAPI.editQuestions(newQuestion.questionId, questionData);
-        
-        // Handle answers - update existing ones and create new ones
-        for (const answer of newQuestion.answers) {
-          if (answer.answerText.trim() === "") continue;
-          
-          if (answer.answerId > 0) {
-            // Update existing answer
-            const answerData = {
-              answerId: answer.answerId,
-              answerText: answer.answerText.trim(),
-              questionId: newQuestion.questionId,
-              skinTypeId: answer.skinTypeId || "",
-              point: answer.point || "0"
-            };
-            await answersAPI.editAnswers(answer.answerId, answerData);
-          } else {
-            // Create new answer
-            const answerData = {
-              answerText: answer.answerText.trim(),
-              questionId: newQuestion.questionId,
-              skinTypeId: answer.skinTypeId || "",
-              point: answer.point || "0"
-            };
-            await answersAPI.createAnswers(answerData);
-          }
-        }
-        
-        // Delete removed answers
-        const existingAnswers = answers.filter(a => a.questionId === newQuestion.questionId);
-        const keptAnswerIds = newQuestion.answers
-          .filter(a => a.answerId > 0 && a.answerText.trim() !== "")
-          .map(a => a.answerId);
-          
-        for (const existingAns of existingAnswers) {
-          if (!keptAnswerIds.includes(existingAns.answerId)) {
-            await answersAPI.deleteAnswers(existingAns.answerId);
-          }
-        }
-      } else {
-        // Create new question and answers
-        await createQuestionAndAnswers(newQuestion);
-      }
 
-      // Close modal and refresh
-      setIsModalOpen(false);
-      setEditingQuestion(null);
-      await fetchQuestions();
-      await fetchAnswers();
-      
-      Swal.fire({
-        icon: 'success',
-        title: 'Lưu thành công',
-        text: 'Câu hỏi đã được lưu thành công!',
-      });
-    } catch (error) {
-      console.error("Lỗi khi lưu câu hỏi:", error);
-      Swal.fire({
-        icon: 'error',
-        title: 'Lỗi!',
-        html: `Đã có lỗi xảy ra khi lưu câu hỏi:<br><pre>${error.message}</pre>`,
-      });
-    }
-  };
-  
+
   const handleDelete = async (questionId) => {
     const result = await Swal.fire({
       icon: 'warning',
@@ -420,6 +326,103 @@ const QuizController = () => {
         { answerId: 0, answerText: "", skinTypeId: "", point: "" }
       ]
     });
+  };
+
+  const handleSaveQuestion = async () => {
+    try {
+      // Validation
+      if (!newQuestion.questionText || newQuestion.questionText.trim() === "") {
+        Swal.fire({
+          icon: 'error',
+          title: 'Lỗi!',
+          text: 'Vui lòng nhập nội dung cho câu hỏi.',
+        });
+        return;
+      }
+      
+      const validAnswers = newQuestion.answers.filter(a => a.answerText.trim() !== "");
+      if (validAnswers.length === 0) {
+        Swal.fire({
+          icon: 'error',
+          title: 'Lỗi!',
+          text: 'Câu hỏi phải có ít nhất một câu trả lời.',
+        });
+        return;
+      }
+
+      if (editingQuestion) {
+        // Update existing question
+        const questionData = {
+          questionId: newQuestion.questionId,
+          questionText: newQuestion.questionText.trim(),
+          orderNumber: newQuestion.orderNumber || 1,
+          quizId: newQuestion.quizId
+        };
+        
+        // Update question
+        await questionsAPI.editQuestions(newQuestion.questionId, questionData);
+        
+        // Handle answers - update existing ones and create new ones
+        for (const answer of newQuestion.answers) {
+          if (answer.answerText.trim() === "") continue;
+          
+          if (answer.answerId > 0) {
+            // Update existing answer
+            const answerData = {
+              answerId: answer.answerId,
+              answerText: answer.answerText.trim(),
+              questionId: newQuestion.questionId,
+              skinTypeId: answer.skinTypeId || "",
+              point: answer.point || "0"
+            };
+            await answersAPI.editAnswers(answer.answerId, answerData);
+          } else {
+            // Create new answer
+            const answerData = {
+              answerText: answer.answerText.trim(),
+              questionId: newQuestion.questionId,
+              skinTypeId: answer.skinTypeId || "",
+              point: answer.point || "0"
+            };
+            await answersAPI.createAnswers(answerData);
+          }
+        }
+        
+        // Delete removed answers
+        const existingAnswers = answers.filter(a => a.questionId === newQuestion.questionId);
+        const keptAnswerIds = newQuestion.answers
+          .filter(a => a.answerId > 0 && a.answerText.trim() !== "")
+          .map(a => a.answerId);
+          
+        for (const existingAns of existingAnswers) {
+          if (!keptAnswerIds.includes(existingAns.answerId)) {
+            await answersAPI.deleteAnswers(existingAns.answerId);
+          }
+        }
+      } else {
+        // Create new question and answers
+        await createQuestionAndAnswers(newQuestion);
+      }
+
+      // Close modal and refresh
+      setIsModalOpen(false);
+      setEditingQuestion(null);
+      await fetchQuestions();
+      await fetchAnswers();
+      
+      Swal.fire({
+        icon: 'success',
+        title: 'Lưu thành công',
+        text: 'Câu hỏi đã được lưu thành công!',
+      });
+    } catch (error) {
+      console.error("Lỗi khi lưu câu hỏi:", error);
+      Swal.fire({
+        icon: 'error',
+        title: 'Lỗi!',
+        html: `Đã có lỗi xảy ra khi lưu câu hỏi:<br><pre>${error.message}</pre>`,
+      });
+    }
   };
 
   return (

@@ -47,6 +47,11 @@ const PaymentSuccess = () => {
                         <p className="text-gray-600">Trạng thái:</p>
                         <p className="font-bold text-gray-800 text-lg">{state?.status}</p>
                     </div>
+                    <div className="bg-blue-50 p-4 rounded-lg">
+                        <p className="text-blue-600 text-sm">
+                            Đơn hàng của bạn sẽ tự động chuyển sang trạng thái "Đang giao hàng" sau 30 giây.
+                        </p>
+                    </div>
                 </div>
 
                 {/* Nút điều hướng */}
