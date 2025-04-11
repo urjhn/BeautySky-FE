@@ -37,37 +37,122 @@ const DashboardEvents = () => {
     }
   };
 
+  const validateDates = (startDate, endDate) => {
+    const currentDate = new Date();
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+
+    if (start < currentDate && end < currentDate) {
+      Swal.fire("Lỗi!", "Ngày bắt đầu và kết thúc không thể trước ngày hiện tại.", "error");
+      return false;
+    }
+    if (end < start) {
+      Swal.fire("Lỗi!", "Ngày kết thúc không thể trước ngày bắt đầu.", "error");
+      return false;
+    }
+    return true;
+  };
+
   const handleSubmit = async () => {
     if (!form.title || !form.content || !form.startDate || !form.endDate) {
       Swal.fire("Lỗi!", "Vui lòng điền đầy đủ thông tin sự kiện.", "error");
       return;
     }
 
+    if (!validateDates(form.startDate, form.endDate)) {
+      return;
+    }
+
     try {
-      const formData = new FormData();
-      formData.append("title", form.title);
-      formData.append("content", form.content);
-      formData.append("createDate", form.createDate);
-      formData.append("startDate", form.startDate);
-      formData.append("endDate", form.endDate);
-
-      if (form.file) {
-        formData.append("file", form.file);
-      }
-
       if (form.id) {
-        await newsAPI.editNews(form.id, formData);
-        Swal.fire("Thành công!", "Sự kiện đã được cập nhật.", "success");
-      } else {
-        await newsAPI.createNews(formData);
-        Swal.fire("Thành công!", "Sự kiện mới đã được thêm.", "success");
-      }
+        // Hiển thị dialog xác nhận khi cập nhật
+        const confirmResult = await Swal.fire({
+          title: "Xác nhận cập nhật?",
+          text: "Bạn có chắc chắn muốn cập nhật sự kiện này?",
+          icon: "question",
+          showCancelButton: true,
+          confirmButtonColor: "#3085d6",
+          cancelButtonColor: "#d33",
+          confirmButtonText: "Xác nhận",
+          cancelButtonText: "Hủy",
+          showLoaderOnConfirm: true,
+          preConfirm: async () => {
+            try {
+              const formData = new FormData();
+              formData.append("title", form.title);
+              formData.append("content", form.content);
+              formData.append("createDate", form.createDate);
+              formData.append("startDate", form.startDate);
+              formData.append("endDate", form.endDate);
+              formData.append("isActive", true);
 
-      resetForm();
-      fetchNews();
+              if (form.file) {
+                formData.append("file", form.file);
+              }
+
+              const currentDate = new Date();
+              const startDate = new Date(form.startDate);
+              if (startDate < currentDate) {
+                throw new Error("Ngày bắt đầu không thể trước ngày hiện tại khi cập nhật.");
+              }
+
+              const response = await newsAPI.editNews(form.id, formData);
+              if (response.status === 200) {
+                return response;
+              }
+              // throw new Error("Không thể cập nhật sự kiện");
+            } catch (error) {
+              Swal.showValidationMessage(error.message);
+            }
+          },
+          allowOutsideClick: () => !Swal.isLoading()
+        });
+
+        if (confirmResult.isConfirmed) {
+          await Swal.fire({
+            icon: "success",
+            title: "Thành công!",
+            text: "Sự kiện đã được cập nhật thành công",
+            timer: 1500,
+            showConfirmButton: false
+          });
+          resetForm();
+          fetchNews();
+        }
+      } else {
+        // Xử lý thêm mới sự kiện
+        const formData = new FormData();
+        formData.append("title", form.title);
+        formData.append("content", form.content);
+        formData.append("createDate", form.createDate);
+        formData.append("startDate", form.startDate);
+        formData.append("endDate", form.endDate);
+        formData.append("isActive", true);
+
+        if (form.file) {
+          formData.append("file", form.file);
+        }
+
+        const response = await newsAPI.createNews(formData);
+        if (response.status === 200) {
+          await Swal.fire({
+            icon: "success",
+            title: "Thành công!",
+            text: "Sự kiện mới đã được thêm thành công",
+            timer: 1500,
+            showConfirmButton: false
+          });
+          resetForm();
+          fetchNews();
+        }
+      }
     } catch (error) {
       console.error("Lỗi khi lưu sự kiện:", error);
-      Swal.fire("Lỗi!", `Không thể lưu sự kiện: ${error.message}`, "error");
+      Swal.fire({
+        icon: "error",
+        title: "Lỗi!",
+        text: error.response?.data || error.message || "Không thể lưu sự kiện",
+      });
     }
   };
 
@@ -93,27 +178,53 @@ const DashboardEvents = () => {
   };
 
   const handleDelete = async (eventId) => {
-    Swal.fire({
-      title: "Bạn có chắc chắn muốn xóa?",
-      text: "Hành động này không thể hoàn tác!",
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonColor: "#d33",
-      cancelButtonColor: "#3085d6",
-      confirmButtonText: "OK",
-      cancelButtonText: "Hủy",
-    }).then(async (result) => {
-      if (result.isConfirmed) {
-        try {
-          await newsAPI.deleteNewsById(eventId);
-          fetchNews();
-          Swal.fire("Đã xóa!", "Sự kiện đã được xóa thành công.", "success");
-        } catch (error) {
-          console.error("Error deleting event:", error);
-          Swal.fire("Lỗi!", "Không thể xóa sự kiện.", "error");
-        }
+    try {
+      const confirmResult = await Swal.fire({
+        title: "Bạn có chắc chắn muốn vô hiệu hóa sự kiện này?",
+        text: "Sự kiện sẽ không còn hiển thị cho người dùng!",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#d33",
+        cancelButtonColor: "#3085d6",
+        confirmButtonText: "Xác nhận",
+        cancelButtonText: "Hủy",
+        showLoaderOnConfirm: true,
+        preConfirm: async () => {
+          try {
+            Swal.showLoading();
+            const response = await newsAPI.deleteNewsById(eventId);
+            if (response.status === 200) {
+              return response;
+            }
+            // throw new Error(response.data || 'Không thể vô hiệu hóa sự kiện');
+          } catch (error) {
+            Swal.showValidationMessage(
+              error.message || 'Có lỗi xảy ra khi vô hiệu hóa sự kiện'
+            );
+          }
+        },
+        allowOutsideClick: () => !Swal.isLoading()
+      });
+
+      if (confirmResult.isConfirmed) {
+        await fetchNews();
+        await Swal.fire({
+          icon: "success",
+          title: "Đã vô hiệu hóa!",
+          text: "Sự kiện đã được vô hiệu hóa thành công",
+          timer: 1500,
+          showConfirmButton: false
+        });
       }
-    });
+    } catch (error) {
+      console.error("Error deactivating event:", error);
+      await Swal.fire({
+        icon: "error",
+        title: "Lỗi!",
+        text: error.message || "Không thể vô hiệu hóa sự kiện",
+        confirmButtonColor: "#3085d6"
+      });
+    }
   };
 
   const handlePageChange = (newPage) => {
@@ -133,6 +244,21 @@ const DashboardEvents = () => {
       endDate: "",
       file: null,
     });
+  };
+
+  // Thêm hàm để kiểm tra trạng thái sự kiện
+  const getEventStatus = (startDate, endDate) => {
+    const currentDate = new Date();
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+
+    if (currentDate < start) {
+      return { status: 'upcoming', text: 'Sắp diễn ra', color: 'bg-yellow-100 text-yellow-800' };
+    } else if (currentDate > end) {
+      return { status: 'expired', text: 'Đã kết thúc', color: 'bg-red-100 text-red-800' };
+    } else {
+      return { status: 'active', text: 'Đang diễn ra', color: 'bg-green-100 text-green-800' };
+    }
   };
 
   return (
@@ -292,6 +418,7 @@ const DashboardEvents = () => {
                 <th className="hidden md:table-cell p-4 text-left font-semibold">📖 Nội dung</th>
                 <th className="hidden sm:table-cell p-4 text-center font-semibold">📅 Ngày tạo</th>
                 <th className="p-3 md:p-4 text-center text-sm md:text-base font-semibold">🖼 Ảnh</th>
+                <th className="p-3 md:p-4 text-center text-sm md:text-base font-semibold">🔄 Trạng thái</th>
                 <th className="p-3 md:p-4 text-center text-sm md:text-base font-semibold">⚡ Hành động</th>
               </tr>
             </thead>
@@ -328,6 +455,26 @@ const DashboardEvents = () => {
                         </div>
                       </div>
                     </td>
+                    <td className="p-3 md:p-4 text-center">
+                      {(() => {
+                        const { color, text } = getEventStatus(event.startDate, event.endDate);
+                        return (
+                          <div className="flex flex-col space-y-1">
+                            <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${color}`}>
+                              <span className={`w-2 h-2 mr-2 rounded-full ${
+                                text === 'Đang diễn ra' ? 'bg-green-400 animate-pulse' : 
+                                text === 'Sắp diễn ra' ? 'bg-yellow-400' : 'bg-red-400'
+                              }`}></span>
+                              {text}
+                            </span>
+                            <div className="text-xs text-gray-500">
+                              <div>Bắt đầu: {new Date(event.startDate).toLocaleDateString('vi-VN')}</div>
+                              <div>Kết thúc: {new Date(event.endDate).toLocaleDateString('vi-VN')}</div>
+                            </div>
+                          </div>
+                        );
+                      })()}
+                    </td>
                     <td className="p-3 md:p-4">
                       <div className="flex flex-col sm:flex-row items-center justify-center space-y-2 sm:space-y-0 sm:space-x-2">
                         <button
@@ -340,7 +487,7 @@ const DashboardEvents = () => {
                           onClick={() => handleDelete(event.id)}
                           className="w-full sm:w-auto text-sm md:text-base bg-gradient-to-r from-red-400 to-red-500 text-white px-3 md:px-4 py-1.5 rounded-md hover:from-red-500 hover:to-red-600 transition-all duration-200 inline-flex items-center justify-center shadow-sm hover:shadow transform hover:-translate-y-0.5"
                         >
-                          <span className="mr-1">❌</span> Xóa
+                          <span className="mr-1">🚫</span> Xóa
                         </button>
                       </div>
                     </td>
@@ -392,6 +539,39 @@ const DashboardEvents = () => {
             </div>
           </div>
         )}
+      </div>
+
+      {/* Mobile view */}
+      <div className="md:hidden">
+        {currentEvents.map((event) => (
+          <div key={event.id} className="bg-white rounded-lg shadow border border-gray-200 p-4 mb-4">
+            <div className="flex flex-col space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-gray-500">Trạng thái:</span>
+                {(() => {
+                  const { color, text } = getEventStatus(event.startDate, event.endDate);
+                  return (
+                    <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${color}`}>
+                      <span className={`w-2 h-2 mr-2 rounded-full ${
+                        text === 'Đang diễn ra' ? 'bg-green-400 animate-pulse' : 
+                        text === 'Sắp diễn ra' ? 'bg-yellow-400' : 'bg-red-400'
+                      }`}></span>
+                      {text}
+                    </span>
+                  );
+                })()}
+              </div>
+              <div className="flex justify-between text-sm text-gray-500">
+                <span>Bắt đầu:</span>
+                <span>{new Date(event.startDate).toLocaleDateString('vi-VN')}</span>
+              </div>
+              <div className="flex justify-between text-sm text-gray-500">
+                <span>Kết thúc:</span>
+                <span>{new Date(event.endDate).toLocaleDateString('vi-VN')}</span>
+              </div>
+            </div>
+          </div>
+        ))}
       </div>
     </div>
   );

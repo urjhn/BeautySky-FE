@@ -32,6 +32,7 @@ const Products = () => {
     skinTypeId: 0,
     productsImages: [],
     isActive: true,
+    expire: null,
   });
 
   const handleImageUpload = async ({ File}) => {
@@ -71,6 +72,14 @@ const Products = () => {
         // Tìm theo số lượng
         if (product.quantity && product.quantity.toString().includes(searchLower)) 
           return true;
+
+        // Tìm theo ngày hết hạn
+        if (product.expire) {
+          const expireDate = new Date(product.expire);
+          const formattedDate = expireDate.toLocaleDateString('vi-VN');
+          if (formattedDate.includes(searchLower)) 
+            return true;
+        }
         
         // Tìm theo ID sản phẩm
         if (product.productId && product.productId.toString().includes(searchLower)) 
@@ -270,7 +279,6 @@ const handleAddProduct = async (formData) => {
   }
 };
 
-// Replace your existing handleSaveEdit with this:
 const handleSaveEdit = async (formData) => {
   try {
     setLoading(true);
@@ -278,6 +286,15 @@ const handleSaveEdit = async (formData) => {
     if (!editingProduct || !editingProduct.productId) {
       throw new Error("Missing product ID");
     }
+    
+    // Modified check that only flags true duplicates
+const nameExists = products.some(p => 
+  p.productName === formData.productName && 
+  p.productId !== editingProduct.productId
+);
+    
+    console.log("FormData:", formData);
+    console.log("EditingProduct:", editingProduct);
     
     const response = await productApi.editProduct(
       editingProduct.productId,
@@ -293,7 +310,6 @@ const handleSaveEdit = async (formData) => {
         text: "Sản phẩm đã được cập nhật thành công!",
       });
       
-      // Refresh product list
       fetchProduct();
     } else {
       throw new Error("Edit failed");
@@ -310,6 +326,8 @@ const handleSaveEdit = async (formData) => {
     setLoading(false);
   }
 };
+
+
 
   const columns = React.useMemo(
     () => [
@@ -363,6 +381,17 @@ const handleSaveEdit = async (formData) => {
         render: (quantity) => (
           <span className="font-semibold text-gray-700 whitespace-nowrap">
             {quantity}
+          </span>
+        ),
+      },
+      {
+        title: "Ngày hết hạn",
+        dataIndex: "expire",
+        key: "expire", 
+        responsive: ['lg'],
+        render: (expire) => (
+          <span className="font-medium text-gray-700 whitespace-nowrap">
+            {expire ? new Date(expire).toLocaleDateString('vi-VN') : 'N/A'}
           </span>
         ),
       },

@@ -10,6 +10,10 @@ const PaymentSuccess = () => {
     const navigate = useNavigate();
 
     // Hiệu ứng confetti khi component được mount
+    // ní có thể sửa lại ở trong trang này cho nó call về api confirm-payment/{orderId} 
+    // trong cái orderId mà bạn kia navigate qua đang sai đấy 
+    // phải split nó ra để lấy cái orderId đúng mà BE nó truyền lên
+    // rồi làm service để call về api confirm-payment/{orderId} truyền đúng biến orderId là đc ấy 
     React.useEffect(() => {
         confetti({
             particleCount: 100,
@@ -42,6 +46,11 @@ const PaymentSuccess = () => {
                     <div className="bg-gray-50 p-4 rounded-lg">
                         <p className="text-gray-600">Trạng thái:</p>
                         <p className="font-bold text-gray-800 text-lg">{state?.status}</p>
+                    </div>
+                    <div className="bg-blue-50 p-4 rounded-lg">
+                        <p className="text-blue-600 text-sm">
+                            Đơn hàng của bạn sẽ tự động chuyển sang trạng thái "Đang giao hàng" sau 30 giây.
+                        </p>
                     </div>
                 </div>
 

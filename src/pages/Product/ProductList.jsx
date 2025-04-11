@@ -28,6 +28,7 @@ const ProductList = ({ selectedSkinType, selectedCategory, sortOrder }) => {
   });
 
   const [paymentMethod, setPaymentMethod] = useState("VNPay");
+  const [userPoints, setUserPoints] = useState(0);
   const [promotions, setPromotions] = useState([]);
   const [selectedVoucher, setSelectedVoucher] = useState(null);
 
@@ -42,26 +43,56 @@ const ProductList = ({ selectedSkinType, selectedCategory, sortOrder }) => {
         email: user.email || "",
         phone: user.phone || "",
         address: user.address || "",
+        point: user.point || 0,
       });
     }
   }, [user]);
 
   useEffect(() => {
-    const fetchPromotions = async () => {
+    const fetchMyPromotions = async () => {
       try {
-        const response = await promotionsAPI.getAll();
-        if (response.status === 200) {
-          setPromotions(response.data);
+        if (user) {
+          const response = await promotionsAPI.getMyPromotions();
+          if (response.status === 200) {
+            const { userPoint, promotion } = response.data;
+            setUserPoints(userPoint);
+            // Chỉ nhận các khuyến mãi đang hoạt động và trong thời hạn
+            setPromotions(promotion);
+          }
         }
       } catch (error) {
         console.error("Lỗi khi tải danh sách khuyến mãi:", error);
+        if (error.response?.status === 404) {
+          setPromotions([]);
+          Swal.fire({
+            icon: 'info',
+            title: 'Không có khuyến mãi',
+            html: `
+              <div class="text-left">
+                <p>Hiện tại không có khuyến mãi nào phù hợp. Có thể do:</p>
+                <ul class="list-disc pl-4 mt-2 space-y-1">
+                  <li>Bạn chưa đủ điểm để đổi khuyến mãi</li>
+                  <li>Không có khuyến mãi đang hoạt động</li>
+                  <li>Các khuyến mãi đã hết hạn</li>
+                </ul>
+              </div>
+            `,
+            confirmButtonText: 'Đồng ý'
+          });
+        } else if (error.response?.status === 401) {
+          Swal.fire({
+            icon: 'error',
+            title: 'Lỗi xác thực',
+            text: 'Vui lòng đăng nhập lại để tiếp tục.',
+            confirmButtonText: 'Đồng ý'
+          });
+        }
       }
     };
 
-    if (user) {
-      fetchPromotions();
-    }
+    fetchMyPromotions();
   }, [user]);
+
 
   const filteredProducts = useMemo(() => {
     return products
@@ -148,6 +179,42 @@ const ProductList = ({ selectedSkinType, selectedCategory, sortOrder }) => {
 
   const handlePayment = async () => {
     try {
+      // Validate thông tin người dùng
+      if (!user) {
+        Swal.fire({
+          icon: 'warning',
+          title: 'Vui lòng đăng nhập',
+          text: 'Bạn cần đăng nhập để thực hiện thanh toán',
+          confirmButtonText: 'Đăng nhập ngay',
+          showCancelButton: true,
+          cancelButtonText: 'Để sau'
+        }).then((result) => {
+          if (result.isConfirmed) {
+            navigate('/login');
+          }
+        });
+        return;
+      }
+
+      if (!formData.name || !formData.phone || !formData.address) {
+        Swal.fire({
+          icon: 'error',
+          title: 'Thiếu thông tin',
+          html: `
+            <div class="text-left">
+              <p class="mb-2">Vui lòng cập nhật đầy đủ thông tin:</p>
+              <ul class="list-disc pl-4">
+                ${!formData.name ? '<li>Họ tên người nhận</li>' : ''}
+                ${!formData.phone ? '<li>Số điện thoại</li>' : ''}
+                ${!formData.address ? '<li>Địa chỉ giao hàng</li>' : ''}
+              </ul>
+            </div>
+          `,
+          confirmButtonText: 'Cập nhật thông tin'
+        });
+        return;
+      }
+
       Swal.fire({
         title: "Đang xử lý...",
         allowOutsideClick: false,
@@ -164,89 +231,134 @@ const ProductList = ({ selectedSkinType, selectedCategory, sortOrder }) => {
       ];
 
       const promotionId = selectedVoucher ? Number(selectedVoucher.promotionId) : null;
-      const orderResponse = await orderAPI.createOrder(promotionId, orderProducts);
+      
+      try {
+        const orderResponse = await orderAPI.createOrder(promotionId, orderProducts);
 
-      if (orderResponse.orderId) {
-        if (paymentMethod === "VNPay") {
-          const paymentRequest = {
-            orderId: orderResponse.orderId,
-            amount: parseInt(discountedPrice),
-            orderInfo: `Thanh toan don hang #${orderResponse.orderId}`,
-            orderType: "other",
-            language: "vn",
-            name: formData.name,
-            orderDescription: `Don hang ${orderResponse.orderId}`,
-          };
+        if (orderResponse.orderId) {
+          if (paymentMethod === "VNPay") {
+            const paymentRequest = {
+              orderId: orderResponse.orderId,
+              amount: parseInt(discountedPrice),
+              orderInfo: `Thanh toan don hang #${orderResponse.orderId}`,
+              orderType: "other",
+              language: "vn",
+              name: formData.name,
+              orderDescription: `Don hang ${orderResponse.orderId}`,
+            };
 
-          const vnpayResponse = await paymentAPI.createVNPayPayment(
-            paymentRequest
-          );
+            try {
+              const vnpayResponse = await paymentAPI.createVNPayPayment(paymentRequest);
 
-          if (vnpayResponse.paymentUrl) {
-            localStorage.setItem(
-              "pendingOrder",
-              JSON.stringify({
-                orderId: orderResponse.orderId,
-                amount: parseInt(discountedPrice),
-                products: [
-                  {
-                    ...selectedProduct,
-                    price: parseInt(selectedProduct.price),
-                  },
-                ],
-              })
-            );
+              if (vnpayResponse.paymentUrl) {
+                localStorage.setItem(
+                  "pendingOrder",
+                  JSON.stringify({
+                    orderId: orderResponse.orderId,
+                    amount: parseInt(discountedPrice),
+                    products: [
+                      {
+                        ...selectedProduct,
+                        price: parseInt(selectedProduct.price),
+                      },
+                    ],
+                  })
+                );
 
-            window.location.href = vnpayResponse.paymentUrl;
+                window.location.href = vnpayResponse.paymentUrl;
+              } else {
+                throw new Error("Không nhận được URL thanh toán từ VNPay");
+              }
+            } catch (vnpayError) {
+              Swal.fire({
+                icon: "error",
+                title: "Lỗi thanh toán VNPay",
+                html: `
+                  <div class="text-left">
+                    <p class="mb-2">Không thể kết nối với cổng thanh toán VNPay:</p>
+                    <p class="text-sm text-gray-600">${vnpayError.message || 'Vui lòng thử lại sau hoặc chọn phương thức thanh toán khác'}</p>
+                  </div>
+                `,
+                confirmButtonText: "Đồng ý"
+              });
+            }
+          } else {
+            // Xử lý thanh toán tiền mặt
+            Swal.close();
+
+            await Swal.fire({
+              icon: "success",
+              title: "Đặt hàng thành công!",
+              html: `
+                <div class="text-left">
+                  <p class="mb-2">Cảm ơn bạn đã đặt hàng. Thông tin đơn hàng:</p>
+                  <ul class="list-none space-y-2">
+                    <li><strong>Mã đơn hàng:</strong> #${orderResponse.orderId}</li>
+                    <li><strong>Tổng tiền:</strong> ${formatCurrency(discountedPrice)}</li>
+                    <li><strong>Phương thức:</strong> Thanh toán khi nhận hàng</li>
+                  </ul>
+                  <p class="mt-3 text-sm text-gray-600">Chúng tôi sẽ liên hệ với bạn trong thời gian sớm nhất!</p>
+                </div>
+              `,
+              confirmButtonText: "Đồng ý",
+            });
+
+            const productInfo = {
+              productId: selectedProduct.productId,
+              productName: selectedProduct.productName,
+              quantity: 1,
+              price: selectedProduct.price,
+              productImage:
+                selectedProduct.productsImages?.[0]?.imageUrl ||
+                selectedProduct.image,
+            };
+
+            const orderInfo = {
+              orderId: orderResponse.orderId,
+              totalAmount: selectedProduct.price,
+              discountAmount: selectedVoucher ? 
+                (selectedProduct.price * selectedVoucher.discountPercentage) / 100 : 0,
+              finalAmount: discountedPrice,
+              products: [productInfo],
+              paymentMethod: "Cash",
+            };
+
+            navigate("/ordersuccess", {
+              state: {
+                orderDetails: orderInfo,
+              },
+            });
           }
-        } else {
-          // Xử lý thanh toán tiền mặt
-          Swal.close();
-
-          await Swal.fire({
-            icon: "success",
-            title: "Đặt hàng thành công!",
-            text: "Cảm ơn bạn đã đặt hàng. Chúng tôi sẽ liên hệ với bạn sớm nhất!",
-            confirmButtonColor: "#3085d6",
-            confirmButtonText: "Đồng ý",
-          });
-
-          // Tạo object sản phẩm với đầy đủ thông tin
-          const productInfo = {
-            productId: selectedProduct.productId,
-            productName: selectedProduct.productName,
-            quantity: 1,
-            price: selectedProduct.price,
-            productImage:
-              selectedProduct.productsImages?.[0]?.imageUrl ||
-              selectedProduct.image,
-          };
-
-          const orderInfo = {
-            orderId: orderResponse.orderId,
-            totalAmount: selectedProduct.price,
-            discountAmount: selectedVoucher ? 
-              (selectedProduct.price * selectedVoucher.discountPercentage) / 100 : 0,
-            finalAmount: discountedPrice,
-            products: [productInfo],
-            paymentMethod: "Cash",
-          };
-
-          navigate("/ordersuccess", {
-            state: {
-              orderDetails: orderInfo,
-            },
-          });
         }
+      } catch (orderError) {
+        Swal.fire({
+          icon: "error",
+          title: "Lỗi tạo đơn hàng",
+          html: `
+            <div class="text-left">
+              <p class="mb-2">Không thể tạo đơn hàng:</p>
+              <p class="text-sm text-gray-600">${orderError.message || 'Vui lòng thử lại sau'}</p>
+              ${orderError.response?.data?.errors ? `
+                <ul class="list-disc pl-4 mt-2 text-sm text-red-500">
+                  ${orderError.response.data.errors.map(err => `<li>${err}</li>`).join('')}
+                </ul>
+              ` : ''}
+            </div>
+          `,
+          confirmButtonText: "Đồng ý"
+        });
       }
     } catch (error) {
-      Swal.close();
-      console.error("Error:", error);
       Swal.fire({
         icon: "error",
-        title: "Lỗi!",
-        text: error.message || "Đã có lỗi xảy ra khi thanh toán.",
-        confirmButtonColor: "#3085d6",
+        title: "Lỗi hệ thống",
+        html: `
+          <div class="text-left">
+            <p class="mb-2">Đã xảy ra lỗi không mong muốn:</p>
+            <p class="text-sm text-gray-600">${error.message || 'Vui lòng thử lại sau'}</p>
+          </div>
+        `,
+        confirmButtonText: "Đồng ý"
       });
     }
   };
@@ -307,7 +419,7 @@ const ProductList = ({ selectedSkinType, selectedCategory, sortOrder }) => {
                               
                               return (
                                 <div 
-                                  key={index} 
+                              key={index}
                                   className="w-4 mr-0.5 flex items-center justify-center"
                                 >
                                   {ratingDiff >= 1 ? (
@@ -539,45 +651,128 @@ const ProductList = ({ selectedSkinType, selectedCategory, sortOrder }) => {
                         <div className="text-blue-600 font-bold animate-pulse">
                           {formatCurrency(selectedProduct?.price)}
                         </div>
+                        <div className="mt-2 flex items-center">
+                          <span className="text-sm text-gray-600">
+                            {selectedProduct?.quantity > 0 ? (
+                              <>
+                                <span className="font-medium">Còn lại:</span>{" "}
+                                <span className={`${
+                                  selectedProduct?.quantity <= 10 
+                                    ? "text-red-500 font-semibold" 
+                                    : "text-green-600"
+                                }`}>
+                                  {selectedProduct?.quantity}
+                                </span>{" "}
+                                {selectedProduct?.quantity <= 10 && (
+                                  <span className="text-xs text-red-500 animate-pulse">
+                                    (Sắp hết hàng)
+                                  </span>
+                                )}
+                              </>
+                            ) : (
+                              <span className="text-red-500 font-semibold">Hết hàng</span>
+                            )}
+                          </span>
+                        </div>
                       </div>
                     </div>
                   </div>
 
                   {/* Mã giảm giá */}
-                  {user && promotions.length > 0 && (
+                  {promotions.length > 0 && (
                     <div className="bg-gray-50 rounded-xl p-4 transform transition-all duration-300 hover:shadow-lg">
-                      <h4 className="font-medium text-gray-700 mb-3 flex items-center gap-2">
-                        <i className="fas fa-tag text-blue-500"></i>
-                        Mã giảm giá
-                      </h4>
-                      <select
-                        className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-300 focus:border-blue-500 transition-all"
-                        onChange={(e) =>
-                          setSelectedVoucher(
-                            e.target.value 
-                              ? promotions.find(v => v.promotionId === parseInt(e.target.value))
-                              : null
-                          )
-                        }
-                      >
-                        <option value="">Không sử dụng</option>
-                        {promotions
-                          .filter((promo) => promo.isActive)
-                          .map((promo) => (
-                            <option
-                              key={promo.promotionId}
-                              value={promo.promotionId}
-                            >
-                              {promo.promotionName} - {promo.discountPercentage}%
-                            </option>
-                          ))}
-                      </select>
-                      
-                      {selectedVoucher && (
-                        <div className="mt-2 text-green-600 text-sm font-medium flex justify-between">
-                          <span>Giảm giá {selectedVoucher.discountPercentage}%:</span>
-                          <span>-{formatCurrency((selectedProduct?.price * selectedVoucher.discountPercentage) / 100)}</span>
+                      <h4 className="font-medium text-gray-700 mb-3 flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <i className="fas fa-tag text-blue-500"></i>
+                          Mã giảm giá
                         </div>
+                        {user && (
+                          <div className="bg-gradient-to-r from-blue-50 to-blue-100 px-3 py-1.5 rounded-full flex items-center gap-1.5">
+                            <i className="fas fa-star text-yellow-400"></i>
+                            <span className="text-sm font-medium text-gray-700">
+                              Điểm của bạn: <span className="text-blue-600 font-bold">{userPoints}</span>
+                            </span>
+                          </div>
+                        )}
+                      </h4>
+
+                      {!user ? (
+                        <div className="text-center p-3 bg-yellow-50 rounded-lg border border-yellow-200">
+                          <i className="fas fa-exclamation-circle text-yellow-500 mr-2"></i>
+                          <span className="text-sm text-yellow-700">
+                            Vui lòng đăng nhập để sử dụng mã giảm giá
+                          </span>
+                        </div>
+                      ) : (
+                        <>
+                          <select
+                            className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-300 focus:border-blue-500 transition-all"
+                            onChange={(e) => {
+                              const selectedPromo = promotions.find(
+                                (v) => v.promotionId === parseInt(e.target.value)
+                              );
+                              
+                              if (selectedPromo) {
+                                setSelectedVoucher(selectedPromo);
+                                // Hiển thị thông tin chi tiết về voucher
+                                Swal.fire({
+                                  icon: 'info',
+                                  title: 'Xác nhận sử dụng khuyến mãi',
+                                  html: `
+                                    <div class="text-left">
+                                      <p class="mb-2">Bạn sẽ sử dụng ${selectedPromo.discountPercentage} điểm để được giảm ${selectedPromo.discountPercentage}%</p>
+                                      <ul class="list-disc pl-4 space-y-1 text-sm">
+                                        <li>Điểm hiện tại: <span class="font-semibold text-blue-600">${userPoints} điểm</span></li>
+                                        <li>Điểm sau khi sử dụng: <span class="font-semibold text-green-600">${userPoints - selectedPromo.discountPercentage} điểm</span></li>
+                                      </ul>
+                                      <p class="mt-2 text-sm text-gray-600">
+                                        Khuyến mãi có hiệu lực đến: ${new Date(selectedPromo.endDate).toLocaleDateString('vi-VN')}
+                                      </p>
+                                    </div>
+                                  `,
+                                  showCancelButton: true,
+                                  confirmButtonText: 'Xác nhận',
+                                  cancelButtonText: 'Hủy'
+                                }).then((result) => {
+                                  if (!result.isConfirmed) {
+                                    setSelectedVoucher(null);
+                                    e.target.value = "";
+                                  }
+                                });
+                              } else {
+                                setSelectedVoucher(null);
+                              }
+                            }}
+                          >
+                            <option value="">Chọn mã giảm giá</option>
+                            {promotions.map((promo) => (
+                              <option
+                                key={promo.promotionId}
+                                value={promo.promotionId}
+                              >
+                                {promo.promotionName} - Giảm {promo.discountPercentage}%
+                                (Hết hạn: {new Date(promo.endDate).toLocaleDateString('vi-VN')})
+                              </option>
+                            ))}
+                          </select>
+
+                          {selectedVoucher && (
+                            <div className="mt-3 space-y-2 bg-blue-50 p-3 rounded-lg">
+                              <div className="text-green-600 text-sm font-medium flex justify-between">
+                                <span>Giảm giá {selectedVoucher.discountPercentage}%:</span>
+                                <span>-{formatCurrency((selectedProduct?.price * selectedVoucher.discountPercentage) / 100)}</span>
+                              </div>
+                              <div className="text-gray-500 text-xs flex justify-between">
+                                <span>Điểm sẽ bị trừ:</span>
+                                <span className="font-medium text-blue-600">{selectedVoucher.discountPercentage} điểm</span>
+                              </div>
+                              <div className="text-gray-500 text-xs flex justify-between">
+                                <span>Điểm còn lại sau khi sử dụng:</span>
+                                <span className="font-medium text-blue-600">{userPoints - selectedVoucher.discountPercentage} điểm</span>
+                              </div>
+                            </div>
+                          )}
+                        </>
                       )}
                     </div>
                   )}
@@ -681,9 +876,9 @@ const ProductList = ({ selectedSkinType, selectedCategory, sortOrder }) => {
                       </span>
                     </div>
                   ) : (
-                    <span className="text-xl font-bold text-blue-600 animate-pulse">
+                  <span className="text-xl font-bold text-blue-600 animate-pulse">
                       {formatCurrency(selectedProduct?.price)}
-                    </span>
+                  </span>
                   )}
                 </div>
 

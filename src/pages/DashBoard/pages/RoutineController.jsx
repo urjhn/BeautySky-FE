@@ -79,6 +79,20 @@ const RoutineController = () => {
     return a.stepOrder - b.stepOrder;
   });
 
+
+  const checkDuplicateStep = (carePlanId, stepOrder, stepId = null) => {
+    return steps.some(
+      step => step.carePlanId === carePlanId && 
+             step.stepOrder === stepOrder && 
+             step.stepId !== stepId
+    );
+  };
+  
+  const checkStepLimit = (carePlanId) => {
+    const stepsForSkinType = steps.filter(step => step.carePlanId === carePlanId);
+    return stepsForSkinType.length >= 6;
+  };
+
   const handleDelete = async (stepId) => {
     const result = await Swal.fire({
       title: "Bạn có chắc chắn muốn xóa bước này?",
@@ -106,6 +120,26 @@ const RoutineController = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    // Kiểm tra giới hạn 6 bước (chỉ khi thêm mới)
+    if (!formData.stepId && checkStepLimit(formData.carePlanId)) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Đã đạt giới hạn',
+        text: 'Mỗi loại da chỉ được tối đa 6 bước chăm sóc.',
+      });
+      return;
+    }
+  
+    // Kiểm tra trùng thứ tự bước
+    if (checkDuplicateStep(formData.carePlanId, formData.stepOrder, formData.stepId || null)) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Lỗi',
+        text: 'Đã tồn tại bước với thứ tự này trong loại da này. Vui lòng chọn thứ tự khác.',
+      });
+      return;
+    }
     
     setIsLoading(true);
     setError(null);
@@ -151,6 +185,18 @@ const RoutineController = () => {
     }
   };
   
+
+
+  const handleStepOrderChange = (e) => {
+    const newOrder = e.target.value;
+    setFormData({ ...formData, stepOrder: newOrder });
+    
+    if (newOrder && checkDuplicateStep(formData.carePlanId, newOrder, formData.stepId || null)) {
+      setError('Thứ tự bước này đã tồn tại cho loại da này');
+    } else {
+      setError(null);
+    }
+  };
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-100 p-4 md:p-6">
       <header className="text-center mb-8 md:mb-12">
@@ -300,81 +346,112 @@ const RoutineController = () => {
       </div>
 
       {isModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 md:p-6 z-50">
-          <div className="bg-white rounded-2xl p-4 md:p-8 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-            <h2 className="text-2xl md:text-3xl font-semibold mb-4 md:mb-6 text-gray-900">
-              {formData.stepId ? "Chỉnh Sửa" : "Thêm"} Bước
-            </h2>
-            <form onSubmit={handleSubmit} className="space-y-4 md:space-y-6">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Loại Da</label>
-                <select
-                  required
-                  value={formData.carePlanId}
-                  onChange={(e) => setFormData({ ...formData, carePlanId: parseInt(e.target.value) })}
-                  className="w-full p-2 md:p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none"
-                >
-                  {Object.entries(skinTypes).map(([id, name]) => (
-                    <option key={id} value={id}>
-                      {name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Thứ tự bước</label>
-                <input
-                  type="number"
-                  required
-                  min="1"
-                  value={formData.stepOrder}
-                  onChange={(e) => setFormData({ ...formData, stepOrder: e.target.value })}
-                  className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Tên Bước</label>
-                <input
-                  type="text"
-                  required
-                  value={formData.stepName}
-                  onChange={(e) => setFormData({ ...formData, stepName: e.target.value })}
-                  className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Mô Tả</label>
-                <textarea
-                  required
-                  value={formData.stepDescription}
-                  onChange={(e) => setFormData({ ...formData, stepDescription: e.target.value })}
-                  className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none"
-                  rows="3"
-                />
-              </div>
-
-              <div className="flex flex-col md:flex-row gap-4">
-                <button
-                  type="submit"
-                  className="w-full md:flex-1 bg-indigo-600 text-white py-2 md:py-3 px-6 rounded-xl hover:bg-indigo-700 transition-all"
-                  disabled={isLoading}
-                >
-                  {isLoading ? "Đang xử lý..." : formData.stepId ? "Cập Nhật" : "Thêm Mới"}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setIsModalOpen(false)}
-                  className="w-full md:flex-1 bg-gray-200 text-gray-800 py-2 md:py-3 px-6 rounded-xl hover:bg-gray-300 transition-all"
-                  disabled={isLoading}
-                >
-                  Hủy
-                </button>
-              </div>
-            </form>
+  <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 md:p-6 z-50">
+    <div className="bg-white rounded-2xl p-4 md:p-8 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+      <h2 className="text-2xl md:text-3xl font-semibold mb-4 md:mb-6 text-gray-900">
+        {formData.stepId ? "Chỉnh Sửa" : "Thêm"} Bước
+      </h2>
+      
+      {/* Thêm cảnh báo khi đủ 6 bước */}
+      {!formData.stepId && checkStepLimit(formData.carePlanId) && (
+        <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-4">
+          <div className="flex">
+            <div className="flex-shrink-0">
+              <svg className="h-5 w-5 text-yellow-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+              </svg>
+            </div>
+            <div className="ml-3">
+              <p className="text-sm text-yellow-700">
+                Loại da này đã đạt tối đa 6 bước. Bạn không thể thêm mới nhưng vẫn có thể chỉnh sửa các bước hiện có.
+              </p>
+            </div>
           </div>
         </div>
       )}
+
+      <form onSubmit={handleSubmit} className="space-y-4 md:space-y-6">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Loại Da</label>
+          <select
+            required
+            value={formData.carePlanId}
+            onChange={(e) => setFormData({ ...formData, carePlanId: parseInt(e.target.value) })}
+            className="w-full p-2 md:p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+            disabled={!!formData.stepId}
+          >
+            {Object.entries(skinTypes).map(([id, name]) => (
+              <option 
+                key={id} 
+                value={id}
+                disabled={checkStepLimit(parseInt(id)) && !formData.stepId}
+              >
+                {name} {checkStepLimit(parseInt(id)) && !formData.stepId ? '(Đã đủ 6 bước)' : ''}
+              </option>
+            ))}
+          </select>
+        </div>
+        
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Thứ tự bước</label>
+          <input
+            type="number"
+            required
+            min="1"
+            max="6"
+            value={formData.stepOrder}
+            onChange={handleStepOrderChange}
+            className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+          />
+          {error && formData.stepOrder && checkDuplicateStep(formData.carePlanId, formData.stepOrder, formData.stepId || null) && (
+            <p className="mt-1 text-sm text-red-600">{error}</p>
+          )}
+        </div>
+
+        {/* Giữ nguyên các trường khác */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Tên Bước</label>
+          <input
+            type="text"
+            required
+            value={formData.stepName}
+            onChange={(e) => setFormData({ ...formData, stepName: e.target.value })}
+            className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Mô Tả</label>
+          <textarea
+            required
+            value={formData.stepDescription}
+            onChange={(e) => setFormData({ ...formData, stepDescription: e.target.value })}
+            className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+            rows="3"
+          />
+        </div>
+
+        <div className="flex flex-col md:flex-row gap-4">
+          <button
+            type="submit"
+            className="w-full md:flex-1 bg-indigo-600 text-white py-2 md:py-3 px-6 rounded-xl hover:bg-indigo-700 transition-all"
+            disabled={isLoading || (!formData.stepId && checkStepLimit(formData.carePlanId))}
+          >
+            {isLoading ? "Đang xử lý..." : formData.stepId ? "Cập Nhật" : "Thêm Mới"}
+          </button>
+          <button
+            type="button"
+            onClick={() => setIsModalOpen(false)}
+            className="w-full md:flex-1 bg-gray-200 text-gray-800 py-2 md:py-3 px-6 rounded-xl hover:bg-gray-300 transition-all"
+            disabled={isLoading}
+          >
+            Hủy
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+)}
     </div>
   );
 };

@@ -57,6 +57,10 @@ const OrderDetail = () => {
         return <ClockIcon className="w-6 h-6 text-yellow-500" />;
       case "Cancelled":
         return <XCircleIcon className="w-6 h-6 text-red-500" />;
+      case "Shipping":
+        return <TruckIcon className="w-6 h-6 text-purple-500" />;
+      case "Delivered":
+        return <CheckCircleIcon className="w-6 h-6 text-blue-500" />;
       default:
         return <TruckIcon className="w-6 h-6 text-blue-500" />;
     }
@@ -65,8 +69,10 @@ const OrderDetail = () => {
   const getStatusColor = (status) => {
     const colorMap = {
       "Pending": "bg-yellow-100 text-yellow-800",
-      "Completed": "bg-green-100 text-green-800",
-      "Cancelled": "bg-red-100 text-red-800"
+      "Completed": "bg-green-100 text-green-800", 
+      "Cancelled": "bg-red-100 text-red-800",
+      "Shipping": "bg-purple-100 text-purple-800",
+      "Delivered": "bg-blue-100 text-blue-800"
     };
     return colorMap[status] || "bg-gray-100 text-gray-800";
   };
@@ -74,8 +80,10 @@ const OrderDetail = () => {
   const getStatusDisplay = (status) => {
     const statusMap = {
       "Pending": "Đang xử lý",
-      "Completed": "Đã giao hàng",
-      "Cancelled": "Đã hủy"
+      "Completed": "Đã thanh toán",
+      "Cancelled": "Đã hủy",
+      "Shipping": "Đang giao hàng",
+      "Delivered": "Đã giao hàng thành công"
     };
     return statusMap[status] || status;
   };

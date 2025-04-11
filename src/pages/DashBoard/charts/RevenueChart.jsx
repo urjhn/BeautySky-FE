@@ -60,7 +60,7 @@ const RevenueChart = ({ revenueGrowth }) => {
         <div>
           <h3 className="text-sm sm:text-base md:text-lg font-semibold text-gray-800">
             📊 Phân tích doanh thu
-          </h3>
+      </h3>
           <p className="text-xs sm:text-sm text-gray-500 mt-0.5">
             Tổng doanh thu: {" "}
             {new Intl.NumberFormat("vi-VN", {
@@ -168,7 +168,7 @@ const RevenueChart = ({ revenueGrowth }) => {
           </p>
         </div>
         <div className="text-center p-2 sm:p-3 bg-red-50 rounded-lg">
-          <p className="text-xs sm:text-sm text-gray-500 mb-1">Doannh thu thấp nhất</p>
+          <p className="text-xs sm:text-sm text-gray-500 mb-1">Doanh thu thấp nhất</p>
           <p className="text-sm sm:text-base md:text-lg font-semibold text-red-600">
             {new Intl.NumberFormat("vi-VN", {
               style: "currency",

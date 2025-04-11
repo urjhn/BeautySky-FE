@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import Navbar from "../../components/Navbar/Navbar";
 import Footer from "../../components/Footer/Footer";
-import Pagination from "../../components/Pagination/Pagination";
 import blogsAPI from "../../services/blogs";
 
 const Blogs = () => {
