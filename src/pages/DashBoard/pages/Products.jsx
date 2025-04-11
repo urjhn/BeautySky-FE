@@ -32,6 +32,7 @@ const Products = () => {
     skinTypeId: 0,
     productsImages: [],
     isActive: true,
+    expire: null,
   });
 
   const handleImageUpload = async ({ File}) => {
@@ -71,6 +72,14 @@ const Products = () => {
         // Tìm theo số lượng
         if (product.quantity && product.quantity.toString().includes(searchLower)) 
           return true;
+
+        // Tìm theo ngày hết hạn
+        if (product.expire) {
+          const expireDate = new Date(product.expire);
+          const formattedDate = expireDate.toLocaleDateString('vi-VN');
+          if (formattedDate.includes(searchLower)) 
+            return true;
+        }
         
         // Tìm theo ID sản phẩm
         if (product.productId && product.productId.toString().includes(searchLower)) 
@@ -372,6 +381,17 @@ const nameExists = products.some(p =>
         render: (quantity) => (
           <span className="font-semibold text-gray-700 whitespace-nowrap">
             {quantity}
+          </span>
+        ),
+      },
+      {
+        title: "Ngày hết hạn",
+        dataIndex: "expire",
+        key: "expire", 
+        responsive: ['lg'],
+        render: (expire) => (
+          <span className="font-medium text-gray-700 whitespace-nowrap">
+            {expire ? new Date(expire).toLocaleDateString('vi-VN') : 'N/A'}
           </span>
         ),
       },

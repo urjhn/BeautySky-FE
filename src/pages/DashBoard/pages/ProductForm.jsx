@@ -13,8 +13,10 @@ import {
   Col,
   Upload,
   Switch,
+  DatePicker,
 } from "antd";
 import { PlusOutlined } from "@ant-design/icons";
+import moment from 'moment';
 
 const ProductForm = ({
   item,
@@ -31,6 +33,8 @@ const ProductForm = ({
   useEffect(() => {
     if (item) {
       // Set initial form values based on the item being edited
+      const expireDate = item.expire ? moment(item.expire, "YYYY-MM-DD") : null;
+
       form.setFieldsValue({
         productId: item.productId,
         productName: item.productName,
@@ -41,6 +45,7 @@ const ProductForm = ({
         categoryId: item.categoryId,
         skinTypeId: item.skinTypeId,
         isActive: item.isActive ?? true,
+        expire: expireDate,
       });
 
       // Initialize preview images if editing an existing product
@@ -52,6 +57,8 @@ const ProductForm = ({
           url: img.imageUrl,
           imageUrl: img.imageUrl,
         }));
+
+        
 
         setFileList(existingImages);
       }
@@ -75,6 +82,14 @@ const ProductForm = ({
     formData.append("categoryId", values.categoryId);
     formData.append("skinTypeId", values.skinTypeId);
     formData.append("isActive", values.isActive ?? true);
+
+    // Add the expire field
+    if (values.expire) {
+      formData.append("expire", values.expire.format("YYYY-MM-DD"));
+    } else if (item && item.expire) {
+      // Nếu đang chỉnh sửa và ngày không được thay đổi, sử dụng bản gốc
+      formData.append("expire", item.expire);
+    }
 
     // Add the image file if it exists
     // Only add the first file in the list (as your backend seems to handle one image)
@@ -149,6 +164,23 @@ const ProductForm = ({
                 min={0}
                 disabled={loading}
                 placeholder="Nhập số lượng sản phẩm"
+              />
+            </Form.Item>
+          </Col>
+        </Row>
+
+        <Row gutter={[16, 16]}>
+          <Col xs={24} sm={24} md={24}>
+            <Form.Item
+              label="Ngày hết hạn"
+              name="expire"
+              rules={[{ required: true, message: "Vui lòng chọn ngày hết hạn!" }]}
+            >
+              <DatePicker 
+                style={{ width: '100%' }}
+                format="DD/MM/YYYY"
+                placeholder="Chọn ngày hết hạn"
+                disabled={loading}
               />
             </Form.Item>
           </Col>
